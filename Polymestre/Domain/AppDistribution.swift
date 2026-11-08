@@ -41,11 +41,11 @@ enum FeedbackMail {
 
     static func url(to address: String, version: String, device: String, entries: [LogEntry]) -> URL? {
         let subject = "Polymestre \(version) — retour"
-        var body = "Ce qui s'est passé (et ce que tu attendais) :\n\n\n\n— Polymestre \(version) · \(device)\n"
+        var body = String(localized: "Ce qui s'est passé (et ce que tu attendais) :\n\n\n\n— Polymestre \(version) · \(device)\n")
         if !entries.isEmpty {
             let room = maxBody - body.count - 20
             // La fin du journal : les dernières lignes sont celles qui expliquent.
-            body += "\nFin du journal :\n" + String(LogBuffer.text(Array(entries.suffix(40))).suffix(max(0, room)))
+            body += String(localized: "\nFin du journal :\n") + String(LogBuffer.text(Array(entries.suffix(40))).suffix(max(0, room)))
         }
         let query = [("subject", subject), ("body", body)]
             .map { "\($0)=\(percent($1.replacingOccurrences(of: "\n", with: "\r\n")))" }

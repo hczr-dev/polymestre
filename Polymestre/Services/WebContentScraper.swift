@@ -21,15 +21,15 @@ enum WebContentScraper {
         var errorDescription: String? {
             switch self {
             case .notACoursePage(.moodle):
-                return "Ouvre la page d'un cours Moodle (celle qui liste les semaines), puis réessaie."
+                return String(localized: "Ouvre la page d'un cours Moodle (celle qui liste les semaines), puis réessaie.")
             case .notACoursePage(.courseware):
-                return "Ouvre un cours Courseware (son plan ou une leçon), puis réessaie."
+                return String(localized: "Ouvre un cours Courseware (son plan ou une leçon), puis réessaie.")
             case .notACoursePage:
-                return "Ouvre la page du cours, puis réessaie."
+                return String(localized: "Ouvre la page du cours, puis réessaie.")
             case .unreadable(let detail):
-                return "Lecture de la page impossible — \(detail)"
+                return String(localized: "Lecture de la page impossible — \(detail)")
             case .empty:
-                return "La page ne contient ni théorie ni série reconnaissables."
+                return String(localized: "La page ne contient ni théorie ni série reconnaissables.")
             }
         }
     }
@@ -65,7 +65,7 @@ enum WebContentScraper {
             throw ScrapeError.unreadable(error.localizedDescription)
         }
         guard let json = raw as? String, let data = json.data(using: .utf8) else {
-            throw ScrapeError.unreadable("réponse vide")
+            throw ScrapeError.unreadable(String(localized: "réponse vide"))
         }
         if let failure = try? JSONDecoder().decode([String: String].self, from: data), let message = failure["error"] {
             throw ScrapeError.unreadable(message)
@@ -434,7 +434,7 @@ enum BotafogoClient {
         request.timeoutInterval = 20
         let (data, response) = try await session.data(for: request)
         if let http = response as? HTTPURLResponse, !(200..<300).contains(http.statusCode) {
-            throw WebContentScraper.ScrapeError.unreadable("le serveur a répondu \(http.statusCode)")
+            throw WebContentScraper.ScrapeError.unreadable(String(localized: "le serveur a répondu \(http.statusCode)"))
         }
         return String(decoding: data, as: UTF8.self)
     }
@@ -513,8 +513,8 @@ enum AuthenticatedDownloader {
                 return try await fetch(MoodleLinks.workaroundPage(url), depth: depth + 1)
             }
             throw WebContentScraper.ScrapeError.unreadable(base.path.contains("/login")
-                ? "la connexion Moodle a expiré : reconnecte-toi dans l'onglet Moodle de l'import"
-                : "ce lien ne mène pas à un PDF")
+                ? String(localized: "la connexion Moodle a expiré : reconnecte-toi dans l'onglet Moodle de l'import")
+                : String(localized: "ce lien ne mène pas à un PDF"))
         }
         let name = response.suggestedFilename ?? "serie.pdf"
         let destination = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString + "-" + name)

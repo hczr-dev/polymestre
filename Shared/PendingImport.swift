@@ -21,10 +21,10 @@ struct PendingImport: Codable, Equatable, Hashable {
     var displayName: String {
         switch kind {
         case .pdf:
-            return fileName.map { "PDF « \($0) »" } ?? "PDF"
+            return fileName.map { String(localized: "PDF « \($0) »") } ?? "PDF"
         case .text:
             let length = text?.count ?? 0
-            return "texte (\(length) caractères)"
+            return String(localized: "texte (\(length) caractères)")
         }
     }
 }

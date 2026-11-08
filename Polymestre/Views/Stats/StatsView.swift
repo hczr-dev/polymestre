@@ -69,11 +69,11 @@ struct StatsView: View {
         let last = DateUtils.addDays(-1, to: r.end)
         switch period {
         case .week:
-            if weekOffset == 0 { return "Cette semaine" }
-            if weekOffset == -1 { return "La semaine dernière" }
+            if weekOffset == 0 { return String(localized: "Cette semaine") }
+            if weekOffset == -1 { return String(localized: "La semaine dernière") }
             return "\(DateUtils.shortDay.string(from: r.start)) – \(DateUtils.shortDay.string(from: last))"
-        case .month: return "\(DateUtils.shortDay.string(from: r.start)) – aujourd'hui"
-        case .semester: return term?.displayName ?? "Depuis le début du semestre"
+        case .month: return String(localized: "\(DateUtils.shortDay.string(from: r.start)) – aujourd'hui")
+        case .semester: return term?.displayName ?? String(localized: "Depuis le début du semestre")
         }
     }
 
@@ -122,7 +122,7 @@ struct StatsView: View {
         var hours: Double { Double(seconds) / 3600 }
     }
 
-    private static let lectureCategory = "Amphi"
+    private static let lectureCategory = String(localized: "Amphi")
 
     private func bin(_ date: Date) -> Date {
         binsByWeek ? DateUtils.startOfWeek(date) : DateUtils.startOfDay(date)
@@ -255,7 +255,7 @@ struct StatsView: View {
 
     /// Amphi, puis chaque nature de travail : la répartition de la période.
     private var splitSlices: [TimeSlice] {
-        var slices = [TimeSlice(name: "Amphi", detail: "cours magistraux suivis", seconds: lectureSeconds,
+        var slices = [TimeSlice(name: String(localized: "Amphi"), detail: String(localized: "cours magistraux suivis"), seconds: lectureSeconds,
                                 color: Carnet.inkTertiary.opacity(0.55))]
         for type in TaskType.reportCategories where type != .lecture {
             let seconds = studySessions.filter { $0.taskType.canonical == type }.reduce(0) { $0 + $1.durationSeconds }
@@ -270,19 +270,19 @@ struct StatsView: View {
         var lecture: [String: Int] = [:]
         var colors: [String: Color] = [:]
         for session in studySessions {
-            let code = session.course?.displayCode ?? "Sans cours"
+            let code = session.course?.displayCode ?? String(localized: "Sans cours")
             study[code, default: 0] += session.durationSeconds
             colors[code] = session.course.map { Carnet.tint($0.colorHex) } ?? Carnet.inkTertiary
         }
         for slot in lectures {
-            let code = slot.course?.displayCode ?? "Sans cours"
+            let code = slot.course?.displayCode ?? String(localized: "Sans cours")
             lecture[code, default: 0] += slot.seconds
             colors[code] = slot.course.map { Carnet.tint($0.colorHex) } ?? Carnet.inkTertiary
         }
         return Set(study.keys).union(lecture.keys)
             .map { code in
                 TimeSlice(name: code,
-                          detail: "\(DateUtils.durationLabel(seconds: study[code] ?? 0)) d'étude, \(DateUtils.durationLabel(seconds: lecture[code] ?? 0)) d'amphi",
+                          detail: String(localized: "\(DateUtils.durationLabel(seconds: study[code] ?? 0)) d'étude, \(DateUtils.durationLabel(seconds: lecture[code] ?? 0)) d'amphi"),
                           seconds: (study[code] ?? 0) + (lecture[code] ?? 0),
                           color: colors[code] ?? Carnet.ink)
             }
@@ -307,8 +307,8 @@ struct StatsView: View {
         var points: [WeekPoint] = []
         var cursor = start
         while cursor <= Date() {
-            points.append(WeekPoint(week: cursor, series: "Étude", hours: Double(study[cursor] ?? 0) / 3600))
-            points.append(WeekPoint(week: cursor, series: "Amphi", hours: Double(lecture[cursor] ?? 0) / 3600))
+            points.append(WeekPoint(week: cursor, series: String(localized: "Étude"), hours: Double(study[cursor] ?? 0) / 3600))
+            points.append(WeekPoint(week: cursor, series: String(localized: "Amphi"), hours: Double(lecture[cursor] ?? 0) / 3600))
             cursor = DateUtils.addWeeks(1, to: cursor)
         }
         return points
@@ -382,18 +382,18 @@ struct StatsView: View {
     /// L'étude, l'amphi, et leur somme — trois chiffres, jamais mélangés.
     private var totals: some View {
         HStack(spacing: 0) {
-            total("Étude", seconds: studySeconds, detail: Plural.count(studySessions.count, "\(studySessions.count) session", "\(studySessions.count) sessions"))
+            total(String(localized: "Étude"), seconds: studySeconds, detail: Plural.count(studySessions.count, "\(studySessions.count) session", "\(studySessions.count) sessions"))
             // Sans heures de cours sur la période, « Amphi 0 h » et un total égal
             // à l'étude n'apprennent rien : la colonne disparaît.
             if lectureSeconds > 0 {
                 Rectangle().fill(Carnet.rule).frame(width: 1, height: 48)
-                total("Amphi", seconds: lectureSeconds, detail: "\(lectures.count) cours")
+                total(String(localized: "Amphi"), seconds: lectureSeconds, detail: String(localized: "\(lectures.count) cours"))
                 Rectangle().fill(Carnet.rule).frame(width: 1, height: 48)
                 total("Total", seconds: studySeconds + lectureSeconds, detail: activeDaysLabel)
             } else {
                 Rectangle().fill(Carnet.rule).frame(width: 1, height: 48)
-                total("Jours actifs", value: "\(Set(studySessions.map { DateUtils.startOfDay($0.startedAt) }).count)",
-                      detail: "sur la période")
+                total(String(localized: "Jours actifs"), value: "\(Set(studySessions.map { DateUtils.startOfDay($0.startedAt) }).count)",
+                      detail: String(localized: "sur la période"))
             }
         }
         .padding(.vertical, 16)
@@ -431,7 +431,7 @@ struct StatsView: View {
         let selectedBin = selectedDay.map(bin) ?? pinnedBin
         let selectedBars = bars.filter { $0.bin == selectedBin }
         return VStack(alignment: .leading, spacing: 10) {
-            CarnetSectionTitle(binsByWeek ? "Semaine par semaine" : "Jour par jour")
+            CarnetSectionTitle(binsByWeek ? String(localized: "Semaine par semaine") : String(localized: "Jour par jour"))
             VStack(alignment: .leading, spacing: 12) {
                 if let selectedBin {
                     selectionSummary(bin: selectedBin, bars: selectedBars)
@@ -679,8 +679,8 @@ struct StatsView: View {
         var points: [DonePoint] = []
         var cursor = start
         while cursor <= Date() {
-            points.append(DonePoint(week: cursor, series: "Théorie", count: theory[cursor] ?? 0))
-            points.append(DonePoint(week: cursor, series: "Exercices", count: exercises[cursor] ?? 0))
+            points.append(DonePoint(week: cursor, series: String(localized: "Théorie"), count: theory[cursor] ?? 0))
+            points.append(DonePoint(week: cursor, series: String(localized: "Exercices"), count: exercises[cursor] ?? 0))
             cursor = DateUtils.addWeeks(1, to: cursor)
         }
         return points
@@ -688,7 +688,7 @@ struct StatsView: View {
 
     private var progressSection: some View {
         VStack(alignment: .leading, spacing: 10) {
-            CarnetSectionTitle("Avancement")
+            CarnetSectionTitle(String(localized: "Avancement"))
             VStack(alignment: .leading, spacing: 16) {
                 ForEach(tracked) { course in
                     courseProgressRow(course)
@@ -706,8 +706,8 @@ struct StatsView: View {
                     Text("Fait par semaine").font(.subheadline.weight(.semibold)).foregroundStyle(Carnet.ink)
                     Spacer()
                     HStack(spacing: 10) {
-                        legendDot(StatsPalette.color(for: .theory), "théorie")
-                        legendDot(StatsPalette.color(for: .exercise), "exercices")
+                        legendDot(StatsPalette.color(for: .theory), String(localized: "théorie"))
+                        legendDot(StatsPalette.color(for: .exercise), String(localized: "exercices"))
                     }
                 }
                 Chart(donePoints) { point in
@@ -721,7 +721,7 @@ struct StatsView: View {
                         .foregroundStyle(by: .value("Série", point.series))
                         .symbolSize(24)
                 }
-                .chartForegroundStyleScale(domain: ["Théorie", "Exercices"],
+                .chartForegroundStyleScale(domain: [String(localized: "Théorie"), String(localized: "Exercices")],
                                            range: [StatsPalette.color(for: .theory), StatsPalette.color(for: .exercise)])
                 .chartLegend(.hidden)
                 .chartXAxis {
@@ -770,9 +770,9 @@ struct StatsView: View {
                 }
             }
             HStack(spacing: 14) {
-                progressAxis("Théorie", progress.watchedCount, progress.videoCount, tint)
-                progressAxis("Exercices", progress.doneCount, progress.exerciseCount, tint)
-                progressAxis("Corrigés", progress.correctedCount, progress.doneCount, tint)
+                progressAxis(String(localized: "Théorie"), progress.watchedCount, progress.videoCount, tint)
+                progressAxis(String(localized: "Exercices"), progress.doneCount, progress.exerciseCount, tint)
+                progressAxis(String(localized: "Corrigés"), progress.correctedCount, progress.doneCount, tint)
             }
         }
     }

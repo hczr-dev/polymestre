@@ -54,19 +54,19 @@ struct ContentImportView: View {
                     }
                     Button { path.append(.courseware) } label: {
                         sourceRow(icon: ContentSource.courseware.icon, title: "Courseware",
-                                  detail: "Tes cours Open edX : chapitres, leçons et vidéos")
+                                  detail: String(localized: "Tes cours Open edX : chapitres, leçons et vidéos"))
                     }
                 } header: {
                     Text("Autres sites")
                 }
                 Section {
                     Button { showingSeriesPDF = true } label: {
-                        sourceRow(icon: "doc.text.magnifyingglass", title: "Une série en PDF",
-                                  detail: "Exercices et sous-questions lus dans l'énoncé")
+                        sourceRow(icon: "doc.text.magnifyingglass", title: String(localized: "Une série en PDF"),
+                                  detail: String(localized: "Exercices et sous-questions lus dans l'énoncé"))
                     }
                     Button { showingFileImport = true } label: {
-                        sourceRow(icon: "square.and.arrow.down", title: "Horaire ou fichier",
-                                  detail: "Horaire .ics d'IS-Academia, sauvegarde JSON, CSV")
+                        sourceRow(icon: "square.and.arrow.down", title: String(localized: "Horaire ou fichier"),
+                                  detail: String(localized: "Horaire .ics d'IS-Academia, sauvegarde JSON, CSV"))
                     }
                 } header: {
                     Text("Fichiers")
@@ -79,7 +79,7 @@ struct ContentImportView: View {
                 }
             }
             .carnetBackground()
-            .navigationTitle(course.map { "Importer · \($0.displayCode)" } ?? "Importer du contenu")
+            .navigationTitle(course.map { String(localized: "Importer · \($0.displayCode)") } ?? "Importer du contenu")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
@@ -208,7 +208,7 @@ struct ContentImportView: View {
 
     private func linkLabel(_ course: Course) -> String {
         let sources = course.contentSources.compactMap { URL(string: $0).flatMap { ContentSource.detect(host: $0.host) }?.label }
-        return sources.isEmpty ? "pas encore importé" : "relié : " + Array(Set(sources)).sorted().joined(separator: ", ")
+        return sources.isEmpty ? String(localized: "pas encore importé") : String(localized: "relié : ") + Array(Set(sources)).sorted().joined(separator: ", ")
     }
 
     private var termInfo: MoodleImportModel.TermInfo {
@@ -217,13 +217,13 @@ struct ContentImportView: View {
     }
 
     private var botafogoDetail: String {
-        if let course, let suggestion = BotafogoSuggestion.hint(for: course) { return "Suggéré pour \(course.displayCode) : \(suggestion)" }
-        return "Polycopiés en ligne (Analyse, Algèbre linéaire, ICS), avec leurs vidéos"
+        if let course, let suggestion = BotafogoSuggestion.hint(for: course) { return String(localized: "Suggéré pour \(course.displayCode) : \(suggestion)") }
+        return String(localized: "Polycopiés en ligne (Analyse, Algèbre linéaire, ICS), avec leurs vidéos")
     }
 
     private var refreshFooter: String {
         guard let last = app.settings.contentLastRefresh else { return "" }
-        return "Mis à jour \(DateUtils.relativeLabel(last).lowercased()) à \(DateUtils.time.string(from: last))."
+        return String(localized: "Mis à jour \(DateUtils.relativeLabel(last).lowercased()) à \(DateUtils.time.string(from: last)).")
     }
 
     private func sourceRow(icon: String, title: String, detail: String) -> some View {
@@ -295,7 +295,7 @@ final class MoodleImportModel {
         error = nil
         plans = []
         pendingQuestions = []
-        progress = "Connexion à Moodle…"
+        progress = String(localized: "Connexion à Moodle…")
         guard await client.ensureSignedIn() else {
             phase = .idle
             needsLogin = true
@@ -303,24 +303,24 @@ final class MoodleImportModel {
         }
         enrolled = (try? await client.enrolled()) ?? []
         for (index, course) in courses.enumerated() {
-            progress = "\(course.displayCode) · \(index + 1) sur \(courses.count)"
+            progress = String(localized: "\(course.displayCode) · \(index + 1) sur \(courses.count)")
             status[course.id] = "recherche…"
             do {
                 switch try await client.resolve(course, enrolled: enrolled) {
                 case .unique(let ref):
                     await load(ref, for: course)
                 case .ambiguous(let options):
-                    status[course.id] = "section à choisir"
+                    status[course.id] = String(localized: "section à choisir")
                     pendingQuestions.append(SectionQuestion(course: course, options: options))
                 case .none:
-                    status[course.id] = "introuvable sur Moodle"
+                    status[course.id] = String(localized: "introuvable sur Moodle")
                 }
             } catch HiddenSiteSession.SiteError.notSignedIn {
                 phase = .idle
                 needsLogin = true
                 return
             } catch {
-                status[course.id] = "erreur : \(error.localizedDescription)"
+                status[course.id] = String(localized: "erreur : \(error.localizedDescription)")
             }
         }
         askNextOrFinish()
@@ -334,7 +334,7 @@ final class MoodleImportModel {
             if let choice {
                 await load(choice, for: question.course)
             } else {
-                status[question.course.id] = "ignoré"
+                status[question.course.id] = String(localized: "ignoré")
             }
             askNextOrFinish()
         }
@@ -347,7 +347,7 @@ final class MoodleImportModel {
         }
         if plans.isEmpty {
             phase = .idle
-            if error == nil { error = "Aucun cours n'a pu être lu sur Moodle. Essaie « Ouvrir Moodle et choisir la page moi-même »." }
+            if error == nil { error = String(localized: "Aucun cours n'a pu être lu sur Moodle. Essaie « Ouvrir Moodle et choisir la page moi-même ».") }
         } else {
             phase = .ready
         }
@@ -370,16 +370,16 @@ final class MoodleImportModel {
             let moocNote: String? = outcome.notes.isEmpty ? nil : outcome.notes.joined(separator: " · ")
             // Un cours vide sur Moodle a été lu sur Botafogo par la chaîne d'import.
             if let title = outcome.botafogoTitle {
-                label = "Botafogo · \(title) (vide sur Moodle)"
+                label = String(localized: "Botafogo · \(title) (vide sur Moodle)")
             }
             guard draft.theoryCount + draft.seriesCount + draft.deadlineCount > 0 else {
-                status[course.id] = snapshot.activityCount == 0 ? "vide sur Moodle" : "rien à suivre (pas de théorie ni de séries)"
+                status[course.id] = snapshot.activityCount == 0 ? String(localized: "vide sur Moodle") : String(localized: "rien à suivre (pas de théorie ni de séries)")
                 return
             }
             plans.append(ContentImportPlan(course: course, sourceLabel: label, draft: draft))
             status[course.id] = [ContentDraftSummary.line(draft), moocNote].compactMap { $0 }.joined(separator: " · ")
         } catch {
-            status[course.id] = "erreur : \(error.localizedDescription)"
+            status[course.id] = String(localized: "erreur : \(error.localizedDescription)")
         }
     }
 
@@ -406,7 +406,7 @@ enum LoginSite: String, Identifiable {
         switch self {
         case .moodle: return "Moodle"
         case .courseware: return "Courseware"
-        case .explique: return "Explique"
+        case .explique: return String(localized: "Explique")
         case .mediaspace: return "MediaSpace"
         }
     }
@@ -431,8 +431,8 @@ enum LoginSite: String, Identifiable {
 
     var hint: String {
         switch self {
-        case .mediaspace: return "Choisis « EPFL » puis connecte-toi avec Switch edu-ID. Cette fenêtre se ferme toute seule."
-        default: return "Connecte-toi avec ton compte EPFL. Cette fenêtre se ferme toute seule."
+        case .mediaspace: return String(localized: "Choisis « EPFL » puis connecte-toi avec Switch edu-ID. Cette fenêtre se ferme toute seule.")
+        default: return String(localized: "Connecte-toi avec ton compte EPFL. Cette fenêtre se ferme toute seule.")
         }
     }
 
@@ -724,7 +724,7 @@ struct BatchReviewView: View {
         try? context.save()
         Haptics.success()
         model.reset()
-        result = lines.joined(separator: "\n") + "\n\nLes énoncés des séries se lisent maintenant en arrière-plan."
+        result = lines.joined(separator: "\n") + String(localized: "\n\nLes énoncés des séries se lisent maintenant en arrière-plan.")
         SeriesAutoReading.start(courses: touched, context: context, settings: app.settings)
     }
 }
@@ -733,12 +733,12 @@ struct BatchReviewView: View {
 enum ContentDraftSummary {
     static func line(_ draft: ContentDraft) -> String {
         var parts: [String] = []
-        if draft.theoryCount > 0 { parts.append("\(Plural.count(draft.theoryCount, "\(draft.theoryCount) élément", "\(draft.theoryCount) éléments")) de théorie") }
+        if draft.theoryCount > 0 { parts.append(String(localized: "\(Plural.count(draft.theoryCount, "\(draft.theoryCount) élément", "\(draft.theoryCount) éléments")) de théorie")) }
         if draft.videoCount > 0 { parts.append(Plural.count(draft.videoCount, "\(draft.videoCount) vidéo", "\(draft.videoCount) vidéos")) }
         if draft.seriesCount > 0 { parts.append(Plural.count(draft.seriesCount, "\(draft.seriesCount) série", "\(draft.seriesCount) séries")) }
         if draft.deadlineCount > 0 { parts.append(Plural.count(draft.deadlineCount, "\(draft.deadlineCount) échéance", "\(draft.deadlineCount) échéances")) }
         if draft.resourceCount > 0 { parts.append(Plural.count(draft.resourceCount, "\(draft.resourceCount) document", "\(draft.resourceCount) documents")) }
-        return parts.isEmpty ? "rien de reconnaissable" : parts.joined(separator: " · ")
+        return parts.isEmpty ? String(localized: "rien de reconnaissable") : parts.joined(separator: " · ")
     }
 }
 
@@ -915,7 +915,7 @@ struct WebImportBrowser: View {
             } else {
                 Text(isCoursePage
                      ? "Page de cours : lecture automatique."
-                     : (source.requiresLogin ? "Connecte-toi si besoin, puis ouvre la page du cours : elle sera lue toute seule." : "Ouvre le cours à importer."))
+                     : (source.requiresLogin ? String(localized: "Connecte-toi si besoin, puis ouvre la page du cours : elle sera lue toute seule.") : String(localized: "Ouvre le cours à importer.")))
                     .font(.footnote)
                     .foregroundStyle(.secondary)
             }
@@ -1110,7 +1110,7 @@ struct BotafogoPicker: View {
                             VStack(alignment: .leading, spacing: Layout.micro) {
                                 HStack(spacing: Layout.snug) {
                                     Text(entry.title).foregroundStyle(Color.primary)
-                                    if entry.suggested { Pill(text: "suggéré", color: Theme.accent) }
+                                    if entry.suggested { Pill(text: String(localized: "suggéré"), color: Theme.accent) }
                                 }
                                 Text(entry.url.path).font(.footnote).foregroundStyle(Color.secondary)
                             }
@@ -1144,7 +1144,7 @@ struct BotafogoPicker: View {
         defer { isLoadingCatalog = false }
         do {
             catalog = try await BotafogoClient.catalog()
-            if catalog.isEmpty { errorMessage = "Aucun polycopié trouvé sur la page d'accueil." }
+            if catalog.isEmpty { errorMessage = String(localized: "Aucun polycopié trouvé sur la page d'accueil.") }
             #if DEBUG
             if let index = PreviewLaunch.string(PreviewLaunch.botafogoCourseFlag).flatMap(Int.init),
                catalog.indices.contains(index) {
@@ -1238,8 +1238,8 @@ struct ContentDraftSections: View {
         let value = section.wrappedValue
         let range = value.weekRange
         let label: String = {
-            guard let range else { return "Non planifié" }
-            return range.lowerBound == range.upperBound ? "Semaine \(range.lowerBound)" : "Semaines \(range.lowerBound)–\(range.upperBound)"
+            guard let range else { return String(localized: "Non planifié") }
+            return range.lowerBound == range.upperBound ? String(localized: "Semaine \(range.lowerBound)") : String(localized: "Semaines \(range.lowerBound)–\(range.upperBound)")
         }()
         return Menu {
             Picker("Semaine", selection: Binding(get: { value.week }, set: { newWeek in
@@ -1280,11 +1280,11 @@ struct ContentDraftSections: View {
                     .lineLimit(2)
                 let details = [
                     value.kind == .series && value.title != "Série \(value.number)" ? value.title : nil,
-                    value.kind == .series && !value.exercises.isEmpty ? "\(value.exercises.count) exercices, \(value.exercises.reduce(0) { $0 + max($1.questions.count, 1) }) questions" : nil,
-                    value.kind == .series && !value.pdfURL.isEmpty && value.exercises.isEmpty ? "PDF à lire" : nil,
-                    value.solutionsAt.map { "corrigé le \(DateUtils.shortDay.string(from: $0))" },
+                    value.kind == .series && !value.exercises.isEmpty ? String(localized: "\(value.exercises.count) exercices, \(value.exercises.reduce(0) { $0 + max($1.questions.count, 1) }) questions") : nil,
+                    value.kind == .series && !value.pdfURL.isEmpty && value.exercises.isEmpty ? String(localized: "PDF à lire") : nil,
+                    value.solutionsAt.map { String(localized: "corrigé le \(DateUtils.shortDay.string(from: $0))") },
                     value.kind == .theory && value.videoCount > 0 ? Plural.count(value.videoCount, "\(value.videoCount) vidéo", "\(value.videoCount) vidéos") : nil,
-                    value.week != nil && value.week != section.week && value.kind != .ignore ? "semaine \(value.plannedWeek(in: section))" : nil
+                    value.week != nil && value.week != section.week && value.kind != .ignore ? String(localized: "semaine \(value.plannedWeek(in: section))") : nil
                 ].compactMap { $0 }
                 if !details.isEmpty {
                     Text(details.joined(separator: " · ")).font(.caption).foregroundStyle(.secondary).lineLimit(1)
@@ -1370,7 +1370,7 @@ struct ContentReviewView: View {
 
     private var importTitle: String {
         let total = draft.theoryCount + draft.seriesCount
-        return "Importer \(Plural.count(total, "\(total) élément", "\(total) éléments"))"
+        return String(localized: "Importer \(Plural.count(total, "\(total) élément", "\(total) éléments"))")
     }
 
     private var targetSection: some View {

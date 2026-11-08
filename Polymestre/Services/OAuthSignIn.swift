@@ -66,10 +66,10 @@ enum OAuthError: LocalizedError {
 
     var errorDescription: String? {
         switch self {
-        case .notConfigured: return "Connexion indisponible dans cette version de l'app."
-        case .cancelled: return "Connexion annulée."
-        case .badResponse(let detail): return "Le service a refusé la connexion (\(detail))."
-        case .stateMismatch: return "Réponse inattendue : réessaie."
+        case .notConfigured: return String(localized: "Connexion indisponible dans cette version de l'app.")
+        case .cancelled: return String(localized: "Connexion annulée.")
+        case .badResponse(let detail): return String(localized: "Le service a refusé la connexion (\(detail)).")
+        case .stateMismatch: return String(localized: "Réponse inattendue : réessaie.")
         }
     }
 }
@@ -98,7 +98,7 @@ final class OAuthSignIn: NSObject, ASWebAuthenticationPresentationContextProvidi
             let items = URLComponents(url: callback, resolvingAgainstBaseURL: false)?.queryItems ?? []
             guard items.first(where: { $0.name == "state" })?.value == state else { throw OAuthError.stateMismatch }
             guard let code = items.first(where: { $0.name == "code" })?.value else {
-                throw OAuthError.badResponse(items.first { $0.name == "error" }?.value ?? "pas de code")
+                throw OAuthError.badResponse(items.first { $0.name == "error" }?.value ?? String(localized: "pas de code"))
             }
             return try await exchangePKCE(provider, code: code, verifier: verifier, redirect: redirect)
         }
@@ -115,7 +115,7 @@ final class OAuthSignIn: NSObject, ASWebAuthenticationPresentationContextProvidi
             throw OAuthError.stateMismatch
         }
         guard let token = items.first(where: { $0.name == "access_token" })?.value, !token.isEmpty else {
-            throw OAuthError.badResponse("pas de jeton")
+            throw OAuthError.badResponse(String(localized: "pas de jeton"))
         }
         return OAuthTokens(accessToken: token, refreshToken: items.first { $0.name == "refresh_token" }?.value)
     }

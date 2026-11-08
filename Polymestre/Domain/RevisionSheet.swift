@@ -23,15 +23,15 @@ struct RevisionSheet: Codable, Equatable {
 
             var label: String {
                 switch self {
-                case .definition: return "Définition"
-                case .theorem: return "Théorème"
+                case .definition: return String(localized: "Définition")
+                case .theorem: return String(localized: "Théorème")
                 case .proposition: return "Proposition"
-                case .lemma: return "Lemme"
-                case .corollary: return "Corollaire"
+                case .lemma: return String(localized: "Lemme")
+                case .corollary: return String(localized: "Corollaire")
                 case .formula: return "Formule"
-                case .method: return "Méthode"
-                case .pitfall: return "Piège"
-                case .example: return "Exemple"
+                case .method: return String(localized: "Méthode")
+                case .pitfall: return String(localized: "Piège")
+                case .example: return String(localized: "Exemple")
                 case .remark: return "Remarque"
                 }
             }
@@ -366,7 +366,7 @@ enum RevisionSheetAI {
                 return .init(id: "ai-\(c)-\(e)", kind: kind, title: name.isEmpty ? kind.label : name, body: body,
                              source: (entry["source"] as? String ?? "").trimmingCharacters(in: .whitespacesAndNewlines))
             }
-            if !entries.isEmpty { result.append(.init(id: "ai-\(c)", title: title.isEmpty ? "Chapitre \(c + 1)" : title, entries: entries)) }
+            if !entries.isEmpty { result.append(.init(id: "ai-\(c)", title: title.isEmpty ? String(localized: "Chapitre \(c + 1)") : title, entries: entries)) }
         }
         return result.isEmpty ? nil : RevisionSheet(origin: .ai, generatedAt: now, chapters: result)
     }

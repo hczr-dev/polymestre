@@ -54,8 +54,8 @@ enum GroupItemKind: String, Codable, CaseIterable {
 
     var label: String {
         switch self {
-        case .exercise: return "exercices"
-        case .theory: return "théorie"
+        case .exercise: return String(localized: "exercices")
+        case .theory: return String(localized: "théorie")
         }
     }
 }

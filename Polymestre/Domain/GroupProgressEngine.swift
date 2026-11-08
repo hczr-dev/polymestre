@@ -91,9 +91,9 @@ struct SubjectMemberProgress: Identifiable, Equatable {
     /// « 8/12 exercices · 3/9 théorie » — les axes qui existent seulement.
     var detailLabel: String {
         var parts: [String] = []
-        if exerciseTotal > 0 { parts.append("\(exercisesDone)/\(exerciseTotal) exercices") }
-        if theoryTotal > 0 { parts.append("\(theoryDone)/\(theoryTotal) théorie") }
-        if seriesTotal > 0 { parts.append("\(seriesDone)/\(seriesTotal) séries") }
+        if exerciseTotal > 0 { parts.append(String(localized: "\(exercisesDone)/\(exerciseTotal) exercices")) }
+        if theoryTotal > 0 { parts.append(String(localized: "\(theoryDone)/\(theoryTotal) théorie")) }
+        if seriesTotal > 0 { parts.append(String(localized: "\(seriesDone)/\(seriesTotal) séries")) }
         return parts.joined(separator: " · ")
     }
 
@@ -104,8 +104,8 @@ struct SubjectMemberProgress: Identifiable, Equatable {
     var gapLabel: String? {
         guard !isMe, hasGapReference else { return nil }
         let gap = gapExercises + gapTheory + gapSeries
-        if gap == 0 { return "au même point" }
-        let unit = abs(gap) == 1 ? "élément" : "éléments"
+        if gap == 0 { return String(localized: "au même point") }
+        let unit = abs(gap) == 1 ? String(localized: "élément") : String(localized: "éléments")
         return gap > 0 ? "\(gap) \(unit) d'avance" : "\(abs(gap)) \(unit) de retard"
     }
 
@@ -179,7 +179,7 @@ enum GroupProgressEngine {
             guard !series.isEmpty || !exercises.isEmpty || !theory.isEmpty else { continue }
             rows.append(SubjectMemberProgress(
                 userID: userID,
-                displayName: "Membre",
+                displayName: String(localized: "Membre"),
                 isMe: userID == meID,
                 isPresent: false,
                 seriesDone: series.count,

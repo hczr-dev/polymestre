@@ -210,14 +210,14 @@ struct MacCommands: Commands {
             Button("À propos de Polymestre") {
                 NSApp.orderFrontStandardAboutPanel(options: [
                     .credits: NSAttributedString(
-                        string: "Tes cours, tes séries, ton temps.",
+                        string: String(localized: "Tes cours, tes séries, ton temps."),
                         attributes: [.font: NSFont.systemFont(ofSize: 11), .foregroundColor: NSColor.secondaryLabelColor])
                 ])
             }
         }
         CommandGroup(replacing: .newItem) {}
         CommandMenu("Chrono") {
-            Button(timer.phase == .running ? "Pause" : (timer.phase == .idle ? "Démarrer" : "Reprendre")) {
+            Button(timer.phase == .running ? "Pause" : (timer.phase == .idle ? String(localized: "Démarrer") : String(localized: "Reprendre"))) {
                 if timer.phase == .onBreak { timer.skipBreak() } else { timer.toggle() }
             }
             .keyboardShortcut("t", modifiers: [.command])
@@ -246,7 +246,7 @@ struct MacCommands: Commands {
                 .keyboardShortcut("n", modifiers: [.command, .shift])
             Divider()
             // Une fiche par cours : le polycopié, ou Claude qui lit tout le cours.
-            Button(RevisionSheetMaker.shared.batch.map { "Fiches de révision… \($0.done)/\($0.total)" } ?? "Faire les fiches de révision") {
+            Button(RevisionSheetMaker.shared.batch.map { String(localized: "Fiches de révision… \($0.done)/\($0.total)") } ?? "Faire les fiches de révision") {
                 guard let context = StudyModeController.shared.container?.mainContext,
                       let courses = try? context.fetch(FetchDescriptor<Course>(sortBy: [SortDescriptor(\.code)])) else { return }
                 Task { await RevisionSheetMaker.shared.makeAll(courses, hub: .shared) }
@@ -273,7 +273,7 @@ struct MacCommands: Commands {
         CommandGroup(replacing: .help) {
             Button("Raccourcis") {
                 let alert = NSAlert()
-                alert.messageText = "Raccourcis"
+                alert.messageText = String(localized: "Raccourcis")
                 alert.informativeText = """
                 ⌃⌥Espace — démarrer ou mettre en pause, depuis n'importe quelle app
                 ⌘T — démarrer / pause · ⇧⌘T — terminer
@@ -384,14 +384,14 @@ final class MacAppDelegate: NSObject, NSApplicationDelegate {
         let menu = NSMenu()
         let title: String
         switch timer.phase {
-        case .idle: title = "Démarrer le chrono"
+        case .idle: title = String(localized: "Démarrer le chrono")
         case .running: title = "Pause"
-        case .paused: title = "Reprendre"
-        case .onBreak: title = "Écourter la pause"
+        case .paused: title = String(localized: "Reprendre")
+        case .onBreak: title = String(localized: "Écourter la pause")
         }
         menu.addItem(DockItem(title: title) { timer.phase == .onBreak ? timer.skipBreak() : timer.toggle() })
         if timer.phase != .idle, !timer.isLocked {
-            menu.addItem(DockItem(title: "Terminer et enregistrer") { timer.finish() })
+            menu.addItem(DockItem(title: String(localized: "Terminer et enregistrer")) { timer.finish() })
         }
         return menu
     }

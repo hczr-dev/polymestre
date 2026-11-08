@@ -89,7 +89,7 @@ enum CourseVideos {
                     if !topic.isEmpty, !topics.contains(topic) { topics.append(topic) }
                 }
                 var item = ContentDraftItem(kind: .theory, number: "\(week)",
-                                            title: topics.isEmpty ? "Cours de la semaine \(week)" : topics.prefix(3).joined(separator: " · "),
+                                            title: topics.isEmpty ? String(localized: "Cours de la semaine \(week)") : topics.prefix(3).joined(separator: " · "),
                                             url: ordered[0].url, videoCount: links.filter { $0.kind == .video }.count, seriesNumber: nil,
                                             theoryKind: links.contains { $0.kind == .video } ? .video : .reading)
                 item.links = links
@@ -104,7 +104,7 @@ enum CourseVideos {
                 var item = ContentDraftItem(kind: .resource, number: "", title: video.title, url: video.url,
                                             videoCount: 1, seriesNumber: nil, theoryKind: .video)
                 item.links = [ContentLink(title: video.title, url: video.url, kind: video.kind)]
-                item.group = "Vidéos du cours (\(sourceLabel))"
+                item.group = String(localized: "Vidéos du cours (\(sourceLabel))")
                 return item
             }
             if let index = result.sections.firstIndex(where: { $0.title.hasPrefix("Documents") }) {

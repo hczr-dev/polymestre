@@ -65,7 +65,7 @@ final class RemindersTaskService: TaskService {
                 let mapped: [ExternalTask] = (reminders ?? []).map { reminder in
                     let due = reminder.dueDateComponents.flatMap { Calendar.current.date(from: $0) }
                     return ExternalTask(identifier: reminder.calendarItemIdentifier,
-                                        title: reminder.title ?? "Sans titre",
+                                        title: reminder.title ?? String(localized: "Sans titre"),
                                         notes: reminder.notes ?? "",
                                         dueDate: due,
                                         isDone: reminder.isCompleted,
@@ -319,7 +319,7 @@ final class NotionTaskService: TaskService {
         return results.compactMap { page in
             guard let id = page["id"] as? String else { return nil }
             let properties = page["properties"] as? [String: Any] ?? [:]
-            let title = Self.title(from: properties["Name"]) ?? "Sans titre"
+            let title = Self.title(from: properties["Name"]) ?? String(localized: "Sans titre")
             let done = (properties["Done"] as? [String: Any])?["checkbox"] as? Bool ?? false
             let due = Self.date(from: properties["Due"])
             let archived = page["archived"] as? Bool ?? false
@@ -406,7 +406,7 @@ final class WebhookTaskService: TaskService {
         guard await post(payload) else { return nil }
         return ExternalTask(identifier: "webhook-\(UUID().uuidString)",
                             title: title, notes: notes, dueDate: dueDate,
-                            isDone: false, priority: priority, listName: "Webhook")
+                            isDone: false, priority: priority, listName: String(localized: "Webhook"))
     }
 
     func setCompleted(identifier: String, completed: Bool) async -> Bool {

@@ -18,8 +18,8 @@ enum LiveActivityBuilder {
     }
 
     static func attributes(for state: FocusTimerState, course: Course?) -> Attributes {
-        Attributes(courseCode: course?.displayCode ?? "Sans cours",
-                   courseName: course?.name ?? "Session libre",
+        Attributes(courseCode: course?.displayCode ?? String(localized: "Sans cours"),
+                   courseName: course?.name ?? String(localized: "Session libre"),
                    taskLabel: state.taskType.label,
                    taskIcon: state.taskType.icon,
                    target: targetLabel(state, course: course))
@@ -78,7 +78,7 @@ enum LiveActivityBuilder {
                                             questionsDone: leaves.map { $0.filter(\.isDone).count },
                                             questionsTotal: leaves.map(\.count),
                                             pomodoro: block,
-                                            title: course?.displayCode ?? "Session libre",
+                                            title: course?.displayCode ?? String(localized: "Session libre"),
                                             subtitle: ActivityTimerState.subtitle(task: timer.taskType.label,
                                                                                   target: targetLabel(timer, course: course)),
                                             now: now)

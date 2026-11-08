@@ -67,7 +67,7 @@ final class EventKitCalendarService: CalendarService {
         return store.events(matching: predicate).map { event in
             ExternalCalendarEvent(
                 identifier: event.eventIdentifier ?? UUID().uuidString,
-                title: event.title ?? "Sans titre",
+                title: event.title ?? String(localized: "Sans titre"),
                 startsAt: event.startDate,
                 endsAt: event.endDate,
                 location: event.location ?? "",

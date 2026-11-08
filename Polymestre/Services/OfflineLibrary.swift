@@ -92,9 +92,9 @@ final class OfflineLibrary {
     func sync(context: ModelContext, settings: SettingsStore) async {
         guard settings.offlineEnabled, !isSyncing else { return }
         let path = await Self.currentPath()
-        guard path.status == .satisfied else { waitingReason = "pas de réseau"; return }
-        if path.isConstrained { waitingReason = "mode données réduites"; return }
-        if settings.offlineWifiOnly, path.isExpensive { waitingReason = "en attente du Wi-Fi"; return }
+        guard path.status == .satisfied else { waitingReason = String(localized: "pas de réseau"); return }
+        if path.isConstrained { waitingReason = String(localized: "mode données réduites"); return }
+        if settings.offlineWifiOnly, path.isExpensive { waitingReason = String(localized: "en attente du Wi-Fi"); return }
         waitingReason = nil
         isSyncing = true
         defer { isSyncing = false; measure() }

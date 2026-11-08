@@ -9,10 +9,10 @@ struct SessionFlow: Codable, Equatable {
         var id: String { rawValue }
         var title: String {
             switch self {
-            case .course: return "Revoir le cours"
-            case .series: return "Faire la série"
-            case .help: return "Bloqué ?"
-            case .debrief: return "Débriefer"
+            case .course: return String(localized: "Revoir le cours")
+            case .series: return String(localized: "Faire la série")
+            case .help: return String(localized: "Bloqué ?")
+            case .debrief: return String(localized: "Débriefer")
             }
         }
     }

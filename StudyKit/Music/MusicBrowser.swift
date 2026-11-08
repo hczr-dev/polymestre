@@ -323,7 +323,7 @@ struct MusicResults: View {
         LazyVStack(alignment: .leading, spacing: 28) {
             if !results.songs.isEmpty {
                 VStack(alignment: .leading, spacing: 8) {
-                    MusicShelfTitle("Morceaux")
+                    MusicShelfTitle(String(localized: "Morceaux"))
                     VStack(spacing: 0) {
                         ForEach(Array(results.songs.prefix(8).enumerated()), id: \.element.id) { index, song in
                             MusicSongRow(song: song) { music.play(Array(results.songs), from: index) }
@@ -343,7 +343,7 @@ struct MusicResults: View {
                 })
             }
             if !results.playlists.isEmpty {
-                MusicShelf(title: "Playlists", items: results.playlists.map {
+                MusicShelf(title: String(localized: "Playlists"), items: results.playlists.map {
                     MusicBrowseItem(id: "playlist-\($0.id.rawValue)", title: $0.name, subtitle: $0.curatorName, artwork: $0.artwork, destination: .playlist($0))
                 })
             }

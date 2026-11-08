@@ -69,16 +69,16 @@ struct SeriesDraft: Identifiable, Equatable {
         var result: [String] = []
         if taken.contains(key) {
             result.append(label.isEmpty
-                ? "La série \(number) existe déjà dans ce cours. Pour une deuxième série la même semaine, donne-lui une étiquette (« b », « jeudi »)."
-                : "La \(displayName) existe déjà dans ce cours.")
+                ? String(localized: "La série \(number) existe déjà dans ce cours. Pour une deuxième série la même semaine, donne-lui une étiquette (« b », « jeudi »).")
+                : String(localized: "La \(displayName) existe déjà dans ce cours."))
         }
         let minors = exercises.map { $0.minor.trimmingCharacters(in: .whitespaces) }
         if minors.contains(where: \.isEmpty) {
-            result.append("Un exercice n'a pas de numéro.")
+            result.append(String(localized: "Un exercice n'a pas de numéro."))
         }
         let duplicates = Dictionary(grouping: minors.filter { !$0.isEmpty }, by: { $0 }).filter { $0.value.count > 1 }.keys.sorted()
         if !duplicates.isEmpty {
-            result.append("Numéro en double : " + duplicates.map { "\(number).\($0)" }.joined(separator: ", ") + ".")
+            result.append(String(localized: "Numéro en double : ") + duplicates.map { "\(number).\($0)" }.joined(separator: ", ") + ".")
         }
         return result
     }

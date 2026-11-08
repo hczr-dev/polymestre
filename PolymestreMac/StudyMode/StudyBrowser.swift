@@ -139,7 +139,7 @@ extension StudyBrowserModel: WKNavigationDelegate, WKUIDelegate {
             // Une fenêtre de connexion (« Se connecter avec… ») doit garder son
             // lien avec la page qui l'ouvre : on rend la vue créée avec cette
             // configuration.
-            let tab = makeTab(title: navigationAction.request.url?.host ?? "Nouvel onglet", configuration: configuration)
+            let tab = makeTab(title: navigationAction.request.url?.host ?? String(localized: "Nouvel onglet"), configuration: configuration)
             selectedID = tab.id
             return tab.webView
         }

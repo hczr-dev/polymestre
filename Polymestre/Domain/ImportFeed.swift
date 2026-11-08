@@ -88,10 +88,10 @@ struct ImportFeed: Equatable {
 
         var kindLabel: String {
             switch kind {
-            case .video: return "Vidéo"
-            case .theory: return "Théorie"
-            case .series: return "Série"
-            case .deadline: return "Échéance"
+            case .video: return String(localized: "Vidéo")
+            case .theory: return String(localized: "Théorie")
+            case .series: return String(localized: "Série")
+            case .deadline: return String(localized: "Échéance")
             }
         }
     }
@@ -186,10 +186,10 @@ struct ImportFeed: Equatable {
                 switch item.kind {
                 case .theory:
                     kind = item.videoCount > 0 ? .video : .theory
-                    if item.videoCount > 1 { detail = "\(item.videoCount) vidéos" }
+                    if item.videoCount > 1 { detail = String(localized: "\(item.videoCount) vidéos") }
                 case .series:
                     kind = .series
-                    if !item.exercises.isEmpty { detail = "\(item.exercises.count) exercices" }
+                    if !item.exercises.isEmpty { detail = String(localized: "\(item.exercises.count) exercices") }
                 case .deadline:
                     kind = .deadline
                     detail = item.date.map(ImportFeed.shortDate)
@@ -234,14 +234,14 @@ struct ImportFeed: Equatable {
         let plain = MathMarkup.plain(TextRepair.clean(item.title)).trimmingCharacters(in: .whitespacesAndNewlines)
         if kind == .series, let number = item.seriesNumber,
            plain.isEmpty || !plain.localizedCaseInsensitiveContains("\(number)") {
-            return "Série \(number)"
+            return String(localized: "Série \(number)")
         }
         if !plain.isEmpty { return plain }
         switch kind {
-        case .series: return "Série"
-        case .video: return "Vidéos"
-        case .theory: return "Théorie"
-        case .deadline: return "Échéance"
+        case .series: return String(localized: "Série")
+        case .video: return String(localized: "Vidéos")
+        case .theory: return String(localized: "Théorie")
+        case .deadline: return String(localized: "Échéance")
         }
     }
 
@@ -253,19 +253,19 @@ struct ImportFeed: Equatable {
         if files > 1 { return "Dossier · \(files) PDF" }
         let target = ((found["target"] as? String) ?? "").lowercased()
         if ["mediaspace", "kaltura", "youtu", "switch.tube", "tube.switch"].contains(where: target.contains) {
-            return "Vidéo"
+            return String(localized: "Vidéo")
         }
         if target.contains("courseware") { return "MOOC" }
         switch found["kind"] as? String {
         case "pdf"?: return "PDF"
         case "dossier"?: return "Dossier"
-        case "fichier"?: return "Fichier"
+        case "fichier"?: return String(localized: "Fichier")
         default: return target.isEmpty ? "Page" : "Lien"
         }
     }
 
     static func shortDate(_ date: Date) -> String {
-        date.formatted(.dateTime.day().month(.abbreviated).locale(Locale(identifier: "fr_CH")))
+        date.formatted(.dateTime.day().month(.abbreviated).locale(DateUtils.appLocale))
     }
 }
 

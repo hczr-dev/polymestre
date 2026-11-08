@@ -136,7 +136,7 @@ struct MacGroupsView: View {
                 }
             }
             .padding(Carnet.pagePadding)
-            .frame(maxWidth: 1000, alignment: .leading)
+            .frame(maxWidth: 1180, alignment: .leading)
             .frame(maxWidth: .infinity)
         }
         .navigationTitle("Groupes")
@@ -361,7 +361,7 @@ private struct MacGroupHub: View {
     private func join(_ entry: PresenceEntry) {
         let type = TaskType.allCases.first { $0.label == entry.taskLabel } ?? .exercise
         let course = myCourses.first { $0.code.uppercased() == entry.courseCode.uppercased() }
-        timer.start(courseID: course?.id, taskType: type, label: "\(entry.courseCode) · \(type.label) · avec \(entry.displayName)")
+        timer.start(courseID: course?.id, taskType: type, label: String(localized: "\(entry.courseCode) · \(type.label) · avec \(entry.displayName)"))
     }
 
     // MARK: Session ensemble
@@ -407,7 +407,7 @@ private struct MacGroupHub: View {
         let members = group.members.sorted { $0.weeklySeconds != $1.weeklySeconds ? $0.weeklySeconds > $1.weeklySeconds : $0.isMe }
         let peak = max(members.first?.weeklySeconds ?? 0, 1)
         return VStack(alignment: .leading, spacing: 10) {
-            SectionTitle(title: "Classement", trailing: String(localized: "7 derniers jours"))
+            SectionTitle(title: String(localized: "Classement"), trailing: String(localized: "7 derniers jours"))
             VStack(spacing: 0) {
                 ForEach(Array(members.enumerated()), id: \.element.id) { index, member in
                     HStack(spacing: 12) {
@@ -448,7 +448,7 @@ private struct MacGroupHub: View {
         let subjects = mySubjects
         if !subjects.isEmpty {
             VStack(alignment: .leading, spacing: 12) {
-                SectionTitle(title: "Qui en est où")
+                SectionTitle(title: String(localized: "Qui en est où"))
                 ForEach(subjects, id: \.self) { code in
                     let course = myCourses.first { $0.code.uppercased() == code.uppercased() }
                     let comparison = GroupProgressBuilder.comparison(subject: code, group: group, course: course, meID: social.userID)
@@ -512,7 +512,7 @@ private struct MacGroupHub: View {
     private var help: some View {
         VStack(alignment: .leading, spacing: 10) {
             HStack {
-                SectionTitle(title: "Entraide")
+                SectionTitle(title: String(localized: "Entraide"))
                 Button { composing = true } label: { Label("Demander", systemImage: "plus.bubble") }
                     .buttonStyle(.paper)
                     .disabled(group.remoteID == nil || encryption == .waitingForKey)
@@ -582,7 +582,7 @@ private struct MacGroupHub: View {
 
     private var membersList: some View {
         VStack(alignment: .leading, spacing: 10) {
-            SectionTitle(title: "Membres", trailing: "\(group.members.count)")
+            SectionTitle(title: String(localized: "Membres"), trailing: "\(group.members.count)")
             VStack(alignment: .leading, spacing: 6) {
                 ForEach(group.members.sorted { $0.displayName < $1.displayName }) { member in
                     HStack {

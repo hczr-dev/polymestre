@@ -351,7 +351,7 @@ struct StudySearchView: View {
         VStack(spacing: 0) {
             HStack(spacing: 10) {
                 Image(systemName: "magnifyingglass").font(.title3).foregroundStyle(StudyPalette.inkSecondary)
-                TextField(current.map { "Chercher dans \($0.displayCode)…" } ?? "Un outil, une série, un calcul…", text: $query)
+                TextField(current.map { String(localized: "Chercher dans \($0.displayCode)…") } ?? "Un outil, une série, un calcul…", text: $query)
                     .textFieldStyle(.plain)
                     .font(.title3)
                     .focused($focused)
@@ -439,7 +439,7 @@ struct StudySearchView: View {
     private func unordered(_ needle: String) -> [Result] {
         var found: [Result] = []
         if let expression = StudySearchQuery.mathExpression(needle), let answer = Self.evaluate(expression) {
-            found.append(Result(id: "math", title: "= \(answer)", subtitle: "↩ copie le résultat", icon: "equal.circle", section: "Calcul") {
+            found.append(Result(id: "math", title: "= \(answer)", subtitle: String(localized: "↩ copie le résultat"), icon: "equal.circle", section: "Calcul") {
                 NSPasteboard.general.clearContents()
                 NSPasteboard.general.setString(answer, forType: .string)
             })
@@ -447,7 +447,7 @@ struct StudySearchView: View {
         found += actions.filter { needle.isEmpty || matches($0.title, needle) }
         // Une phrase : la poser à Claude, tapée telle quelle.
         if let question = StudySearchQuery.claudeQuestion(needle) {
-            found.append(Result(id: "a.ask", title: "Demander à Claude", subtitle: question, icon: "sparkle", section: "Actions") {
+            found.append(Result(id: "a.ask", title: String(localized: "Demander à Claude"), subtitle: question, icon: "sparkle", section: "Actions") {
                 controller.desk.ask(question, attachSeries: true)
                 controller.present()
             })
@@ -483,7 +483,7 @@ struct StudySearchView: View {
         if let course = tracked.first(where: { $0.id == timer.courseID }),
            let klass = DeskSchedule.latest(of: course.id, in: DeskSchedule.today(context: modelContext)),
            LectureClock.current(at: Date(), in: [klass.slot]) != nil {
-            list.append(Result(id: "a.mark", title: "Poser un repère", subtitle: course.displayCode, icon: "flag", section: "Actions") {
+            list.append(Result(id: "a.mark", title: String(localized: "Poser un repère"), subtitle: course.displayCode, icon: "flag", section: "Actions") {
                 _ = LectureMarkStore.shared.mark(courseID: course.id, classStart: klass.slot.start)
             })
         }
@@ -493,16 +493,16 @@ struct StudySearchView: View {
         // Le Pomodoro, allumé ou coupé en cours de séance (pas dans un groupe : l'horloge est commune).
         if timer.state?.groupSession == nil {
             let on = timer.state?.pomodoro == true
-            list.append(Result(id: "a.pomodoro", title: on ? "Couper le Pomodoro" : "Allumer le Pomodoro",
-                               subtitle: on ? "" : "un bloc de \(settings.focusMinutes) min, à partir de maintenant", icon: "timer", section: "Actions") {
+            list.append(Result(id: "a.pomodoro", title: on ? String(localized: "Couper le Pomodoro") : String(localized: "Allumer le Pomodoro"),
+                               subtitle: on ? "" : String(localized: "un bloc de \(settings.focusMinutes) min, à partir de maintenant"), icon: "timer", section: "Actions") {
                 timer.setPomodoro(!on)
             })
         }
         if timer.phase == .onBreak {
-            list.append(Result(id: "a.skip", title: "Écourter la pause", icon: "forward.fill", section: "Actions") { timer.skipBreak() })
+            list.append(Result(id: "a.skip", title: String(localized: "Écourter la pause"), icon: "forward.fill", section: "Actions") { timer.skipBreak() })
         }
         if !StudyMode.isOpenEnded(timer.state) {
-            list.append(Result(id: "a.more", title: "Encore 25 min", icon: "plus", section: "Actions") { timer.extendStudy(minutes: 25) })
+            list.append(Result(id: "a.more", title: String(localized: "Encore 25 min"), icon: "plus", section: "Actions") { timer.extendStudy(minutes: 25) })
         }
         return list
     }
@@ -552,13 +552,13 @@ struct StudySearchView: View {
             let reading: CoursePane.Reading? = resource.kind == .poly
                 ? .botafogo(title: resource.title, url: resource.address) : ResourceLibrary.reading(for: resource)
             guard let reading else { continue }
-            list.append(Result(id: "res.\(resource.id)", title: resource.title, subtitle: "Gardé", icon: resource.kind.icon, section: "Gardés") {
+            list.append(Result(id: "res.\(resource.id)", title: resource.title, subtitle: String(localized: "Gardé"), icon: resource.kind.icon, section: "Gardés") {
                 controller.desk.openSide(.init(kind: .reading(reading), title: resource.title, icon: resource.kind.icon, courseID: course.id))
                 controller.present()
             })
         }
         for document in NotesStore.shared.documents(for: course, among: tracked) {
-            list.append(Result(id: "nb.\(document.path)", title: document.title, subtitle: "Cahier", icon: "pencil.and.scribble", section: "Cahiers") {
+            list.append(Result(id: "nb.\(document.path)", title: document.title, subtitle: String(localized: "Cahier"), icon: "pencil.and.scribble", section: "Cahiers") {
                 controller.desk.openSide(.init(kind: .notebook(path: document.path), title: document.title, icon: "pencil.and.scribble", courseID: course.id))
                 controller.present()
             })

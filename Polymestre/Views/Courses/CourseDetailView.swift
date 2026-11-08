@@ -41,8 +41,8 @@ struct CourseDetailView: View {
         static var segments: [Section] { [.exercises, .theory] }
         var title: String {
             switch self {
-            case .theory: return "Théorie"
-            case .exercises: return "Séries"
+            case .theory: return String(localized: "Théorie")
+            case .exercises: return String(localized: "Séries")
             case .progress: return "Progression"
             case .exams: return "Examens"
             }
@@ -259,10 +259,10 @@ struct CourseDetailView: View {
             }
             if progress.hasItems {
                 HStack(spacing: 16) {
-                    summaryAxis("Théorie", done: progress.watchedCount, total: progress.videoCount, tint: tint)
-                    summaryAxis("Exercices", done: progress.doneCount, total: progress.exerciseCount, tint: tint)
+                    summaryAxis(String(localized: "Théorie"), done: progress.watchedCount, total: progress.videoCount, tint: tint)
+                    summaryAxis(String(localized: "Exercices"), done: progress.doneCount, total: progress.exerciseCount, tint: tint)
                     if progress.doneCount > 0 {
-                        summaryAxis("Corrigés", done: progress.correctedCount, total: progress.doneCount, tint: tint)
+                        summaryAxis(String(localized: "Corrigés"), done: progress.correctedCount, total: progress.doneCount, tint: tint)
                     }
                 }
             } else {
@@ -324,10 +324,10 @@ struct CourseDetailView: View {
     /// « 4 à rattraper : 1 à refaire, 3 exercices à faire », « À jour, 2 d'avance ».
     private func standingSentence(late: Int, ahead: Int) -> String {
         if late > 0 {
-            return "\(late) à rattraper : " + LateWork.of(course).summary
+            return String(localized: "\(late) à rattraper : ") + LateWork.of(course).summary
         }
-        if ahead > 0 { return "À jour, et \(ahead) d'avance" }
-        return "À jour sur les semaines passées"
+        if ahead > 0 { return String(localized: "À jour, et \(ahead) d'avance") }
+        return String(localized: "À jour sur les semaines passées")
     }
 
     /// « 28 sept – 2 oct » : du lundi au vendredi de la semaine d'enseignement.
@@ -335,7 +335,7 @@ struct CourseDetailView: View {
         guard let term = course.term else { return nil }
         let monday = DateUtils.addTeachingWeeks(week - 1, to: term.startDate)
         let friday = DateUtils.addDays(4, to: monday)
-        let format = Date.FormatStyle().day().month(.abbreviated).locale(Locale(identifier: "fr_CH"))
+        let format = Date.FormatStyle().day().month(.abbreviated).locale(DateUtils.appLocale)
         return "\(monday.formatted(format)) – \(friday.formatted(format))"
     }
 
@@ -405,8 +405,8 @@ struct CourseDetailView: View {
         if tab == .theory {
             AnkiCourseRow(course: course)
             if theory.isEmpty {
-                CarnetEmpty(icon: "book", title: "Pas de théorie",
-                            message: "Rien en semaine \(week).")
+                CarnetEmpty(icon: "book", title: String(localized: "Pas de théorie"),
+                            message: String(localized: "Rien en semaine \(week)."))
             } else {
                 VStack(alignment: .leading, spacing: 12) {
                     VStack(alignment: .leading, spacing: 3) {
@@ -453,8 +453,8 @@ struct CourseDetailView: View {
             }
         } else {
             if series.isEmpty {
-                CarnetEmpty(icon: "list.number", title: "Pas de série",
-                            message: "Rien en semaine \(week).")
+                CarnetEmpty(icon: "list.number", title: String(localized: "Pas de série"),
+                            message: String(localized: "Rien en semaine \(week)."))
             }
             ForEach(series) { item in
                 seriesBlock(item)
@@ -463,7 +463,7 @@ struct CourseDetailView: View {
 
         if !deadlines.isEmpty {
             VStack(alignment: .leading, spacing: 10) {
-                CarnetSectionTitle("Cette semaine")
+                CarnetSectionTitle(String(localized: "Cette semaine"))
                 CarnetSheet {
                     ForEach(Array(deadlines.enumerated()), id: \.element.id) { index, exam in
                         CarnetRow(icon: exam.kind.icon, tint: Carnet.tint(course.colorHex),
@@ -485,19 +485,19 @@ struct CourseDetailView: View {
     /// « À regarder : l'enregistrement du cours et 2 chapitres du MOOC (14 vidéos) ».
     private func watchSummary(_ theory: [TheoryItem]) -> String {
         let remaining = theory.filter { !$0.isWatched }
-        guard !remaining.isEmpty else { return "Tout est vu cette semaine" }
+        guard !remaining.isEmpty else { return String(localized: "Tout est vu cette semaine") }
         let mooc = remaining.filter { $0.title.hasPrefix("MOOC") }
         let lectures = remaining.filter { !$0.title.hasPrefix("MOOC") }
         var parts: [String] = []
         if !lectures.isEmpty {
             let recorded = lectures.contains { $0.links.contains { $0.kind == .video } }
-            parts.append(recorded ? "l'enregistrement du cours" : (lectures.count > 1 ? "\(lectures.count) cours" : "le cours"))
+            parts.append(recorded ? String(localized: "l'enregistrement du cours") : (lectures.count > 1 ? String(localized: "\(lectures.count) cours") : String(localized: "le cours")))
         }
         if !mooc.isEmpty {
             let videos = mooc.reduce(0) { $0 + $1.links.filter { $0.kind == .video }.count }
-            parts.append("\(Plural.count(mooc.count, "\(mooc.count) chapitre", "\(mooc.count) chapitres")) du MOOC" + (videos > 0 ? " (\(videos) vidéos)" : ""))
+            parts.append(String(localized: "\(Plural.count(mooc.count, "\(mooc.count) chapitre", "\(mooc.count) chapitres")) du MOOC") + (videos > 0 ? String(localized: " (\(videos) vidéos)") : ""))
         }
-        return "À regarder : " + parts.joined(separator: " et ")
+        return String(localized: "À regarder : ") + parts.joined(separator: " et ")
     }
 
     private func weekTopic(theory: [TheoryItem], series: [ExerciseSeries]) -> String? {
@@ -557,13 +557,13 @@ struct CourseDetailView: View {
     private var notesPreview: String {
         let first = course.notes.split(separator: "\n").first { !$0.trimmingCharacters(in: .whitespaces).isEmpty }
         return first.map { MathMarkup.plain(String($0)).trimmingCharacters(in: CharacterSet(charactersIn: "#*- ")) }
-            ?? "Ce que le prof a dit, le barème, une erreur du corrigé"
+            ?? String(localized: "Ce que le prof a dit, le barème, une erreur du corrigé")
     }
 
     /// Ce qui accompagne le cours sans se suivre : notes, examens, documents, progression.
     private var besideLinks: some View {
         VStack(alignment: .leading, spacing: 10) {
-            CarnetSectionTitle("À côté")
+            CarnetSectionTitle(String(localized: "À côté"))
             CarnetSheet {
                 Button { showingNotes = true } label: {
                     CarnetRow(icon: "note.text", tint: Carnet.inkSecondary, title: "Notes",
@@ -572,21 +572,21 @@ struct CourseDetailView: View {
                 .buttonStyle(.plain)
                 CarnetRule()
                 Button { showingExams = true } label: {
-                    CarnetRow(icon: "graduationcap", tint: Carnet.inkSecondary, title: "Examens et annales",
+                    CarnetRow(icon: "graduationcap", tint: Carnet.inkSecondary, title: String(localized: "Examens et annales"),
                               subtitle: examsDetail(course.nextExam)) { chevron }
                 }
                 .buttonStyle(.plain)
                 if !course.documents.isEmpty {
                     CarnetRule()
                     Button { showingDocuments = true } label: {
-                        CarnetRow(icon: "folder", tint: Carnet.inkSecondary, title: "Documents du cours",
+                        CarnetRow(icon: "folder", tint: Carnet.inkSecondary, title: String(localized: "Documents du cours"),
                                   subtitle: course.documents.prefix(3).map(\.title).joined(separator: " · ")) { chevron }
                     }
                     .buttonStyle(.plain)
                 }
                 CarnetRule()
                 Button { showingProgress = true } label: {
-                    CarnetRow(icon: "chart.bar", tint: Carnet.inkSecondary, title: "Progression semaine par semaine") { chevron }
+                    CarnetRow(icon: "chart.bar", tint: Carnet.inkSecondary, title: String(localized: "Progression semaine par semaine")) { chevron }
                 }
                 .buttonStyle(.plain)
             }
@@ -782,9 +782,9 @@ struct CourseDetailView: View {
 
     private func seriesTitle(_ week: WeeklyProgress) -> String {
         switch week.seriesNumbers.count {
-        case 0: return "Séries"
-        case 1: return "Série \(week.seriesNumbers[0])"
-        default: return "Séries " + week.seriesNumbers.map(String.init).joined(separator: ", ")
+        case 0: return String(localized: "Séries")
+        case 1: return String(localized: "Série \(week.seriesNumbers[0])")
+        default: return String(localized: "Séries ") + week.seriesNumbers.map(String.init).joined(separator: ", ")
         }
     }
 
@@ -792,14 +792,14 @@ struct CourseDetailView: View {
         // Espaces insécables : « 2 h » ne se coupe pas en fin de ligne.
         var parts = ["\(fmt(course.credits))\u{00A0}ECTS"]
         parts.append(course.hasLectures
-                     ? "\(fmt(course.weeklyLectureHours))\u{00A0}h de cours · \(fmt(course.weeklyExerciseHours))\u{00A0}h d'exercices"
-                     : "\(fmt(course.weeklyExerciseHours))\u{00A0}h d'exercices, sans amphi")
+                     ? String(localized: "\(fmt(course.weeklyLectureHours))\u{00A0}h de cours · \(fmt(course.weeklyExerciseHours))\u{00A0}h d'exercices")
+                     : String(localized: "\(fmt(course.weeklyExerciseHours))\u{00A0}h d'exercices, sans amphi"))
         return parts.joined(separator: " · ")
     }
 
     private func examsDetail(_ next: Exam?) -> String {
         guard let next else {
-            return course.exams.isEmpty ? "Ajoute le midterm et l'examen final" : "Évaluations passées et annales"
+            return course.exams.isEmpty ? String(localized: "Ajoute le midterm et l'examen final") : String(localized: "Évaluations passées et annales")
         }
         var parts = [DateUtils.fullDayLabel(next.date)]
         if !course.pastExams.isEmpty { parts.append(Plural.count(course.pastExams.count, "\(course.pastExams.count) annale", "\(course.pastExams.count) annales")) }
@@ -822,7 +822,7 @@ struct CourseDocumentsView: View {
         var order: [String] = []
         var byGroup: [String: [CourseDocument]] = [:]
         for document in course.documents {
-            let key = document.group.isEmpty ? "Autres" : document.group
+            let key = document.group.isEmpty ? String(localized: "Autres") : document.group
             if byGroup[key] == nil { order.append(key) }
             byGroup[key, default: []].append(document)
         }

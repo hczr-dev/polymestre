@@ -22,17 +22,17 @@ enum MilestoneKind: String, Codable, CaseIterable, Identifiable {
 
     var label: String {
         switch self {
-        case .teachingStart: return "Début des cours"
-        case .teachingEnd: return "Fin des cours"
-        case .examStart: return "Début des examens"
-        case .examEnd: return "Fin des examens"
+        case .teachingStart: return String(localized: "Début des cours")
+        case .teachingEnd: return String(localized: "Fin des cours")
+        case .examStart: return String(localized: "Début des examens")
+        case .examEnd: return String(localized: "Fin des examens")
         case .break: return "Interruption"
-        case .holiday: return "Jour férié"
-        case .deadline: return "Délai"
-        case .opening: return "Ouverture"
-        case .evaluation: return "Évaluation des cours"
+        case .holiday: return String(localized: "Jour férié")
+        case .deadline: return String(localized: "Délai")
+        case .opening: return String(localized: "Ouverture")
+        case .evaluation: return String(localized: "Évaluation des cours")
         case .publication: return "Publication"
-        case .other: return "Autre"
+        case .other: return String(localized: "Autre")
         }
     }
 

@@ -324,11 +324,11 @@ struct ClaudePane: View {
         if chat.config.profile == .project {
             let skill = file?.seriesSkill
             let loaded = skill.map { chat.info?.hasSkill($0) ?? ClaudeProjectSetup.linkedSkills(settings: settings).contains($0) } ?? false
-            rows.append(.init(icon: "folder", title: "Ton projet : " + chat.config.folder.lastPathComponent,
-                              detail: skill.map { loaded ? "compétence \($0) chargée" : "compétence \($0) introuvable" } ?? "CLAUDE.md, ta mémoire, tes compétences",
+            rows.append(.init(icon: "folder", title: String(localized: "Ton projet : ") + chat.config.folder.lastPathComponent,
+                              detail: skill.map { loaded ? String(localized: "compétence \($0) chargée") : String(localized: "compétence \($0) introuvable") } ?? String(localized: "CLAUDE.md, ta mémoire, tes compétences"),
                               state: skill == nil || loaded ? .ok : .warning))
         } else {
-            rows.append(.init(icon: "lock", title: "Claude seul", detail: "sans outils ni projet — allume « Mon projet Claude » dans les réglages",
+            rows.append(.init(icon: "lock", title: String(localized: "Claude seul"), detail: String(localized: "sans outils ni projet — allume « Mon projet Claude » dans les réglages"),
                               state: .info))
         }
         guard scope == .series else {
@@ -340,37 +340,37 @@ struct ClaudePane: View {
             let pdf = address.map { if case .ready? = desk.document($0) { return true }; return false } ?? false
             let site = exercise.flatMap { siteStatements[$0.id] } != nil
             rows.append(.init(icon: "doc.text", title: name(series),
-                              detail: pdf ? (chat.opened ? "énoncé envoyé au début" : "l'énoncé (PDF) part avec le premier message")
-                                  : (site ? "énoncé lu sur le site du cours" : "Claude n'a que les numéros et les titres"),
+                              detail: pdf ? (chat.opened ? String(localized: "énoncé envoyé au début") : String(localized: "l'énoncé (PDF) part avec le premier message"))
+                                  : (site ? String(localized: "énoncé lu sur le site du cours") : String(localized: "Claude n'a que les numéros et les titres")),
                               state: pdf || site ? .ok : .warning))
         }
         if let exercise {
             let questions = exercise.leafSubQuestions.count
             rows.append(.init(icon: "pencil", title: exercise.displayNumber,
-                              detail: questions > 0 ? "\(exercise.subQuestionDoneCount)/\(questions) questions cochées" : nil, state: .ok))
+                              detail: questions > 0 ? String(localized: "\(exercise.subQuestionDoneCount)/\(questions) questions cochées") : nil, state: .ok))
             if settings.reviewHints {
                 let hints = exercise.hints
-                rows.append(.init(icon: "lightbulb", title: hints.isEmpty ? "Aucun indice encore" : "\(hints.count) indice\(hints.count > 1 ? "s" : "") sur cet exercice",
-                                  detail: hints.last.map { "dernier : niveau \($0.level) — \($0.text)" }, state: hints.isEmpty ? .missing : .info))
+                rows.append(.init(icon: "lightbulb", title: hints.isEmpty ? String(localized: "Aucun indice encore") : Plural.count(hints.count, "\(hints.count) indice sur cet exercice", "\(hints.count) indices sur cet exercice"),
+                                  detail: hints.last.map { String(localized: "dernier : niveau \($0.level) — \($0.text)") }, state: hints.isEmpty ? .missing : .info))
             }
         } else {
-            rows.append(.init(icon: "pencil", title: "Pas d'exercice en cours", detail: "choisis-en un : Claude saura où tu en es", state: .missing))
+            rows.append(.init(icon: "pencil", title: String(localized: "Pas d'exercice en cours"), detail: String(localized: "choisis-en un : Claude saura où tu en es"), state: .missing))
         }
         if let copy = currentCopy {
             let age = Date().timeIntervalSince(copy.modified)
-            rows.append(.init(icon: "pencil.and.scribble", title: "Ta copie : " + copy.title,
-                              detail: "sauvegardée \(copy.modified.formatted(.relative(presentation: .named)))"
-                                + (age > 3 * 3600 ? " — GoodNotes n'envoie tes dernières pages qu'app ouverte : ouvre-la sur l'iPad, ou « Sauvegarder maintenant »" : ""),
+            rows.append(.init(icon: "pencil.and.scribble", title: String(localized: "Ta copie : ") + copy.title,
+                              detail: String(localized: "sauvegardée \(copy.modified.formatted(.relative(presentation: .named)))")
+                                + (age > 3 * 3600 ? String(localized: " — GoodNotes n'envoie tes dernières pages qu'app ouverte : ouvre-la sur l'iPad, ou « Sauvegarder maintenant »") : ""),
                               state: age > 3 * 3600 ? .warning : .ok,
-                              help: "\(copy.notebook) · seules les pages que Claude n'a pas encore vues partent (nouvelles ou modifiées)"))
+                              help: String(localized: "\(copy.notebook) · seules les pages que Claude n'a pas encore vues partent (nouvelles ou modifiées)")))
         } else {
-            rows.append(.init(icon: "pencil.and.scribble", title: "Copie introuvable dans tes notes",
-                              detail: "range ta série dans un cahier du cours (« Série \(series?.seriesNumber ?? 0) »), ou joins une photo", state: .missing))
+            rows.append(.init(icon: "pencil.and.scribble", title: String(localized: "Copie introuvable dans tes notes"),
+                              detail: String(localized: "range ta série dans un cahier du cours (« Série \(series?.seriesNumber ?? 0) »), ou joins une photo"), state: .missing))
         }
         if let tools = toolsRow(chat) { rows.append(tools) }
         if let tokens = chat.contextTokens {
-            rows.append(.init(icon: "gauge.with.dots.needle.33percent", title: "Contexte : \(tokens >= 1000 ? "\(tokens / 1000) k" : "\(tokens)") jetons",
-                              detail: file?.model(for: nil, scope: .series).map { "modèle \($0)" }, state: .info))
+            rows.append(.init(icon: "gauge.with.dots.needle.33percent", title: String(localized: "Contexte : \(tokens >= 1000 ? "\(tokens / 1000) k" : "\(tokens)") jetons"),
+                              detail: file?.model(for: nil, scope: .series).map { String(localized: "modèle \($0)") }, state: .info))
         }
         return rows
     }
@@ -385,10 +385,10 @@ struct ClaudePane: View {
         let off = servers.filter { $0.status != "connected" }
         let label = { (server: ClaudeTutor.SessionInfo.MCPServer) in ClaudeTutor.toolLabel("mcp__" + server.name) }
         var help = ""
-        if !on.isEmpty { help += "Connectés : " + on.map(label).joined(separator: ", ") }
-        if !off.isEmpty { help += (help.isEmpty ? "" : "\n") + "À connecter (claude puis /mcp dans le Terminal) : " + off.map(label).joined(separator: ", ") }
-        return .init(icon: "point.3.connected.trianglepath.dotted", title: "Outils : \(on.count) connecté\(on.count > 1 ? "s" : "")",
-                     detail: off.isEmpty ? nil : "\(off.count) à connecter — voir l'infobulle", state: on.isEmpty ? .info : .ok, help: help)
+        if !on.isEmpty { help += String(localized: "Connectés : ") + on.map(label).joined(separator: ", ") }
+        if !off.isEmpty { help += (help.isEmpty ? "" : "\n") + String(localized: "À connecter (claude puis /mcp dans le Terminal) : ") + off.map(label).joined(separator: ", ") }
+        return .init(icon: "point.3.connected.trianglepath.dotted", title: Plural.count(on.count, "Outils : \(on.count) connecté", "Outils : \(on.count) connectés"),
+                     detail: off.isEmpty ? nil : String(localized: "\(off.count) à connecter — voir l'infobulle"), state: on.isEmpty ? .info : .ok, help: help)
     }
 
     private func name(_ series: ExerciseSeries) -> String {
@@ -444,7 +444,7 @@ struct ClaudePane: View {
 
     private var welcome: some View {
         VStack(alignment: .leading, spacing: 14) {
-            Text(scope == .system ? "On fait quoi ?" : (exercise.map { "On attaque l'\($0.displayNumber.lowercased()) ?" } ?? (series == nil ? "Une question ?" : "On attaque ?")))
+            Text(scope == .system ? "On fait quoi ?" : (exercise.map { String(localized: "On attaque l'\($0.displayNumber.lowercased()) ?") } ?? (series == nil ? String(localized: "Une question ?") : String(localized: "On attaque ?"))))
                 .font(StudyType.displaySmall).foregroundStyle(Carnet.ink)
             Text(scope == .system
                  ? "La conversation générale : ton brief, ta semaine, ta revue — les commandes de ton projet."
@@ -468,7 +468,7 @@ struct ClaudePane: View {
         if let command = file?.commands(.series).first(where: { $0.verdicts == true }) {
             run(command)
         } else {
-            send(ClaudeTutor.postMortemPrompt(useSkill: usesSkill, features: settings.reviewFeatures(file)), label: "Clore la série",
+            send(ClaudeTutor.postMortemPrompt(useSkill: usesSkill, features: settings.reviewFeatures(file)), label: String(localized: "Clore la série"),
                  model: file?.model(for: nil, scope: .system))
         }
     }
@@ -483,8 +483,8 @@ struct ClaudePane: View {
         }
         var list: [ClaudeSuggestion] = []
         if readyToClose {
-            list.append(ClaudeSuggestion(id: "close", label: "Clore la série", icon: "checkmark.seal", primary: true,
-                                         help: "Comparer ta copie au corrigé : corrections, carnet d'erreurs, exercices à refaire",
+            list.append(ClaudeSuggestion(id: "close", label: String(localized: "Clore la série"), icon: "checkmark.seal", primary: true,
+                                         help: String(localized: "Comparer ta copie au corrigé : corrections, carnet d'erreurs, exercices à refaire"),
                                          action: postMortem))
         }
         if exercise != nil {
@@ -492,7 +492,7 @@ struct ClaudePane: View {
             let asks = chat?.messages.last(where: { $0.role == .claude && !$0.isStreaming }).map { TutorFramework.asksQuestion($0.text) } ?? false
             for next in TutorFramework.suggestions(tutorState, replyAsksQuestion: asks) { list.append(suggestion(next)) }
         } else {
-            list.append(ClaudeSuggestion(id: "explain", label: "La notion de la série", icon: "book") {
+            list.append(ClaudeSuggestion(id: "explain", label: String(localized: "La notion de la série"), icon: "book") {
                 send("Quelles notions cette série fait-elle travailler ? Où les revoir dans le cours ?")
             })
         }
@@ -502,18 +502,18 @@ struct ClaudePane: View {
     private func suggestion(_ next: TutorFramework.Next) -> ClaudeSuggestion {
         switch next {
         case .hint(let level):
-            return ClaudeSuggestion(id: "hint\(level)", label: level == 1 ? "Un indice" : "Indice \(level)", icon: "lightbulb",
-                                    help: "Niveau \(level) sur 4 : \(TutorFramework.levelName(level))") {
+            return ClaudeSuggestion(id: "hint\(level)", label: level == 1 ? String(localized: "Un indice") : String(localized: "Indice \(level)"), icon: "lightbulb",
+                                    help: String(localized: "Niveau \(level) sur 4 : \(TutorFramework.levelName(level))")) {
                 send(TutorFramework.hintPrompt(after: level - 1))
             }
         case .tryIt:
-            return ClaudeSuggestion(id: "try", label: "J'essaie", icon: "pencil", help: "Écrire ta tentative : Claude te dit où est la première erreur") {
+            return ClaudeSuggestion(id: "try", label: String(localized: "J'essaie"), icon: "pencil", help: String(localized: "Écrire ta tentative : Claude te dit où est la première erreur")) {
                 if draft.isEmpty { draft = "Ma tentative : " }
                 focused = true
             }
         case .check:
-            return ClaudeSuggestion(id: "check", label: currentCopy == nil ? "Vérifie-moi" : "Vérifie ma copie", icon: "checkmark.circle",
-                                    help: currentCopy.map { "Envoie « \($0.title) » (sauvegardée \($0.modified.formatted(.relative(presentation: .named))))" }) {
+            return ClaudeSuggestion(id: "check", label: currentCopy == nil ? String(localized: "Vérifie-moi") : String(localized: "Vérifie ma copie"), icon: "checkmark.circle",
+                                    help: currentCopy.map { String(localized: "Envoie « \($0.title) » (sauvegardée \($0.modified.formatted(.relative(presentation: .named))))") }) {
                 let copy = currentCopy
                 Task {
                     let attached = await copy.asyncMap { await attachCopy($0) } ?? nil
@@ -526,7 +526,7 @@ struct ClaudePane: View {
         case .explain:
             return ClaudeSuggestion(id: "explain", label: "La notion", icon: "book") { send(ClaudeTutor.QuickAction.explain.prompt) }
         case .solution:
-            return ClaudeSuggestion(id: "solution", label: "La solution", icon: "eye") {
+            return ClaudeSuggestion(id: "solution", label: String(localized: "La solution"), icon: "eye") {
                 send(ClaudeTutor.QuickAction.solution.prompt, model: .some(file?.model(for: nil, scope: .system)))
             }
         }
@@ -714,9 +714,9 @@ struct ClaudePane: View {
                     .buttonStyle(.plain)
                     .foregroundStyle(stale ? Carnet.review : Carnet.inkSecondary)
                     .help("Joindre ta copie « \(copy.title) », sauvegardée \(copy.modified.formatted(.relative(presentation: .named)))"
-                          + (stale ? " — ouvre GoodNotes sur l'iPad pour envoyer tes dernières pages" : ""))
+                          + (stale ? String(localized: " — ouvre GoodNotes sur l'iPad pour envoyer tes dernières pages") : ""))
                 }
-                TextField(scope == .system ? "Ta demande" : (chat.mode == .tutor ? "Où tu bloques ?" : "Ta question"), text: $draft, axis: .vertical)
+                TextField(scope == .system ? "Ta demande" : (chat.mode == .tutor ? String(localized: "Où tu bloques ?") : String(localized: "Ta question")), text: $draft, axis: .vertical)
                     .textFieldStyle(.plain)
                     .font(.body)
                     .lineLimit(1...8)
@@ -820,7 +820,7 @@ struct ClaudePane: View {
         var pdfAttached = false
         if scope == .series, attachSeries, !chat.opened, let address = seriesAddress,
            case .ready(let url)? = desk.document(address), let data = try? Data(contentsOf: url) {
-            files.insert(.init(kind: .pdf, data: data, name: series.map(name) ?? "Série", origin: .series(series.map(name) ?? "Série")), at: 0)
+            files.insert(.init(kind: .pdf, data: data, name: series.map(name) ?? String(localized: "Série"), origin: .series(series.map(name) ?? String(localized: "Série"))), at: 0)
             pdfAttached = true
         }
         var state = tutorState
@@ -863,7 +863,7 @@ struct ClaudePane: View {
             week: series.plannedWeek > 0 ? series.plannedWeek : nil,
             due: series.dueDate.map { $0.formatted(.dateTime.weekday(.wide).day().month(.wide).locale(Locale(identifier: "fr_CH"))) },
             exercises: series.sortedExercises.map { item in
-                let status = item.correctness.map { $0.label.lowercased() } ?? (item.isDone ? "fait" : "à faire")
+                let status = item.correctness.map { $0.label.lowercased() } ?? (item.isDone ? String(localized: "fait") : String(localized: "à faire"))
                 return .init(number: item.exerciseNumber, title: item.title, status: status + (item.isBonus ? " (bonus)" : ""))
             },
             pdfAttached: pdfAttached)

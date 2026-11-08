@@ -78,8 +78,8 @@ final class PastExam {
 
     /// « Travaillé le 12 mars · vert ».
     var statusLabel: String {
-        guard let workedAt else { return "Pas encore travaillé" }
-        var parts = ["Travaillé le \(DateUtils.shortDay.string(from: workedAt))"]
+        guard let workedAt else { return String(localized: "Pas encore travaillé") }
+        var parts = [String(localized: "Travaillé le \(DateUtils.shortDay.string(from: workedAt))")]
         if let confidence { parts.append(confidence.label) }
         return parts.joined(separator: " · ")
     }

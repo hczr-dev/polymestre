@@ -60,9 +60,9 @@ struct ExercisesTabView: View {
         VStack(alignment: .leading, spacing: Layout.sectionSpacing) {
             if course.series.isEmpty {
                 EmptyCard(icon: TaskType.exercise.icon,
-                          title: "Aucune série",
-                          message: "Depuis Moodle, ou le PDF d'une série.",
-                          actionTitle: "Importer depuis Moodle") {
+                          title: String(localized: "Aucune série"),
+                          message: String(localized: "Depuis Moodle, ou le PDF d'une série."),
+                          actionTitle: String(localized: "Importer depuis Moodle")) {
                     app.router.openContentImport(courseID: course.id)
                 }
                 HStack(spacing: Layout.control) {
@@ -189,9 +189,9 @@ struct ExercisesTabView: View {
     private var legend: some View {
         VStack(alignment: .leading, spacing: Layout.snug) {
             HStack(spacing: Layout.block) {
-                legendItem(.toDo, "à faire")
-                legendItem(.toCorrect, "fait, à corriger")
-                legendItem(.redo, "à refaire")
+                legendItem(.toDo, String(localized: "à faire"))
+                legendItem(.toCorrect, String(localized: "fait, à corriger"))
+                legendItem(.redo, String(localized: "à refaire"))
                 Spacer(minLength: 0)
             }
             HStack(spacing: Layout.block) {
@@ -404,7 +404,7 @@ struct ExercisesTabView: View {
                 }
                 if theory > 0 {
                     Button { weekContext = WeekContextTarget(week: series.plannedWeek) } label: {
-                        documentChip("Théorie S\(series.plannedWeek) · \(theory)", icon: TaskType.theory.icon)
+                        documentChip(String(localized: "Théorie S\(series.plannedWeek) · \(theory)"), icon: TaskType.theory.icon)
                     }
                     .buttonStyle(.plain)
                 }
@@ -431,14 +431,14 @@ struct ExercisesTabView: View {
         do {
             downloadedPDF = DownloadedPDF(url: try await AuthenticatedDownloader.download(url))
         } catch {
-            downloadError = "\(error.localizedDescription) Reconnecte-toi à Moodle depuis « Importer du contenu », ou choisis le fichier toi-même."
+            downloadError = String(localized: "\(error.localizedDescription) Reconnecte-toi à Moodle depuis « Importer du contenu », ou choisis le fichier toi-même.")
         }
     }
 
     private func seriesSubtitle(_ series: ExerciseSeries) -> String {
-        var parts = [series.plannedWeek > 0 ? "Semaine \(series.plannedWeek)" : "Sans semaine"]
-        if series.exercises.isEmpty { parts.append("exercices à importer") }
-        if let due = series.dueDate { parts.append("à rendre le \(DateUtils.shortDay.string(from: due))") }
+        var parts = [series.plannedWeek > 0 ? String(localized: "Semaine \(series.plannedWeek)") : String(localized: "Sans semaine")]
+        if series.exercises.isEmpty { parts.append(String(localized: "exercices à importer")) }
+        if let due = series.dueDate { parts.append(String(localized: "à rendre le \(DateUtils.shortDay.string(from: due))")) }
         if !series.bonusExercises.isEmpty { parts.append("\(series.bonusExercises.count) bonus") }
         let spent = ExerciseFlow.seconds(on: series)
         if spent >= 60 { parts.append(DateUtils.hoursLabel(seconds: spent)) }

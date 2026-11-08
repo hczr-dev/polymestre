@@ -159,7 +159,7 @@ struct BotafogoDocumentView: View {
                 Spacer()
                 if let accessory { accessory }
                 if let ask {
-                    Button { ask("J'ai une question sur « \(title) » (Botafogo).") } label: {
+                    Button { ask(String(localized: "J'ai une question sur « \(title) » (Botafogo).")) } label: {
                         Label("Claude", systemImage: "sparkle")
                     }
                     .buttonStyle(.paper)
@@ -627,7 +627,7 @@ struct BotafogoQuizCard<Prompt: View>: View {
         .buttonStyle(.plain)
         .disabled(answered)
         .accessibilityLabel(MathMarkup.plain(choice.text))
-        .accessibilityValue(answered ? (choice.correct ? "Juste" : (isPicked ? "Faux" : "")) : "")
+        .accessibilityValue(answered ? (choice.correct ? String(localized: "Juste") : (isPicked ? String(localized: "Faux") : "")) : "")
     }
 }
 

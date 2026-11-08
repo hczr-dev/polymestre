@@ -99,7 +99,7 @@ struct RemotePresence: Codable {
             ?? ISO8601DateFormatter().date(from: updatedAt)
             ?? Date()
         return PresenceEntry(userID: userId,
-                             displayName: profile?.displayName ?? "Membre",
+                             displayName: profile?.displayName ?? String(localized: "Membre"),
                              courseCode: courseCode ?? "",
                              taskLabel: taskLabel ?? "",
                              target: target ?? "",
@@ -266,7 +266,7 @@ struct RemotePost: Codable, Identifiable, Equatable {
     /// « CS-107 · 4.3 » : ce sur quoi porte la question.
     var target: String {
         [courseCode.isEmpty ? nil : courseCode,
-         exerciseNumber.isEmpty ? seriesNumber.map { "série \($0)" } : exerciseNumber]
+         exerciseNumber.isEmpty ? seriesNumber.map { String(localized: "série \($0)") } : exerciseNumber]
             .compactMap { $0 }.joined(separator: " · ")
     }
 }
@@ -437,7 +437,7 @@ final class SocialService {
         do {
             try await client.rpc("delete_my_account", params: [:])
         } catch {
-            lastError = "La suppression a échoué : \(error.localizedDescription)"
+            lastError = String(localized: "La suppression a échoué : \(error.localizedDescription)")
             throw error
         }
         await signOut()
@@ -518,7 +518,7 @@ final class SocialService {
                                            query: [URLQueryItem(name: "invite_code", value: "eq.\(inviteCode)"),
                                                    URLQueryItem(name: "select", value: "*")])
         guard let data, let group = try? JSONDecoder().decode([RemoteGroup].self, from: data).first else {
-            throw SupabaseError.decoding("Aucun groupe avec ce code")
+            throw SupabaseError.decoding(String(localized: "Aucun groupe avec ce code"))
         }
         try await ensureMembership(groupID: group.id, role: .member)
         // On rejoint **toutes** les matières du groupe par défaut : c'est le cas
@@ -818,7 +818,7 @@ final class SocialService {
             let data = try await client.insert("group_sessions", values: [
                 "group_id": groupID, "host_id": me, "updated_by": me, "clock": try Self.clockJSON(clock)
             ])
-            guard let created = Self.decodeSessions(data).first else { throw SupabaseError.server(status: 500, message: "session introuvable") }
+            guard let created = Self.decodeSessions(data).first else { throw SupabaseError.server(status: 500, message: String(localized: "session introuvable")) }
             try await joinGroupSession(sessionID: created.id, groupID: groupID)
             return try await fetchLiveSession(groupID: groupID) ?? created
         } catch let error as SupabaseError {
@@ -1005,7 +1005,7 @@ final class SocialService {
            let text = try? GroupCrypto.open(sealed, key: active.key, groupID: groupID, authorID: post.authorId) {
             copy.body = text
         } else {
-            copy.body = "Message chiffré — la clé du groupe n'est pas encore arrivée sur cet appareil."
+            copy.body = String(localized: "Message chiffré — la clé du groupe n'est pas encore arrivée sur cet appareil.")
             copy.isLocked = true
         }
         return copy

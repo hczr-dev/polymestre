@@ -269,7 +269,7 @@ struct FocusTimerPanel: View {
                     }
                 } label: {
                     contextRow(title: "Cours",
-                               value: course.map { "\($0.displayCode) · \($0.name)" } ?? "Choisir",
+                               value: course.map { "\($0.displayCode) · \($0.name)" } ?? String(localized: "Choisir"),
                                tint: course.map { Carnet.tint($0.colorHex) })
                 }
                 .accessibilityLabel("Cours")
@@ -305,7 +305,7 @@ struct FocusTimerPanel: View {
                             }
                         }
                     } label: {
-                        contextRow(title: "Sur", value: targetLabel ?? "Tout le cours", tint: nil)
+                        contextRow(title: "Sur", value: targetLabel ?? String(localized: "Tout le cours"), tint: nil)
                     }
                     .accessibilityLabel("Cible")
                     .accessibilityValue(targetLabel ?? "tout le cours")
@@ -400,7 +400,7 @@ struct FocusTimerPanel: View {
                             .font(Carnet.serif(.title3))
                             .foregroundStyle(Carnet.ink)
                         Text([ExerciseStage(exercise).label.capitalizedFirst,
-                              position.map { "\($0 + 1) sur \(siblings.count)" }]
+                              position.map { String(localized: "\($0 + 1) sur \(siblings.count)") }]
                                 .compactMap { $0 }.joined(separator: " · "))
                             .font(.footnote)
                             .foregroundStyle(Carnet.inkSecondary)
@@ -548,7 +548,7 @@ struct FocusTimerPanel: View {
         if isAdjusting {
             return DialContent(time: TimerText.clock(elapsed),
                                progress: nil,
-                               caption: "Temps compté · un tour = 1 h",
+                               caption: String(localized: "Temps compté · un tour = 1 h"),
                                tint: tint)
         }
         switch phase {
@@ -557,12 +557,12 @@ struct FocusTimerPanel: View {
             let total = max(1, end.timeIntervalSince(start))
             return DialContent(time: TimerText.clock(left.rounded(.up)),
                                progress: left / total,
-                               caption: "\(kind.label) · bloc \(nextBlockNumber) ensuite",
+                               caption: String(localized: "\(kind.label) · bloc \(nextBlockNumber) ensuite"),
                                tint: Color.teal)
         case .readyForBlock(let block):
             return DialContent(time: TimerText.clock(pomodoroSettings.blockDuration),
                                progress: 0,
-                               caption: "Pause finie · bloc \(block) prêt",
+                               caption: String(localized: "Pause finie · bloc \(block) prêt"),
                                tint: tint)
         case .idle:
             if focus.isPomodoro {
@@ -579,13 +579,13 @@ struct FocusTimerPanel: View {
                 return DialContent(time: TimerText.clock(status.remaining.rounded(.up)),
                                    progress: status.progress,
                                    caption: paused
-                                       ? "En pause · \(TimerText.clock(elapsed)) travaillées"
+                                       ? String(localized: "En pause · \(TimerText.clock(elapsed)) travaillées")
                                        : "Bloc \(status.blockNumber) · \(TimerText.clock(elapsed)) au total",
                                    tint: tint)
             }
             return DialContent(time: TimerText.clock(elapsed),
                                progress: elapsed.truncatingRemainder(dividingBy: 3600) / 3600,
-                               caption: paused ? "En pause" : "Un tour = une heure",
+                               caption: paused ? String(localized: "En pause") : String(localized: "Un tour = une heure"),
                                tint: tint)
         }
     }
@@ -773,7 +773,7 @@ struct FocusTimerPanel: View {
         let shortcuts = effectiveShortcuts
         if !shortcuts.isEmpty {
             VStack(alignment: .leading, spacing: 10) {
-                CarnetSectionTitle("Démarrer en un toucher") {
+                CarnetSectionTitle(String(localized: "Démarrer en un toucher")) {
                     Button("Modifier") { showingShortcutEditor = true }
                 }
                 CarnetSheet {
@@ -979,7 +979,7 @@ struct FocusTimerPanel: View {
         if !title.isEmpty { parts.append(String(title.prefix(32))) }
         if exercise.isBonus { parts.append("bonus") }
         if case .inProgress(let done, let total) = ExerciseStage(exercise) { parts.append("\(done)/\(total)") }
-        if ExerciseStage(exercise) == .redo { parts.append("à refaire") }
+        if ExerciseStage(exercise) == .redo { parts.append(String(localized: "à refaire")) }
         return parts.joined(separator: " · ")
     }
 

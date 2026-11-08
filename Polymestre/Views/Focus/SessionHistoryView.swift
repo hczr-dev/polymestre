@@ -148,7 +148,7 @@ struct SessionHistoryView: View {
     private func subtitle(_ session: StudySession) -> String {
         var parts = [DateUtils.time.string(from: session.startedAt)]
         if let target = session.targetLabel { parts.append(target) }
-        if session.isManual { parts.append("saisie manuelle") }
+        if session.isManual { parts.append(String(localized: "saisie manuelle")) }
         if !session.note.isEmpty { parts.append(session.note) }
         return parts.joined(separator: " · ")
     }

@@ -404,7 +404,7 @@ final class StudyMusic {
     private func resume(_ item: MusicLink.Item, at elapsed: TimeInterval, playing: Bool) async {
         let reference = MusicTrackReference(catalogID: nil, title: item.title, artist: item.artist, album: item.album, duration: item.duration)
         guard let song = await MusicCatalogLookup.song(for: reference) else {
-            lastError = "Morceau introuvable dans Apple Music : il n'a pas pu changer d'appareil."
+            lastError = String(localized: "Morceau introuvable dans Apple Music : il n'a pas pu changer d'appareil.")
             return
         }
         let started = Date()

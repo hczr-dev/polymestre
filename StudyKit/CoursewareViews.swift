@@ -182,7 +182,7 @@ struct CoursewareUnitPage: View {
                     switch block.kind {
                     case .video:
                         if let url = block.videoURL ?? block.youTubeID.map({ "https://www.youtube.com/watch?v=\($0)" }) {
-                            NativeVideo(title: block.title.isEmpty ? "Vidéo" : block.title, address: url, desk: desk, openWeb: openWeb,
+                            NativeVideo(title: block.title.isEmpty ? String(localized: "Vidéo") : block.title, address: url, desk: desk, openWeb: openWeb,
                                         start: start?.block == block.id ? start?.at : nil, studiedKey: block.id,
                                         autoplay: start?.block == block.id)
                         }
@@ -263,7 +263,7 @@ struct EdXProblemCard: View {
                         .buttonStyle(.ink)
                         .disabled(sending || answers.values.allSatisfy(\.isEmpty))
                     if let result {
-                        Label(result.isCorrect ? "Juste" : (result.verdict == "partially-correct" ? "En partie" : "Faux"),
+                        Label(result.isCorrect ? "Juste" : (result.verdict == "partially-correct" ? String(localized: "En partie") : String(localized: "Faux")),
                               systemImage: result.isCorrect ? "checkmark.circle.fill" : "xmark.circle.fill")
                             .foregroundStyle(result.isCorrect ? Carnet.correct : Carnet.wrong)
                     }

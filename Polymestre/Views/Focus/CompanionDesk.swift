@@ -89,7 +89,7 @@ struct CompanionDesk: View {
         TimelineView(.periodic(from: StudyMode.tickAnchor(focus.state), by: 1)) { context in
             let onBreak = focus.state?.breakEndsAt.map { $0 > context.date } ?? false
             VStack(spacing: 4) {
-                Text(onBreak ? "Pause — lève-toi, bois un verre d'eau" : (course?.displayCode ?? "Mode étude"))
+                Text(onBreak ? "Pause — lève-toi, bois un verre d'eau" : (course?.displayCode ?? String(localized: "Mode étude")))
                     .font(.caption.weight(.semibold)).textCase(onBreak ? nil : .uppercase).tracking(1)
                     .foregroundStyle(tint)
                 Text(TimerText.clock(StudyMode.clock(focus.state, at: context.date)))
@@ -183,7 +183,7 @@ struct CompanionDesk: View {
                     Button("Envoyer") {
                         asking = false
                         deliver(DeskDrop(from: CloudRelay.deviceID, intent: .ask, question: question, exerciseID: exercise?.id, sentAt: Date()),
-                                note: "Question envoyée au Mac")
+                                note: String(localized: "Question envoyée au Mac"))
                         question = ""
                     }
                     .disabled(question.trimmingCharacters(in: .whitespaces).isEmpty)
@@ -195,12 +195,12 @@ struct CompanionDesk: View {
 
     private func send(_ intent: DeskDrop.Intent, images: [UIImage]) {
         guard let pdf = Self.pdf(from: images) else {
-            failed = "La numérisation est trop lourde : moins de pages"
+            failed = String(localized: "La numérisation est trop lourde : moins de pages")
             clearSoon()
             return
         }
         deliver(DeskDrop(from: CloudRelay.deviceID, intent: intent, document: pdf, isPDF: true, exerciseID: exercise?.id, sentAt: Date()),
-                note: intent == .stuck ? "Envoyé : Claude regarde où ça bloque" : "Ta copie est sur le Mac")
+                note: intent == .stuck ? String(localized: "Envoyé : Claude regarde où ça bloque") : String(localized: "Ta copie est sur le Mac"))
     }
 
     private func deliver(_ drop: DeskDrop, note: String) {
@@ -208,7 +208,7 @@ struct CompanionDesk: View {
             sent = note
             failed = nil
         } else {
-            failed = TimerLink.shared.isConnected ? "Trop lourd pour partir" : "Le Mac n'est pas joignable (réseau ?)"
+            failed = TimerLink.shared.isConnected ? String(localized: "Trop lourd pour partir") : String(localized: "Le Mac n'est pas joignable (réseau ?)")
         }
         clearSoon()
     }

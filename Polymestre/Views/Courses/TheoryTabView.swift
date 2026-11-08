@@ -26,9 +26,9 @@ struct TheoryTabView: View {
         VStack(alignment: .leading, spacing: Layout.sectionSpacing) {
             if course.theoryItems.isEmpty {
                 EmptyCard(icon: TaskType.theory.icon,
-                          title: "Aucune théorie",
+                          title: String(localized: "Aucune théorie"),
                           message: "Depuis Moodle, Courseware ou Botafogo.",
-                          actionTitle: "Importer la théorie") {
+                          actionTitle: String(localized: "Importer la théorie")) {
                     app.router.openContentImport(courseID: course.id)
                 }
                 Button {
@@ -42,7 +42,7 @@ struct TheoryTabView: View {
             } else {
                 weekCard
                 HStack {
-                    SectionHeader(title: "Tout le cours", trailing: nil)
+                    SectionHeader(title: String(localized: "Tout le cours"), trailing: nil)
                     Button {
                         withAnimation(Motion.snappy) { showsDone.toggle() }
                     } label: {
@@ -72,7 +72,7 @@ struct TheoryTabView: View {
         let done = weekItems.filter(\.isWatched).count
         let remainingSeconds = weekItems.filter { !$0.isWatched }.reduce(0) { $0 + $1.durationSeconds }
         let videos = weekItems.reduce(0) { $0 + $1.videoCount }
-        Card(title: course.isTermRunning ? "Semaine \(week)" : "Hors semestre",
+        Card(title: course.isTermRunning ? String(localized: "Semaine \(week)") : String(localized: "Hors semestre"),
              icon: "calendar",
              trailing: weekItems.isEmpty ? nil : "\(done)/\(weekItems.count)") {
             if weekItems.isEmpty {
@@ -87,7 +87,7 @@ struct TheoryTabView: View {
                     ProgressBar(progress: CourseProgress.ratio(done, weekItems.count), color: TaskType.theory.tint)
                     if remainingSeconds > 0 || videos > 0 {
                         Text([videos > 0 ? Plural.count(videos, "\(videos) vidéo", "\(videos) vidéos") : nil,
-                              remainingSeconds > 0 ? "\(DateUtils.durationLabel(seconds: remainingSeconds)) à regarder" : nil]
+                              remainingSeconds > 0 ? String(localized: "\(DateUtils.durationLabel(seconds: remainingSeconds)) à regarder") : nil]
                             .compactMap { $0 }.joined(separator: " · "))
                             .font(.caption)
                             .foregroundStyle(.secondary)
@@ -116,7 +116,7 @@ struct TheoryTabView: View {
         let all = course.sortedTheoryItems.filter { $0.sectionNumber == section }
         let items = showsDone ? all : all.filter { !$0.isWatched }
         let watched = all.filter(\.isWatched).count
-        let title = all.first(where: { !$0.sectionTitle.isEmpty })?.sectionTitle ?? "Chapitre \(section)"
+        let title = all.first(where: { !$0.sectionTitle.isEmpty })?.sectionTitle ?? String(localized: "Chapitre \(section)")
         if !items.isEmpty {
             VStack(alignment: .leading, spacing: 0) {
                 HStack(alignment: .firstTextBaseline, spacing: Layout.inline) {
@@ -173,7 +173,7 @@ struct VideoRow: View {
         HStack(spacing: 0) {
             CheckCircleButton(isOn: video.isWatched,
                               tint: TaskType.theory.tint,
-                              label: "Marquer \(video.displayNumber) comme faite",
+                              label: String(localized: "Marquer \(video.displayNumber) comme faite"),
                               action: onToggleWatched)
 
             Button(action: onOpen) {
@@ -225,11 +225,11 @@ struct VideoRow: View {
     /// « 3 vidéos · 45 min · résumé », ce qui compte, sans « 0 min ».
     private var meta: String {
         var parts: [String] = []
-        if video.videoCount > 1 { parts.append("\(video.videoCount) vidéos") }
-        else if video.videoCount == 1 || video.kind == .video { parts.append("Vidéo") }
+        if video.videoCount > 1 { parts.append(String(localized: "\(video.videoCount) vidéos")) }
+        else if video.videoCount == 1 || video.kind == .video { parts.append(String(localized: "Vidéo")) }
         else { parts.append(video.kind.label) }
         if video.hasDuration { parts.append(video.durationLabel) }
-        if video.isSummarized { parts.append("résumé") }
+        if video.isSummarized { parts.append(String(localized: "résumé")) }
         if video.plannedWeek > 0 && !isCurrentWeek { parts.append("S\(video.plannedWeek)") }
         return parts.joined(separator: " · ")
     }
@@ -254,27 +254,27 @@ struct VideoDetailSheet: View {
         NavigationStack {
             Form {
                 Section("Théorie") {
-                    DetailRow(icon: "number", label: "Numéro", value: video.number, tint: video.kind.tint)
+                    DetailRow(icon: "number", label: String(localized: "Numéro"), value: video.number, tint: video.kind.tint)
                     if !video.title.isEmpty {
                         DetailRow(icon: "text.alignleft", label: "Titre", value: video.title)
                     }
                     DetailRow(icon: video.kind.icon, label: "Support",
-                              value: video.videoCount > 1 ? "\(video.videoCount) vidéos" : video.kind.label)
+                              value: video.videoCount > 1 ? String(localized: "\(video.videoCount) vidéos") : video.kind.label)
                     if video.hasDuration {
-                        DetailRow(icon: "clock", label: "Durée", value: video.durationLabel)
+                        DetailRow(icon: "clock", label: String(localized: "Durée"), value: video.durationLabel)
                     }
                     if let course = video.course {
-                        DetailRow(icon: "books.vertical", label: "Cours", value: course.code)
+                        DetailRow(icon: "books.vertical", label: String(localized: "Cours"), value: course.code)
                     }
                 }
 
                 Section("Suivi") {
                     DetailRow(icon: "checkmark.circle.fill",
-                              label: "Faite le",
+                              label: String(localized: "Faite le"),
                               value: video.watchedAt.map { DateUtils.shortDay.string(from: $0) } ?? "—",
                               tint: .green)
                     DetailRow(icon: "doc.text.fill",
-                              label: "Résumé le",
+                              label: String(localized: "Résumé le"),
                               value: video.summarizedAt.map { DateUtils.shortDay.string(from: $0) } ?? "—",
                               tint: .teal)
                     Button {

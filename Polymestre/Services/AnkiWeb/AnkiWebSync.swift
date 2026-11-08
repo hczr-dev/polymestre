@@ -117,7 +117,7 @@ final class AnkiWebSync {
         defer { isWorking = false }
         do {
             let client = AnkiWebClient(endpoint: defaults.string(forKey: Key.endpoint).flatMap(URL.init(string:)))
-            status = "Connexion à AnkiWeb…"
+            status = String(localized: "Connexion à AnkiWeb…")
             let key = try await client.login(username: username, password: password)
             AnkiKeychain.hostKey = key
             defaults.set(username, forKey: Key.username)
@@ -236,7 +236,7 @@ final class AnkiWebSync {
         }
         guard let local else { return }
         if pendingLocal == 0, local.modified == meta.modified {
-            status = "À jour"
+            status = String(localized: "À jour")
             defaults.set(Date(), forKey: Key.lastRefresh)
             return
         }
@@ -246,7 +246,7 @@ final class AnkiWebSync {
     /// Téléchargement complet : au premier lancement, ou quand la collection
     /// d'AnkiWeb a été remplacée.
     private func download(with client: AnkiWebClient) async throws {
-        status = "Téléchargement de la collection…"
+        status = String(localized: "Téléchargement de la collection…")
         let data = try await client.download()
         try AnkiCollection.install(data)
         // Le téléchargement incrémente le numéro de synchronisation du serveur :
@@ -256,7 +256,7 @@ final class AnkiWebSync {
         defaults.set(after.modified, forKey: Key.serverMod)
         defaults.set(after.usn, forKey: Key.serverUsn)
         defaults.set(Date(), forKey: Key.lastRefresh)
-        status = "Collection à jour"
+        status = String(localized: "Collection à jour")
         // Les cartes créées avant d'avoir une copie : écrites maintenant.
         if !pending.isEmpty, let collection = AnkiCollection(writable: true) {
             for draft in pending {
@@ -280,7 +280,7 @@ final class AnkiWebSync {
     ///    exactement les mêmes cartes, notes, révisions… Sinon le serveur
     ///    **annule tout** — sa collection reste intacte.
     private func normalSync(_ local: AnkiCollection, meta: AnkiWebClient.Meta, client: AnkiWebClient) async throws {
-        status = "Synchronisation…"
+        status = String(localized: "Synchronisation…")
         let sent = local.pendingChanges
         // Une seconde de marge : ce qui est modifié à partir d'ici repartira.
         let startedAt = Int64(Date().timeIntervalSince1970) - 1
@@ -322,7 +322,7 @@ final class AnkiWebSync {
             defaults.set(modified, forKey: Key.serverMod)
             defaults.set(meta.usn + 1, forKey: Key.serverUsn)
             defaults.set(Date(), forKey: Key.lastRefresh)
-            status = sent > 0 ? "Synchronisé · \(Plural.count(sent, "\(sent) modification envoyée", "\(sent) modifications envoyées"))" : "Collection à jour"
+            status = sent > 0 ? String(localized: "Synchronisé · \(Plural.count(sent, "\(sent) modification envoyée", "\(sent) modifications envoyées"))") : String(localized: "Collection à jour")
         } catch {
             // Le serveur annule la transaction : sa collection reste intacte, et
             // nos lignes gardent `usn = -1` pour la prochaine fois.

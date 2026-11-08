@@ -23,8 +23,8 @@ enum ShortcutAction: String {
 
     var title: String {
         switch self {
-        case .importSeries: return "Importer une série"
-        case .startTimer: return "Lancer le chrono"
+        case .importSeries: return String(localized: "Importer une série")
+        case .startTimer: return String(localized: "Lancer le chrono")
         }
     }
 }

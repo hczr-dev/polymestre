@@ -219,9 +219,9 @@ struct FocusMiniPlayer: View {
     private func primaryButton(phase: FocusPhase) -> some View {
         let (icon, label): (String, String) = {
             switch phase {
-            case .working: return ("pause.fill", "Mettre en pause")
-            case .onBreak: return ("forward.fill", "Terminer la pause")
-            default: return ("play.fill", "Reprendre")
+            case .working: return ("pause.fill", String(localized: "Mettre en pause"))
+            case .onBreak: return ("forward.fill", String(localized: "Terminer la pause"))
+            default: return ("play.fill", String(localized: "Reprendre"))
             }
         }()
         Button {
@@ -245,11 +245,11 @@ struct FocusMiniPlayer: View {
 
     private func statusText(_ phase: FocusPhase) -> String {
         switch phase {
-        case .working: return focus.isPomodoro ? "Bloc \(focus.pomodoroStatus().blockNumber) en cours" : "En cours"
-        case .paused: return "En pause"
+        case .working: return focus.isPomodoro ? String(localized: "Bloc \(focus.pomodoroStatus().blockNumber) en cours") : String(localized: "En cours")
+        case .paused: return String(localized: "En pause")
         case .onBreak(let kind, _, _): return kind.label
-        case .readyForBlock(let block): return "Bloc \(block) prêt"
-        case .idle: return "Prêt"
+        case .readyForBlock(let block): return String(localized: "Bloc \(block) prêt")
+        case .idle: return String(localized: "Prêt")
         }
     }
 
@@ -332,7 +332,7 @@ enum FocusLabels {
             if let item = target.theoryItem { return MathMarkup.plain(item.title.isEmpty ? item.displayNumber : item.title) }
             return state.taskType.label
         }()
-        return [course?.displayCode ?? "Session libre", what].joined(separator: " · ")
+        return [course?.displayCode ?? String(localized: "Session libre"), what].joined(separator: " · ")
     }
 }
 

@@ -79,7 +79,7 @@ final class AppContainer {
         #if NO_CLOUDKIT
         // Build non signée (`build.sh`, captures du simulateur) : sans le droit
         // iCloud, CloudKit arrête l'app au lieu de lever une erreur.
-        cloudError = "build sans iCloud"
+        cloudError = String(localized: "build sans iCloud")
         _ = cloud
         #else
         do {
@@ -101,11 +101,11 @@ final class AppContainer {
             // empêcher l'app de démarrer, mais l'échec est retenu et affiché.
             if let fallback = try? ModelContainer(for: schema, configurations: [local]) {
                 self.modelContainer = fallback
-                failure = "La migration du schéma a échoué ; la base a été ouverte sans plan de migration."
+                failure = String(localized: "La migration du schéma a échoué ; la base a été ouverte sans plan de migration.")
             } else {
                 let memory = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
                 self.modelContainer = try! ModelContainer(for: schema, configurations: [memory])
-                failure = "La base n'a pas pu être ouverte : cette session ne sera pas conservée."
+                failure = String(localized: "La base n'a pas pu être ouverte : cette session ne sera pas conservée.")
             }
         }
         self.isCloudSynced = synced

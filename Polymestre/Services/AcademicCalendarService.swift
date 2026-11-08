@@ -21,10 +21,10 @@ enum AcademicCalendarService {
 
         var errorDescription: String? {
             switch self {
-            case .network(let detail): return "Téléchargement impossible : \(detail)"
-            case .http(let code): return "La page de l'EPFL a répondu \(code)."
-            case .empty: return "La page ne contient aucune date lisible."
-            case .unreadable: return "La page n'a pas pu être lue comme du texte."
+            case .network(let detail): return String(localized: "Téléchargement impossible : \(detail)")
+            case .http(let code): return String(localized: "La page de l'EPFL a répondu \(code).")
+            case .empty: return String(localized: "La page ne contient aucune date lisible.")
+            case .unreadable: return String(localized: "La page n'a pas pu être lue comme du texte.")
             }
         }
     }
@@ -36,7 +36,7 @@ enum AcademicCalendarService {
         var total = 0
 
         var message: String {
-            var parts: [String] = ["\(Plural.count(total, "\(total) échéance", "\(total) échéances")) à jour"]
+            var parts: [String] = [String(localized: "\(Plural.count(total, "\(total) échéance", "\(total) échéances")) à jour")]
             if added > 0 { parts.append(Plural.count(added, "\(added) ajoutée", "\(added) ajoutées")) }
             if updated > 0 { parts.append(Plural.count(updated, "\(updated) corrigée", "\(updated) corrigées")) }
             if removed > 0 { parts.append(Plural.count(removed, "\(removed) retirée", "\(removed) retirées")) }
@@ -76,7 +76,7 @@ enum AcademicCalendarService {
     static func fetch(_ urlString: String, session: URLSession = .shared) async throws -> String {
         var raw = urlString.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !raw.isEmpty, let url = URL(string: raw), url.scheme?.hasPrefix("http") == true else {
-            throw RefreshError.network("adresse invalide")
+            throw RefreshError.network(String(localized: "adresse invalide"))
         }
         raw = url.absoluteString
 

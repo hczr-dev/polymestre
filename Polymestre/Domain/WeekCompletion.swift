@@ -30,12 +30,12 @@ enum WeekCompletion {
         /// « 4 éléments de théorie, 7 exercices ».
         var summary: String {
             var parts: [String] = []
-            if !theory.isEmpty { parts.append("\(theory.count) théorie") }
+            if !theory.isEmpty { parts.append(String(localized: "\(theory.count) théorie")) }
             if !exercises.isEmpty { parts.append(Plural.count(exercises.count, "\(exercises.count) exercice", "\(exercises.count) exercices")) }
             if !corrected.isEmpty, corrected.count != exercises.count {
                 parts.append(Plural.count(corrected.count, "\(corrected.count) corrigé", "\(corrected.count) corrigés"))
             }
-            return parts.isEmpty ? "rien à cocher" : parts.joined(separator: ", ")
+            return parts.isEmpty ? String(localized: "rien à cocher") : parts.joined(separator: ", ")
         }
     }
 

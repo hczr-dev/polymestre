@@ -227,7 +227,7 @@ final class StudyModeController: NSObject, NSWindowDelegate {
             let window = StudyWindow(contentRect: frame,
                                      styleMask: !realGeometry ? [.titled, .closable, .resizable] : [.borderless, .fullSizeContentView],
                                      backing: .buffered, defer: false)
-            window.title = "Mode étude"
+            window.title = String(localized: "Mode étude")
             window.isReleasedWhenClosed = false
             window.level = .normal
             window.collectionBehavior = blocking && !previewOnly ? [.canJoinAllSpaces, .fullScreenNone] : [.managed, .fullScreenNone]
@@ -739,8 +739,8 @@ final class StudyModeController: NSObject, NSWindowDelegate {
             return false
         }
         let alert = NSAlert()
-        alert.messageText = "Quitter le mode étude ?"
-        alert.informativeText = "Ta session continue."
+        alert.messageText = String(localized: "Quitter le mode étude ?")
+        alert.informativeText = String(localized: "Ta session continue.")
         alert.addButton(withTitle: "Rester")
         alert.addButton(withTitle: "Quitter")
         return alert.runModal() == .alertSecondButtonReturn

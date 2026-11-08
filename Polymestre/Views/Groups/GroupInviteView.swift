@@ -49,7 +49,7 @@ struct GroupInviteView: View {
 
     @ViewBuilder
     private var qrCard: some View {
-        Card(title: "À scanner", icon: "qrcode") {
+        Card(title: String(localized: "À scanner"), icon: "qrcode") {
             VStack(spacing: Layout.block) {
                 if let qrImage {
                     Image(uiImage: qrImage)
@@ -81,7 +81,7 @@ struct GroupInviteView: View {
     // MARK: Code
 
     private var codeCard: some View {
-        Card(title: "Code d'invitation", icon: "number") {
+        Card(title: String(localized: "Code d'invitation"), icon: "number") {
             HStack(spacing: Layout.block) {
                 Text(group.inviteCode)
                     .font(.title3.weight(.bold).monospaced())

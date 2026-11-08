@@ -347,14 +347,14 @@ enum StudyMode {
         // l'ordre reste celui d'avant : Moodle, Claude, GoodNotes, Courseware.
         var base: [Tool] = []
         if let url = Institution.current.moodleURL("/my/") {
-            base.append(Tool(id: "moodle", title: "Moodle", subtitle: "Tes cours", icon: "graduationcap", kind: .web(url)))
+            base.append(Tool(id: "moodle", title: "Moodle", subtitle: String(localized: "Tes cours"), icon: "graduationcap", kind: .web(url)))
         }
-        base.append(Tool(id: "claude-app", title: "Claude", subtitle: "L'app", icon: "sparkles",
+        base.append(Tool(id: "claude-app", title: "Claude", subtitle: String(localized: "L'app"), icon: "sparkles",
                          kind: .app(bundleID: "com.anthropic.claudefordesktop", scheme: "claude://")))
-        base.append(Tool(id: "goodnotes", title: "GoodNotes", subtitle: "Écrire", icon: "pencil.and.scribble",
+        base.append(Tool(id: "goodnotes", title: "GoodNotes", subtitle: String(localized: "Écrire"), icon: "pencil.and.scribble",
                          kind: .app(bundleID: "com.goodnotesapp.x", scheme: "goodnotes://")))
         if let url = Institution.current.coursewareURL("/dashboard") {
-            base.append(Tool(id: "courseware", title: "Courseware", subtitle: "MOOC et vidéos", icon: "play.rectangle", kind: .web(url)))
+            base.append(Tool(id: "courseware", title: "Courseware", subtitle: String(localized: "MOOC et vidéos"), icon: "play.rectangle", kind: .web(url)))
         }
         return result + base
     }

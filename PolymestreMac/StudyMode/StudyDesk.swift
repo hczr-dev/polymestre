@@ -19,12 +19,12 @@ final class StudyDesk {
         var title: String {
             switch self {
             case .desk: return "Bureau"
-            case .exercise: return "Série"
-            case .course: return "Cours"
+            case .exercise: return String(localized: "Série")
+            case .course: return String(localized: "Cours")
             case .notes: return "Notes"
-            case .calc: return "Calcul"
+            case .calc: return String(localized: "Calcul")
             case .web: return "Web"
-            case .music: return "Musique"
+            case .music: return String(localized: "Musique")
             }
         }
 
@@ -271,15 +271,15 @@ final class StudyDesk {
         case .copy:
             pendingDraftAttachment = attachment
             showClaude()
-            DeskNotifications.shared.post(.iPhone, "Ta copie, depuis l'iPhone : jointe à la conversation", icon: "iphone.and.arrow.forward")
+            DeskNotifications.shared.post(.iPhone, String(localized: "Ta copie, depuis l'iPhone : jointe à la conversation"), icon: "iphone.and.arrow.forward")
         case .stuck:
             ask(drop.question ?? "Je bloque. Voici ma tentative (photo prise à l'iPhone) : dis-moi où ça décroche et donne-moi l'indice du niveau minimal suffisant, sans la solution.",
                 attachment: attachment)
-            DeskNotifications.shared.post(.iPhone, "« Je bloque », depuis l'iPhone", icon: "iphone.and.arrow.forward")
+            DeskNotifications.shared.post(.iPhone, String(localized: "« Je bloque », depuis l'iPhone"), icon: "iphone.and.arrow.forward")
         case .ask:
             if let question = drop.question, !question.isEmpty {
                 if let attachment { ask(question, attachment: attachment) } else { ask(question) }
-                DeskNotifications.shared.post(.iPhone, "Ta question, depuis l'iPhone", icon: "iphone.and.arrow.forward")
+                DeskNotifications.shared.post(.iPhone, String(localized: "Ta question, depuis l'iPhone"), icon: "iphone.and.arrow.forward")
             }
         }
     }

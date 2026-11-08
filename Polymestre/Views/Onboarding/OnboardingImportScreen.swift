@@ -78,26 +78,26 @@ struct ImportScreen: View {
     static func explanation(_ course: ImportFeed.Course) -> String {
         switch course.stage {
         case .waiting, .outline:
-            if course.sections.isEmpty { return "Lecture du plan du cours sur Moodle…" }
+            if course.sections.isEmpty { return String(localized: "Lecture du plan du cours sur Moodle…") }
             let count = course.activities.count
             return "Plan lu : \(course.sections.count) sections, \(Plural.count(count, "\(count) activité", "\(count) activités"))."
         case .activities:
-            return "Ouverture de chaque lien et fichier pour voir ce qu'il contient : \(course.openedCount) / \(max(course.openableCount, course.openedCount))."
+            return String(localized: "Ouverture de chaque lien et fichier pour voir ce qu'il contient : \(course.openedCount) / \(max(course.openableCount, course.openedCount)).")
         case .sources:
             switch course.currentSource {
-            case "Plan du cours"?: return "Lecture du plan du cours, pour savoir quoi faire chaque semaine."
-            case "MOOC"?: return "Lecture du MOOC Courseware cité par le cours : ses chapitres et leurs vidéos."
-            case "MediaSpace"?: return "Lecture des listes de vidéos MediaSpace citées par le cours."
-            case "Explique"?: return "Lecture des vidéos et des exercices d'Explique."
-            case "Botafogo"?: return "Lecture du polycopié Botafogo du cours."
-            default: return "Recherche des autres sources du cours : plan, MOOC, vidéos."
+            case "Plan du cours"?: return String(localized: "Lecture du plan du cours, pour savoir quoi faire chaque semaine.")
+            case "MOOC"?: return String(localized: "Lecture du MOOC Courseware cité par le cours : ses chapitres et leurs vidéos.")
+            case "MediaSpace"?: return String(localized: "Lecture des listes de vidéos MediaSpace citées par le cours.")
+            case "Explique"?: return String(localized: "Lecture des vidéos et des exercices d'Explique.")
+            case "Botafogo"?: return String(localized: "Lecture du polycopié Botafogo du cours.")
+            default: return String(localized: "Recherche des autres sources du cours : plan, MOOC, vidéos.")
             }
         case .analysis:
-            return "Analyse : à quelle semaine appartient chaque élément, et s'il s'agit d'une série, d'une vidéo ou d'une échéance."
+            return String(localized: "Analyse : à quelle semaine appartient chaque élément, et s'il s'agit d'une série, d'une vidéo ou d'une échéance.")
         case .writing, .done:
             let weeks = Set(course.placed.map(\.week)).count
-            if course.placed.isEmpty { return "Rien à ranger dans ce cours pour l'instant." }
-            return "\(course.placed.count) éléments rangés dans \(Plural.count(weeks, "\(weeks) semaine", "\(weeks) semaines"))."
+            if course.placed.isEmpty { return String(localized: "Rien à ranger dans ce cours pour l'instant.") }
+            return String(localized: "\(course.placed.count) éléments rangés dans \(Plural.count(weeks, "\(weeks) semaine", "\(weeks) semaines")).")
         }
     }
 
@@ -205,9 +205,9 @@ private struct StepRail: View {
 
     private static let steps = [
         Step(label: "Plan", icon: "list.bullet.rectangle.portrait", stages: [.waiting, .outline]),
-        Step(label: "Ouverture", icon: "doc.viewfinder", stages: [.activities]),
+        Step(label: String(localized: "Ouverture"), icon: "doc.viewfinder", stages: [.activities]),
         Step(label: "Analyse", icon: "text.magnifyingglass", stages: [.sources, .analysis]),
-        Step(label: "Rangement", icon: "calendar", stages: [.writing, .done]),
+        Step(label: String(localized: "Rangement"), icon: "calendar", stages: [.writing, .done]),
     ]
 
     private var active: Int {
@@ -564,8 +564,8 @@ private struct AnalysisLens: View {
     }
 
     private var questions: [String] {
-        guard readingSources else { return ["Quelle semaine ?", "Quel type ?", "Quelle date ?"] }
-        return course.sourcesRead.isEmpty ? ["Plan du cours", "MOOC", "Vidéos"] : Array(course.sourcesRead.suffix(3))
+        guard readingSources else { return [String(localized: "Quelle semaine ?"), String(localized: "Quel type ?"), String(localized: "Quelle date ?")] }
+        return course.sourcesRead.isEmpty ? [String(localized: "Plan du cours"), "MOOC", String(localized: "Vidéos")] : Array(course.sourcesRead.suffix(3))
     }
 
     /// La question allumée : à tour de rôle pendant l'analyse ; la source en

@@ -90,7 +90,7 @@ struct WeekWidgetView: View {
     // MARK: Écran d'accueil
 
     private var weekTitle: String {
-        week?.number.map { "Semaine \($0)" } ?? "Cette semaine"
+        week?.number.map { String(localized: "Semaine \($0)") } ?? String(localized: "Cette semaine")
     }
 
     private var header: some View {
@@ -112,8 +112,8 @@ struct WeekWidgetView: View {
         VStack(alignment: .leading, spacing: 8) {
             header
             Spacer(minLength: 0)
-            axis("Théorie", theory)
-            axis("Séries", series)
+            axis(String(localized: "Théorie"), theory)
+            axis(String(localized: "Séries"), series)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
     }
@@ -123,8 +123,8 @@ struct WeekWidgetView: View {
             VStack(alignment: .leading, spacing: 8) {
                 header
                 Spacer(minLength: 0)
-                axis("Théorie", theory)
-                axis("Séries", series)
+                axis(String(localized: "Théorie"), theory)
+                axis(String(localized: "Séries"), series)
             }
             .frame(width: 118)
             Rectangle().fill(Paper.rule).frame(width: 1)
@@ -142,8 +142,8 @@ struct WeekWidgetView: View {
                 WidgetDayStrip(days: week?.days ?? [], weekStart: week?.weekStart ?? Date(), height: 30)
             }
             HStack(spacing: 14) {
-                axis("Théorie", theory)
-                axis("Séries", series)
+                axis(String(localized: "Théorie"), theory)
+                axis(String(localized: "Séries"), series)
             }
             Rectangle().fill(Paper.rule).frame(height: 1)
             VStack(alignment: .leading, spacing: 9) {
@@ -530,8 +530,8 @@ struct TodayWidgetView: View {
 
     private func countdown(_ date: Date) -> String {
         switch daysUntil(date) {
-        case 0: return "Aujourd'hui"
-        case 1: return "Demain"
+        case 0: return String(localized: "Aujourd'hui")
+        case 1: return String(localized: "Demain")
         case let days: return "Dans \(days) j"
         }
     }

@@ -35,7 +35,7 @@ final class PlannedSession {
         self.course = course
         self.groupRemoteID = groupRemoteID
         self.groupName = groupName
-        self.title = title.isEmpty ? "Session d'étude" : title
+        self.title = title.isEmpty ? String(localized: "Session d'étude") : title
         self.startsAt = startsAt
         self.durationMinutes = durationMinutes
         self.location = location

@@ -67,7 +67,7 @@ enum SearchIndexBuilder {
                               kind: .course,
                               title: course.name.isEmpty ? course.displayCode : course.name,
                               subtitle: [course.displayCode,
-                                         "\(Int(course.credits)) crédits",
+                                         String(localized: "\(Int(course.credits)) crédits"),
                                          course.term?.displayName ?? ""]
                                   .filter { !$0.isEmpty }
                                   .joined(separator: " · "),
@@ -79,7 +79,7 @@ enum SearchIndexBuilder {
         SearchDocument(id: "series.\(series.id)",
                        kind: .series,
                        title: series.title.isEmpty ? series.displayName : series.title,
-                       subtitle: "\(course.displayCode) · semaine \(series.plannedWeek) · \(series.exercises.count) exercices",
+                       subtitle: String(localized: "\(course.displayCode) · semaine \(series.plannedWeek) · \(series.exercises.count) exercices"),
                        detail: "serie \(series.seriesNumber) \(series.title) \(series.topic)",
                        courseCode: course.displayCode,
                        date: series.dueDate ?? series.publishedAt)
@@ -98,15 +98,15 @@ enum SearchIndexBuilder {
 
         var parts = ["\(course.displayCode) · \(series.displayName)"]
         if exercise.isDone {
-            parts.append(exercise.isCorrected ? "corrigé" : "fait")
+            parts.append(exercise.isCorrected ? String(localized: "corrigé") : String(localized: "fait"))
         } else {
-            parts.append("à faire")
+            parts.append(String(localized: "à faire"))
         }
         if let confidence = exercise.confidence { parts.append(confidence.label) }
 
         return SearchDocument(id: "exercise.\(exercise.id)",
                               kind: .exercise,
-                              title: "Exercice \(exercise.exerciseNumber)"
+                              title: String(localized: "Exercice \(exercise.exerciseNumber)")
                                   + (exercise.title.isEmpty ? "" : " — \(exercise.title)"),
                               subtitle: parts.joined(separator: " · "),
                               detail: detail,
@@ -116,14 +116,14 @@ enum SearchIndexBuilder {
 
     private static func theoryDocument(_ item: TheoryItem, course: Course) -> SearchDocument {
         var detail = "\(item.kind.label) \(item.number) \(item.title) \(item.summaryText ?? "")"
-        if item.isWatched { detail += " vu" }
+        if item.isWatched { detail += String(localized: " vu") }
         if item.isSummarized { detail += " resume" }
 
         var parts = ["\(course.displayCode) · \(item.displayNumber)"]
         if item.durationSeconds > 0 {
             parts.append(DateUtils.durationLabel(seconds: item.durationSeconds))
         }
-        parts.append(item.isWatched ? (item.isSummarized ? "vu et résumé" : "vu") : "à voir")
+        parts.append(item.isWatched ? (item.isSummarized ? String(localized: "vu et résumé") : String(localized: "vu")) : String(localized: "à voir"))
 
         return SearchDocument(id: "theory.\(item.id)",
                               kind: .theory,

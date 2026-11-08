@@ -13,27 +13,27 @@ enum GroupErrorExplainer {
         let detail = serverDetail(raw)
 
         if raw.contains("PGRST205") {
-            return "les tables n'existent pas encore côté Supabase. Exécute `Support/supabase-schema.sql` dans le SQL Editor, puis relance la synchronisation."
+            return String(localized: "les tables n'existent pas encore côté Supabase. Exécute `Support/supabase-schema.sql` dans le SQL Editor, puis relance la synchronisation.")
         }
         if raw.contains("PGRST202") {
-            return "la fonction `group_leaderboard` est absente. Elle est incluse dans `Support/supabase-schema.sql`."
+            return String(localized: "la fonction `group_leaderboard` est absente. Elle est incluse dans `Support/supabase-schema.sql`.")
         }
         if raw.contains("PGRST201") {
-            return "le serveur trouve deux chemins entre deux tables et refuse de choisir. Relance `Support/supabase-schema.sql` : les clés étrangères y sont explicites."
+            return String(localized: "le serveur trouve deux chemins entre deux tables et refuse de choisir. Relance `Support/supabase-schema.sql` : les clés étrangères y sont explicites.")
         }
         if raw.contains("permission denied") {
             // 42501 sur une **lecture** : ce n'est pas une politique RLS — elle
             // filtrerait en silence — mais un droit de table manquant.
-            return "le serveur refuse l'accès à la table (droits manquants). Réexécute `Support/supabase-schema.sql` : il accorde explicitement les droits aux rôles de l'app.\(detail)"
+            return String(localized: "le serveur refuse l'accès à la table (droits manquants). Réexécute `Support/supabase-schema.sql` : il accorde explicitement les droits aux rôles de l'app.\(detail)")
         }
         if raw.contains("42501") || raw.contains("row-level security") {
-            return "les politiques RLS refusent cette écriture — le plus souvent parce que tu n'es pas membre du groupe côté serveur. Appuie sur « Réparer et réessayer » : la synchronisation rétablit ton adhésion si tu as créé le groupe.\(detail)"
+            return String(localized: "les politiques RLS refusent cette écriture — le plus souvent parce que tu n'es pas membre du groupe côté serveur. Appuie sur « Réparer et réessayer » : la synchronisation rétablit ton adhésion si tu as créé le groupe.\(detail)")
         }
         if raw.contains("23503") {
-            return "le profil n'existe pas encore côté serveur. Reconnecte-toi, puis relance.\(detail)"
+            return String(localized: "le profil n'existe pas encore côté serveur. Reconnecte-toi, puis relance.\(detail)")
         }
         if raw.contains("23505") {
-            return "cette ligne existe déjà côté serveur.\(detail)"
+            return String(localized: "cette ligne existe déjà côté serveur.\(detail)")
         }
         return raw
     }

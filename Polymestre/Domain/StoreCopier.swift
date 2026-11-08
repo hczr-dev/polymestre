@@ -54,7 +54,7 @@ enum StoreCopier {
         var mergedDuplicates: Int { entities.values.reduce(0) { $0 + $1.mergedDuplicates } }
         var summary: String {
             var parts = entities.sorted { $0.key < $1.key }.filter { $0.value.source > 0 }.map { name, c in
-                "\(name) \(c.copied)/\(c.unique)" + (c.mergedDuplicates > 0 ? " (+\(c.mergedDuplicates) doublons fondus)" : "")
+                "\(name) \(c.copied)/\(c.unique)" + (c.mergedDuplicates > 0 ? String(localized: " (+\(c.mergedDuplicates) doublons fondus)") : "")
             }
             if !conflicts.isEmpty { parts.append("\(conflicts.count) conflits") }
             return parts.joined(separator: " · ")

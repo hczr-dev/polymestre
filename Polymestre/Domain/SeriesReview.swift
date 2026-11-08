@@ -28,13 +28,13 @@ enum SeriesReview {
 
         var label: String {
             switch self {
-            case .calculation: return "Calcul"
-            case .method: return "Méthode"
-            case .understanding: return "Compréhension"
-            case .slip: return "Étourderie"
-            case .gap: return "Lacune de cours"
-            case .time: return "Gestion du temps"
-            case .reading: return "Lecture de l'énoncé"
+            case .calculation: return String(localized: "Calcul")
+            case .method: return String(localized: "Méthode")
+            case .understanding: return String(localized: "Compréhension")
+            case .slip: return String(localized: "Étourderie")
+            case .gap: return String(localized: "Lacune de cours")
+            case .time: return String(localized: "Gestion du temps")
+            case .reading: return String(localized: "Lecture de l'énoncé")
             }
         }
 
@@ -251,7 +251,7 @@ enum RedoLadder {
         var label: String {
             switch self {
             case .days(let days): return "J+\(days)"
-            case .exam: return "Pré-examen"
+            case .exam: return String(localized: "Pré-examen")
             }
         }
     }
@@ -289,9 +289,9 @@ enum RedoLadder {
 
         var label: String {
             switch self {
-            case .cleared: return "Réussi sans notes"
-            case .passed: return "Réussi avec aide"
-            case .failed: return "Raté"
+            case .cleared: return String(localized: "Réussi sans notes")
+            case .passed: return String(localized: "Réussi avec aide")
+            case .failed: return String(localized: "Raté")
             }
         }
     }
@@ -355,11 +355,14 @@ extension SeriesReview {
 
         var summary: String {
             var parts: [String] = []
-            if corrected > 0 { parts.append("\(corrected) correction\(corrected > 1 ? "s" : "")") }
-            if mistakes > 0 { parts.append("\(mistakes) erreur\(mistakes > 1 ? "s" : "") au carnet") }
-            if !queued.isEmpty { parts.append("en reprise : \(queued.joined(separator: ", "))") }
-            if !overCap.isEmpty { parts.append("écarté\(overCap.count > 1 ? "s" : "") (plafond) : \(overCap.joined(separator: ", "))") }
-            return parts.isEmpty ? "Rien de nouveau." : parts.joined(separator: " · ")
+            if corrected > 0 { parts.append(Plural.count(corrected, "\(corrected) correction", "\(corrected) corrections")) }
+            if mistakes > 0 { parts.append(Plural.count(mistakes, "\(mistakes) erreur au carnet", "\(mistakes) erreurs au carnet")) }
+            if !queued.isEmpty { parts.append(String(localized: "en reprise : \(queued.joined(separator: ", "))")) }
+            if !overCap.isEmpty {
+                let list = overCap.joined(separator: ", ")
+                parts.append(Plural.count(overCap.count, "écarté (plafond) : \(list)", "écartés (plafond) : \(list)"))
+            }
+            return parts.isEmpty ? String(localized: "Rien de nouveau.") : parts.joined(separator: " · ")
         }
     }
 

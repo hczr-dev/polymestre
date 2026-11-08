@@ -51,12 +51,12 @@ struct LateWork {
     /// « 2 à refaire, 3 à corriger, 5 exercices et 2 éléments de théorie ».
     var summary: String {
         var parts: [String] = []
-        if !redo.isEmpty { parts.append("\(redo.count) à refaire") }
-        if !toCorrect.isEmpty { parts.append("\(toCorrect.count) à corriger") }
+        if !redo.isEmpty { parts.append(String(localized: "\(redo.count) à refaire")) }
+        if !toCorrect.isEmpty { parts.append(String(localized: "\(toCorrect.count) à corriger")) }
         if exerciseCount > 0 { parts.append(Plural.count(exerciseCount, "\(exerciseCount) exercice à faire", "\(exerciseCount) exercices à faire")) }
         if theoryCount > 0 { parts.append(Plural.count(theoryCount, "\(theoryCount) élément de théorie", "\(theoryCount) éléments de théorie")) }
         guard parts.count > 1 else { return parts.first ?? "" }
-        return parts.dropLast().joined(separator: ", ") + " et " + parts.last!
+        return parts.dropLast().joined(separator: ", ") + String(localized: " et ") + parts.last!
     }
 
     /// - Parameters:

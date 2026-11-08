@@ -136,7 +136,7 @@ struct MiniTimerView: View {
     private func subtitle(at date: Date) -> String {
         let what = MacTargets.headline(course: course, taskType: timer.taskType, targetID: timer.targetID)
         if timer.isStudying {
-            return "Mode étude · reste \(StudyMode.remaining(timer.state, at: date).minuteLabel(roundingUp: true))"
+            return String(localized: "Mode étude · reste \(StudyMode.remaining(timer.state, at: date).minuteLabel(roundingUp: true))")
         }
         if let status = timer.statusLabel(at: date) { return "\(status) · \(what)" }
         guard let course else { return what }

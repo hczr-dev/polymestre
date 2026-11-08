@@ -53,20 +53,20 @@ struct TasksView: View {
                 if tasks.isEmpty {
                     Section {
                         EmptyCard(icon: "checklist",
-                                  title: "Aucune tâche",
-                                  message: "Relie une app de tâches dans les réglages, ou ajoutes-en une.",
-                                  actionTitle: "Ajouter une tâche") {
+                                  title: String(localized: "Aucune tâche"),
+                                  message: String(localized: "Relie une app de tâches dans les réglages, ou ajoutes-en une."),
+                                  actionTitle: String(localized: "Ajouter une tâche")) {
                             showingAdd = true
                         }
                         .listRowInsets(EdgeInsets())
                         .listRowBackground(Color.clear)
                     }
                 } else {
-                    section("En retard", overdue, tint: .red)
-                    section("Aujourd'hui", today, tint: .orange)
-                    section("À venir", upcoming, tint: .blue)
-                    section("Sans échéance", someday, tint: .secondary)
-                    section("Terminées récemment", completed, tint: .green)
+                    section(String(localized: "En retard"), overdue, tint: .red)
+                    section(String(localized: "Aujourd'hui"), today, tint: .orange)
+                    section(String(localized: "À venir"), upcoming, tint: .blue)
+                    section(String(localized: "Sans échéance"), someday, tint: .secondary)
+                    section(String(localized: "Terminées récemment"), completed, tint: .green)
                 }
 
                 if let statusMessage {
@@ -210,11 +210,11 @@ struct TasksView: View {
         try? context.save()
 
         if activeProviders.isEmpty {
-            statusMessage = "Aucune app de tâches reliée (Réglages › Tâches)."
+            statusMessage = String(localized: "Aucune app de tâches reliée (Réglages › Tâches).")
         } else if result.fetched == 0 {
-            statusMessage = "Aucune tâche récupérée."
+            statusMessage = String(localized: "Aucune tâche récupérée.")
         } else {
-            statusMessage = "\(result.fetched) tâche(s) · \(result.created) nouvelle(s) · \(result.updated) mise(s) à jour."
+            statusMessage = String(localized: "\(result.fetched) tâche(s) · \(result.created) nouvelle(s) · \(result.updated) mise(s) à jour.")
         }
     }
 }

@@ -353,7 +353,7 @@ struct RootTabView: View {
             }
             let type = TaskType(rawValue: value("type") ?? "") ?? .exercise
             let code = value("course") ?? ""
-            let label = value("label") ?? (code.isEmpty ? "Session libre" : "\(code) · \(type.label)")
+            let label = value("label") ?? (code.isEmpty ? String(localized: "Session libre") : "\(code) · \(type.label)")
             app.router.startFocus(courseID: nil,
                                   courseCode: code,
                                   taskType: type,

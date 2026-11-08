@@ -43,15 +43,15 @@ struct AIImportSettingsView: View {
 
             if settings.aiExtractionEnabled {
                 Section(header: CarnetFormHeader("Moteurs")) {
-                    status(title: "En ligne", icon: sharedIcon, tint: sharedTint,
+                    status(title: String(localized: "En ligne"), icon: sharedIcon, tint: sharedTint,
                            value: sharedTitle, detail: sharedDetail, busy: sharedStatus == .checking)
                     if SeriesAIExtractor.isSharedAvailable, sharedStatus != .ready, sharedStatus != .checking {
                         Button("Réessayer") { Task { await checkShared() } }
                     }
-                    status(title: "Sur l'iPhone",
+                    status(title: String(localized: "Sur l'iPhone"),
                            icon: SeriesAIExtractor.isOnDeviceAvailable ? "checkmark.circle.fill" : "minus.circle",
                            tint: SeriesAIExtractor.isOnDeviceAvailable ? Color.green.accessibleMark : .secondary,
-                           value: SeriesAIExtractor.isOnDeviceAvailable ? "en secours, hors ligne" : "indisponible",
+                           value: SeriesAIExtractor.isOnDeviceAvailable ? String(localized: "en secours, hors ligne") : "indisponible",
                            detail: onDeviceMessage, busy: isTestingOnDevice)
                     if SeriesAIExtractor.isOnDeviceAvailable {
                         Button("Tester") { Task { await checkOnDevice() } }
@@ -129,9 +129,9 @@ struct AIImportSettingsView: View {
     private var sharedTitle: String {
         guard SeriesAIExtractor.isSharedAvailable else { return "indisponible" }
         switch sharedStatus {
-        case .ready: return "prêt"
-        case .checking: return "vérification…"
-        case .notDeployed, .failing, .unconfigured: return "en panne"
+        case .ready: return String(localized: "prêt")
+        case .checking: return String(localized: "vérification…")
+        case .notDeployed, .failing, .unconfigured: return String(localized: "en panne")
         case .unknown: return "—"
         }
     }
@@ -149,11 +149,11 @@ struct AIImportSettingsView: View {
         case .ready:
             sharedStatus = .ready
         case .notDeployed(let status):
-            sharedStatus = .notDeployed("HTTP \(status) — la fonction n'existe pas sur le projet.")
+            sharedStatus = .notDeployed(String(localized: "HTTP \(status) — la fonction n'existe pas sur le projet."))
         case .failing(let detail):
             sharedStatus = .failing(detail)
         case .unconfigured:
-            sharedStatus = .unconfigured("Aucun projet Supabase n'est compilé dans cette version.")
+            sharedStatus = .unconfigured(String(localized: "Aucun projet Supabase n'est compilé dans cette version."))
         }
     }
 }

@@ -69,8 +69,8 @@ struct ClaudeMeasureSettingsPane: View {
             }
 
             Section {
-                FolderList(title: "Étude (jamais limitée)", folders: $draft.studyFolders)
-                FolderList(title: "Libres (pas dans le budget)", folders: $draft.freeFolders)
+                FolderList(title: String(localized: "Étude (jamais limitée)"), folders: $draft.studyFolders)
+                FolderList(title: String(localized: "Libres (pas dans le budget)"), folders: $draft.freeFolders)
             } header: {
                 Text("Dossiers")
             } footer: {
@@ -159,7 +159,7 @@ struct ClaudeMeasureSettingsPane: View {
     }
 
     private func day(_ date: Date) -> String {
-        "\(lowered(DateUtils.relativeLabel(date))) à \(CM.clock(date))"
+        String(localized: "\(lowered(DateUtils.relativeLabel(date))) à \(CM.clock(date))")
     }
 
     /// Une heure « hh:mm » du couvre-feu, éditée comme une date.
@@ -259,23 +259,25 @@ struct ClaudeMeasureCard: View {
         let etude = week.reduce(0) { $0 + $1.etude }
         let blocks = week.reduce(0) { $0 + $1.blocks }
         return HStack(spacing: 36) {
-            figure(CM.duration(service.today?.projets ?? 0), "projets aujourd'hui")
-            figure(CM.duration(projets), "projets en 7 jours")
-            figure(CM.duration(etude), "Claude pour étudier")
-            figure("\(blocks)", blocks > 1 ? "demandes bloquées" : "demande bloquée")
+            figure(CM.duration(service.today?.projets ?? 0), String(localized: "projets aujourd'hui"))
+            figure(CM.duration(projets), String(localized: "projets en 7 jours"))
+            figure(CM.duration(etude), String(localized: "Claude pour étudier"))
+            figure("\(blocks)", blocks > 1 ? String(localized: "demandes bloquées") : String(localized: "demande bloquée"))
             Spacer()
         }
     }
 
     private var chart: some View {
         let budget = service.policy.flatMap { $0.desired.budgetWeekday }
+        // La légende est le texte des séries : le même, traduit, des deux côtés.
+        let projects = String(localized: "projets"), study = String(localized: "étude")
         return Chart {
             ForEach(service.week) { day in
                 BarMark(x: .value("Jour", dateOf(day.day), unit: .day), y: .value("Heures", day.projets / 3600))
-                    .foregroundStyle(by: .value("Claude", "projets"))
+                    .foregroundStyle(by: .value("Claude", projects))
                     .cornerRadius(3)
                 BarMark(x: .value("Jour", dateOf(day.day), unit: .day), y: .value("Heures", day.etude / 3600))
-                    .foregroundStyle(by: .value("Claude", "étude"))
+                    .foregroundStyle(by: .value("Claude", study))
                     .cornerRadius(3)
             }
             if let budget {
@@ -287,7 +289,7 @@ struct ClaudeMeasureCard: View {
                     }
             }
         }
-        .chartForegroundStyleScale(["projets": Carnet.wrong, "étude": Carnet.correct])
+        .chartForegroundStyleScale([projects: Carnet.wrong, study: Carnet.correct])
         .chartXAxis {
             AxisMarks(values: .stride(by: .day)) { _ in
                 AxisGridLine()

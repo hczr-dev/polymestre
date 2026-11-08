@@ -385,11 +385,11 @@ struct RevisionSheetView: View {
     private func summary(_ sheet: RevisionSheet) -> String {
         if let scope, let chapter = sheet.chapter(scope) {
             let counts = LearningPath.counts(sheet: sheet, map: StudyMapStore.shared.map(course), chapter: scope)
-            return "\(chapter.entries.count) entrées dans ce chapitre · \(counts.solid) solides"
+            return String(localized: "\(chapter.entries.count) entrées dans ce chapitre · \(counts.solid) solides")
         }
         let count = sheet.entries.count
         let origin = sheet.origin == .handout ? String(localized: "tirés du polycopié") : String(localized: "écrits par Claude d'après le cours")
-        return "\(count) entrées, \(origin) · \(sheet.generatedAt.formatted(.dateTime.day().month(.abbreviated)))"
+        return String(localized: "\(count) entrées, \(origin) · \(sheet.generatedAt.formatted(.dateTime.day().month(.abbreviated)))")
     }
 
     @ViewBuilder

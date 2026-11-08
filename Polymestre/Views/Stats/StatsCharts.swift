@@ -41,7 +41,7 @@ struct SplitCard: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
-            CarnetSectionTitle("Répartition") {
+            CarnetSectionTitle(String(localized: "Répartition")) {
                 if let selected, let slice = slices.first(where: { $0.name == selected }) {
                     Text("\(slice.name) · \(DateUtils.hoursLabel(seconds: slice.seconds)) · \(percent(slice.seconds, total))")
                 }
@@ -108,7 +108,7 @@ struct CoursePieCard: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
-            CarnetSectionTitle("Par matière")
+            CarnetSectionTitle(String(localized: "Par matière"))
             StatsCard {
                 if total == 0 {
                     Text("Rien sur cette période.").font(.subheadline).foregroundStyle(Carnet.inkSecondary)
@@ -177,7 +177,7 @@ struct WeeklyTrendCard: View {
     @State private var selected: Date?
 
     private var studyAverage: Double {
-        let study = points.filter { $0.series == "Étude" }
+        let study = points.filter { $0.series == String(localized: "Étude") }
         let active = study.filter { $0.hours > 0 }
         return active.isEmpty ? 0 : active.reduce(0) { $0 + $1.hours } / Double(active.count)
     }
@@ -185,7 +185,7 @@ struct WeeklyTrendCard: View {
     var body: some View {
         let selectedWeek = selected.map(DateUtils.startOfWeek)
         VStack(alignment: .leading, spacing: 10) {
-            CarnetSectionTitle("Par semaine") {
+            CarnetSectionTitle(String(localized: "Par semaine")) {
                 if let selectedWeek {
                     let values = points.filter { $0.week == selectedWeek }
                     Text("\(weekLabel(selectedWeek)) : " + values.map { "\($0.series.lowercased()) \(String(format: "%.1f", $0.hours).replacingOccurrences(of: ".", with: ",")) h" }.joined(separator: ", "))
@@ -218,7 +218,7 @@ struct WeeklyTrendCard: View {
                             .foregroundStyle(Carnet.ink.opacity(0.25))
                     }
                 }
-                .chartForegroundStyleScale(domain: ["Étude", "Amphi"],
+                .chartForegroundStyleScale(domain: [String(localized: "Étude"), String(localized: "Amphi")],
                                            range: [Carnet.ink, Carnet.inkTertiary])
                 .chartLegend(position: .top, alignment: .leading)
                 .chartXSelection(value: $selected)
@@ -264,7 +264,7 @@ struct PaceCard: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
-            CarnetSectionTitle("Fait / prévu à ce jour")
+            CarnetSectionTitle(String(localized: "Fait / prévu à ce jour"))
             StatsCard {
                 Chart(rows) { row in
                     BarMark(x: .value("Fait", row.done * 100), y: .value("Cours", row.code), height: .fixed(14))

@@ -53,12 +53,12 @@ struct CoursePane: View {
         var label: String {
             switch self {
             case .sheet: return "Fiche"
-            case .saved: return "Gardés"
-            case .polymestre: return "Semaine"
+            case .saved: return String(localized: "Gardés")
+            case .polymestre: return String(localized: "Semaine")
             case .notes: return "Mes notes"
             case .moodle: return "Moodle"
             case .courseware: return "Courseware"
-            case .botafogo: return "Le cours"
+            case .botafogo: return String(localized: "Le cours")
             case .ed: return "Ed"
             }
         }
@@ -406,12 +406,12 @@ struct CoursePane: View {
             ScrollView {
                 LazyVStack(alignment: .leading, spacing: 18) {
                     weekSummary(course, week: shown, items: items, videos: videos, series: series, tint: tint)
-                    if !videos.isEmpty { weekCard("À regarder", icon: "play.rectangle", videos, course: course, tint: tint) }
-                    if !readings.isEmpty { weekCard("À lire", icon: "book", readings, course: course, tint: tint) }
-                    if !slides.isEmpty { weekCard("Diapositives et notes", icon: "rectangle.on.rectangle", slides, course: course, tint: tint) }
+                    if !videos.isEmpty { weekCard(String(localized: "À regarder"), icon: "play.rectangle", videos, course: course, tint: tint) }
+                    if !readings.isEmpty { weekCard(String(localized: "À lire"), icon: "book", readings, course: course, tint: tint) }
+                    if !slides.isEmpty { weekCard(String(localized: "Diapositives et notes"), icon: "rectangle.on.rectangle", slides, course: course, tint: tint) }
                     ForEach(series) { seriesCard($0, course: course, tint: tint) }
                     if shown == all.last, !course.documents.isEmpty {
-                        card("Documents du cours", icon: "folder") {
+                        card(String(localized: "Documents du cours"), icon: "folder") {
                             ForEach(course.documents) { document in
                                 Button { openLink(document.url, title: document.title, kind: document.kind) } label: {
                                     Label(document.title, systemImage: document.kind.icon)
@@ -559,7 +559,7 @@ struct CoursePane: View {
                     { openTheory(item, course: course) })
         }
         if let go, let pending = series.first(where: { !$0.isComplete }), let exercise = pending.sortedExercises.first(where: { !$0.isDone }) {
-            let name = pending.title.isEmpty ? "Série \(pending.seriesNumber)" : pending.title
+            let name = pending.title.isEmpty ? String(localized: "Série \(pending.seriesNumber)") : pending.title
             return (String(localized: "Faire la série"), "\(name) · \(exercise.displayNumber)", "list.number", { go(.exercise(exercise)) })
         }
         return nil
@@ -734,7 +734,7 @@ struct CoursePane: View {
         HStack(spacing: 8) {
             if let go, let target = firstOpen ?? series.sortedExercises.first {
                 Button { go(.exercise(target)) } label: {
-                    Label(short ? "Faire" : (firstOpen == nil ? "Revoir la série" : "Faire la série"), systemImage: "pencil.and.list.clipboard")
+                    Label(short ? "Faire" : (firstOpen == nil ? String(localized: "Revoir la série") : String(localized: "Faire la série")), systemImage: "pencil.and.list.clipboard")
                 }
                 .buttonStyle(.ink)
             }
@@ -890,7 +890,7 @@ struct CoursePane: View {
                                     .foregroundStyle(Carnet.tint(course?.colorHex ?? "")).frame(width: 18)
                                 VStack(alignment: .leading, spacing: 1) {
                                     Text(document.title).foregroundStyle(Carnet.ink).lineLimit(2)
-                                    Text(document.modified.formatted(.relative(presentation: .named).locale(Locale(identifier: "fr_CH"))))
+                                    Text(document.modified.formatted(.relative(presentation: .named).locale(DateUtils.appLocale)))
                                         .font(.caption2).foregroundStyle(Carnet.inkTertiary)
                                 }
                             }
@@ -989,7 +989,7 @@ struct CoursePane: View {
             .sheet(isPresented: $composingEd) {
                 EdComposeSheet(courseID: ed.id, desk: desk) { id in
                     edReload += 1
-                    if let id { reading = .edThread(id: id, title: "Ta question") }
+                    if let id { reading = .edThread(id: id, title: String(localized: "Ta question")) }
                 }
             }
         } else {
@@ -1396,7 +1396,7 @@ struct CoursePane: View {
                 Spacer()
                 saveButton(title, address, .pdf)
                 if let reading { besideButton(reading, title) }
-                Button { ask("J'ai une question sur ce document (« \(title) »).") } label: {
+                Button { ask(String(localized: "J'ai une question sur ce document (« \(title) »).")) } label: {
                     Label("Claude", systemImage: "sparkle")
                 }
                 .buttonStyle(.paper)
@@ -1413,7 +1413,7 @@ struct CoursePane: View {
                 Spacer()
                 if let save { saveButton(title, save.address, save.kind) }
                 if let reading { besideButton(reading, title) }
-                Button { ask("J'ai une question sur « \(title) ».") } label: {
+                Button { ask(String(localized: "J'ai une question sur « \(title) ».")) } label: {
                     Label("Claude", systemImage: "sparkle")
                 }
                 .buttonStyle(.paper)

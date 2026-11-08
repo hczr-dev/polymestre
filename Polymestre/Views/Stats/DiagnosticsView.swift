@@ -23,12 +23,12 @@ struct DiagnosticsView: View {
 
     private var liveTitle: String {
         guard StudyActivityController.isEnabledBySystem else {
-            return "Les activités en direct sont refusées pour Polymestre (Réglages du système)."
+            return String(localized: "Les activités en direct sont refusées pour Polymestre (Réglages du système).")
         }
         let total = liveCount + examCount
-        if total == 0 { return "Aucune activité en cours — l'îlot est vide, c'est normal." }
-        var text = "\(Plural.count(total, "\(total) activité", "\(total) activités")) en cours"
-        if examCount > 0 { text += " (dont \(examCount) d'examen)" }
+        if total == 0 { return String(localized: "Aucune activité en cours — l'îlot est vide, c'est normal.") }
+        var text = String(localized: "\(Plural.count(total, "\(total) activité", "\(total) activités")) en cours")
+        if examCount > 0 { text += String(localized: " (dont \(examCount) d'examen)") }
         return text + "."
     }
     @State private var showingClear = false

@@ -18,7 +18,7 @@ struct CarnetTheoryLine: View {
         HStack(spacing: 0) {
             CheckCircleButton(isOn: item.isWatched,
                               tint: Carnet.tint(item.course?.colorHex ?? "#6B655A"),
-                              label: "Marquer \(item.title) vu") {
+                              label: String(localized: "Marquer \(item.title) vu")) {
                 item.watchedAt = item.isWatched ? nil : Date()
                 if item.watchedAt == nil { item.summarizedAt = nil }
                 try? context.save()
@@ -133,9 +133,9 @@ struct CarnetTheoryLine: View {
         var parts: [String] = []
         let videos = item.links.filter { $0.kind == .video }.count
         if videos > 1 {
-            parts.append("\(videos) vidéos")
+            parts.append(String(localized: "\(videos) vidéos"))
         } else if item.videoCount > 1 {
-            parts.append("\(item.videoCount) vidéos")
+            parts.append(String(localized: "\(item.videoCount) vidéos"))
         } else {
             parts.append(item.kind.label)
         }
@@ -165,36 +165,36 @@ extension ContentLink.Kind {
     /// « Transparents », « Vidéo » : la pastille d'un seul lien.
     var chipLabel: String {
         switch self {
-        case .video: return "Vidéo"
+        case .video: return String(localized: "Vidéo")
         case .slides: return "Transparents"
         case .notes: return "Notes"
         case .pdf: return "PDF"
         case .page: return "Page"
-        case .solution: return "Corrigé"
+        case .solution: return String(localized: "Corrigé")
         }
     }
 
     /// « 5 vidéos », « 2 transparents ».
     var pluralLabel: String {
         switch self {
-        case .video: return "vidéos"
+        case .video: return String(localized: "vidéos")
         case .slides: return "transparents"
         case .notes: return "notes"
         case .pdf: return "PDF"
         case .page: return "pages"
-        case .solution: return "corrigés"
+        case .solution: return String(localized: "corrigés")
         }
     }
 
     /// « transparents », « notes » : le mot d'une ligne de détail.
     var shortLabel: String {
         switch self {
-        case .video: return "vidéo"
+        case .video: return String(localized: "vidéo")
         case .slides: return "transparents"
         case .notes: return "notes"
         case .pdf: return "PDF"
         case .page: return "page"
-        case .solution: return "corrigé"
+        case .solution: return String(localized: "corrigé")
         }
     }
 }
@@ -272,7 +272,7 @@ extension Correctness {
     var lineLabel: String {
         switch self {
         case .correct: return "juste"
-        case .partial: return "à revoir"
+        case .partial: return String(localized: "à revoir")
         case .wrong: return "faux"
         }
     }

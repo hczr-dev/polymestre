@@ -12,8 +12,7 @@ enum SeriesAutoReading {
         Task { @MainActor in
             let report = await SeriesAutoReader.shared.readPending(courses: courses, context: context, settings: settings)
             guard !report.isEmpty else { return }
-            let line = "Énoncés lus — " + report.joined(separator: " · ")
-            settings.contentRefreshNews = SettingsStore.mergedNews(settings.contentRefreshNews, adding: line)
+            settings.contentRefreshNews = SettingsStore.mergedNews(settings.contentRefreshNews, adding: report.joined(separator: NewsLines.separator))
         }
     }
 }
@@ -88,7 +87,8 @@ final class SeriesAutoReader {
                     if count > 0 {
                         if revising { SeriesSourceWatch.commit(series) }
                         try? context.save()
-                        report.append("\(course.displayCode) série \(series.seriesNumber) : "
+                        // « MATH-101 Série 5b : … » : le nom complet, traduit (`NewsLines` en fait la clé).
+                        report.append("\(course.displayCode) \(series.displayName) : "
                                       + (revising ? String(localized: "énoncé révisé, \(count) exercices") : Plural.count(count, "\(count) exercice", "\(count) exercices")))
                     }
                 } catch {
@@ -182,16 +182,16 @@ final class SeriesAutoReader {
                 let count = try await extract(lines: HTMLLayout.lines(fromHTML: html), pageImages: [],
                                               into: series, course: course, context: context, settings: settings, mode: mode)
                 if count > 0 { return count }
-                throw HiddenSiteSession.SiteError.failed("Page web sans énoncé lisible (\(base.host ?? "site inconnu")) : ouvre-la depuis la série.")
+                throw HiddenSiteSession.SiteError.failed(String(localized: "Page web sans énoncé lisible (\(base.host ?? String(localized: "site inconnu"))) : ouvre-la depuis la série."))
             }
         }
         defer { try? FileManager.default.removeItem(at: file) }
         guard let document = PDFDocument(url: file) else {
-            throw HiddenSiteSession.SiteError.failed("Ce lien ne mène pas à un PDF lisible.")
+            throw HiddenSiteSession.SiteError.failed(String(localized: "Ce lien ne mène pas à un PDF lisible."))
         }
         let lines = PDFLayoutExtractor.lines(from: document)
         guard lines.contains(where: { !$0.isEmpty }) else {
-            throw HiddenSiteSession.SiteError.failed("Le PDF ne contient pas de texte (scan ?).")
+            throw HiddenSiteSession.SiteError.failed(String(localized: "Le PDF ne contient pas de texte (scan ?)."))
         }
         return try await extract(lines: lines, pageImages: PDFPageRenderer.jpegPages(of: document),
                                  into: series, course: course, context: context, settings: settings, mode: mode)

@@ -51,11 +51,11 @@ enum ExerciseStage: Equatable {
     /// « à faire », « 2/5 », « à corriger », « juste », « à refaire »…
     var label: String {
         switch self {
-        case .toDo: return "à faire"
+        case .toDo: return String(localized: "à faire")
         case .inProgress(let done, let total): return "\(done)/\(total)"
-        case .toCorrect: return "à corriger"
+        case .toCorrect: return String(localized: "à corriger")
         case .corrected(let correctness): return correctness.shortLabel.lowercased()
-        case .redo: return "à refaire"
+        case .redo: return String(localized: "à refaire")
         }
     }
 }

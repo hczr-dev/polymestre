@@ -95,7 +95,7 @@ enum LogBuffer {
 
     /// Le journal en texte, pour le partager ou le coller dans un message.
     static func text(_ entries: [LogEntry], formatter: ISO8601DateFormatter = .init()) -> String {
-        guard !entries.isEmpty else { return "Journal vide." }
+        guard !entries.isEmpty else { return String(localized: "Journal vide.") }
         return entries.map { entry in
             var line = "[\(formatter.string(from: entry.date))] \(entry.level.label.uppercased()) \(entry.category) — \(entry.message)"
             if let detail = entry.detail, !detail.isEmpty {

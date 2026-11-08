@@ -62,7 +62,7 @@ struct AnkiCourseRow: View {
             CarnetIconTile(systemName: "rectangle.stack", tint: Carnet.tint(course.colorHex))
             VStack(alignment: .leading, spacing: 2) {
                 Text("Révision Anki").font(.body).foregroundStyle(Carnet.ink)
-                Text(preparing ? "Téléchargement de ta collection…" : (sync.lastError ?? "Ta collection n'est pas encore sur l'appareil"))
+                Text(preparing ? "Téléchargement de ta collection…" : (sync.lastError ?? String(localized: "Ta collection n'est pas encore sur l'appareil")))
                     .font(.footnote)
                     .foregroundStyle(sync.lastError == nil ? Carnet.inkSecondary : Carnet.wrong)
                     .lineLimit(2)
@@ -153,9 +153,9 @@ struct AnkiCourseRow: View {
     }
 
     private var summary: String {
-        if counts.total == 0 { return "Rien à revoir aujourd'hui" }
+        if counts.total == 0 { return String(localized: "Rien à revoir aujourd'hui") }
         var parts: [String] = []
-        if counts.review + counts.learning > 0 { parts.append("\(counts.review + counts.learning) à revoir") }
+        if counts.review + counts.learning > 0 { parts.append(String(localized: "\(counts.review + counts.learning) à revoir")) }
         if counts.new > 0 { parts.append(Plural.count(counts.new, "\(counts.new) nouvelle", "\(counts.new) nouvelles")) }
         return parts.joined(separator: " · ")
     }
@@ -200,7 +200,7 @@ struct AnkiReviewView: View {
                     AnkiCardWebView(html: showingAnswer ? rendered.answer : rendered.question, css: rendered.css,
                                     onTap: tapCard)
                         .background(Carnet.sheet)
-                        .accessibilityAction(named: showingAnswer ? "Bien" : "Afficher la réponse") { tapCard() }
+                        .accessibilityAction(named: showingAnswer ? "Bien" : String(localized: "Afficher la réponse")) { tapCard() }
                     controls
                 } else {
                     finished
@@ -577,7 +577,7 @@ struct AnkiNoteEditor: View {
                         .textInputAutocapitalization(.never)
                         .autocorrectionDisabled()
                 } header: {
-                    CarnetFormHeader("Étiquettes")
+                    CarnetFormHeader(String(localized: "Étiquettes"))
                 } footer: {
                     Text("Formules : \\( … \\).")
                 }
@@ -615,7 +615,7 @@ struct AnkiNoteEditor: View {
             Haptics.success()
             dismiss()
         } else {
-            error = "La carte n'a pas pu être enregistrée."
+            error = String(localized: "La carte n'a pas pu être enregistrée.")
         }
     }
 

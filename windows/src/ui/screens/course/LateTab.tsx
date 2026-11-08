@@ -60,7 +60,9 @@ export function LateTab({ course, saveAll, onOpen }: {
         <div className="big">
           <Icon name={late.total > 0 ? "exclamationmark.triangle" : "checkmark.circle"} size={20}
             color={late.total > 0 ? "var(--wrong)" : "var(--correct)"} />
-          <span className="serif">{late.total > 0 ? `${late.total} à rattraper` : "Rien à rattraper"}</span>
+          <span className="serif" title={`Compté dans le retard : ce qui était prévu avant la semaine ${late.currentWeek} et n'est pas fait ou pas vu, les exercices faits dont le corrigé est publié mais pas encore corrigés, et les exercices à refaire. La semaine en cours n'y entre pas, les bonus non plus.`}>
+            {late.total > 0 ? `${late.total} à rattraper` : "Rien à rattraper"}
+          </span>
         </div>
         <p className="muted" style={{ margin: "5px 0 0", fontSize: 13 }}>
           {late.total > 0 ? summary.charAt(0).toUpperCase() + summary.slice(1) + "."
@@ -70,8 +72,7 @@ export function LateTab({ course, saveAll, onOpen }: {
       </Card>
 
       {late.redo.length > 0 && (
-        <Group title="À refaire" count={late.redo.length}
-          why="Corrigés faux. Reprends-les sans regarder la solution, tant que l'erreur est fraîche.">
+        <Group title="À refaire" count={late.redo.length}>
           {late.redo.map((e) => (
             <Row key={e.id} mark={<Icon name="arrow.counterclockwise" size={16} color="var(--wrong)" />}
               title={title(e)} detail={seriesOf(e)} onOpen={() => onOpen(e.id, "exercise")} />
@@ -80,8 +81,7 @@ export function LateTab({ course, saveAll, onOpen }: {
       )}
 
       {late.toCorrect.length > 0 && (
-        <Group title="À corriger" count={late.toCorrect.length}
-          why="Faits, et le corrigé est publié. Compare ta copie au corrigé et donne la couleur : juste, moyen ou faux.">
+        <Group title="À corriger" count={late.toCorrect.length}>
           {late.toCorrect.map((e) => (
             <Row key={e.id} mark={<Icon name="checkmark.seal" size={16} color="var(--review)" />}
               title={title(e)} detail={seriesOf(e)} onOpen={() => onOpen(e.id, "exercise")}
@@ -93,8 +93,7 @@ export function LateTab({ course, saveAll, onOpen }: {
       )}
 
       {late.series.length > 0 && (
-        <Group title={late.exerciseCount === 1 ? "Exercice à faire" : "Exercices à faire"} count={late.exerciseCount}
-          why="Prévus les semaines passées, pas encore faits. Déjà faits sur papier ? Coche-les : ils passeront « à corriger ».">
+        <Group title={late.exerciseCount === 1 ? "Exercice à faire" : "Exercices à faire"} count={late.exerciseCount}>
           {late.series.map((group) => (
             <SeriesBlock key={group.series.id} group={group}
               onAll={() => void markDone(group.exercises, group.series.displayName)}>
@@ -110,7 +109,7 @@ export function LateTab({ course, saveAll, onOpen }: {
       )}
 
       {late.theory.length > 0 && (
-        <Group title="Théorie à voir" count={late.theoryCount} why="Vidéos, transparents, sections du polycopié des semaines passées.">
+        <Group title="Théorie à voir" count={late.theoryCount}>
           {late.theory.map((group) => (
             <div key={group.week} className="cs-late-block">
               <div className="cs-late-head">
@@ -131,14 +130,6 @@ export function LateTab({ course, saveAll, onOpen }: {
         </Group>
       )}
 
-      {late.total > 0 && (
-        <p className="muted small" style={{ margin: 0 }}>
-          Compté dans le retard : ce qui était prévu avant la semaine {late.currentWeek} et n'est pas fait ou pas vu, les exercices
-          faits dont le corrigé est publié mais pas encore corrigés, et les exercices à refaire. La semaine en cours n'y entre pas,
-          les bonus non plus.
-        </p>
-      )}
-
       {undo && (
         <div className="cs-undo">
           <span>Coché : {undo.label}.</span>
@@ -150,10 +141,9 @@ export function LateTab({ course, saveAll, onOpen }: {
   );
 }
 
-function Group({ title, count, why, children }: { title: string; count: number; why: string; children: React.ReactNode }) {
+function Group({ title, count, children }: { title: string; count: number; children: React.ReactNode }) {
   return (
     <Section title={title} style={{ marginBottom: 0 }} action={<span className="mono muted small">{count}</span>}>
-      <p className="muted small" style={{ margin: "0 0 8px" }}>{why}</p>
       <Card className="cs-list" flat>{children}</Card>
     </Section>
   );

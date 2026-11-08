@@ -125,3 +125,21 @@ func lateWorkResults(context: ModelContext) -> [(Bool, String)] {
     note(snapshot.timelineDates(from: now).dates.contains(now.addingTimeInterval(3_600)), "et prévoit une entrée au changement")
     return results
 }
+
+// « Nouveau dans tes cours » : une série n'y figure qu'une fois, sa dernière nouvelle.
+func newsLinesResults() -> [(Bool, String)] {
+    var results: [(Bool, String)] = []
+    let old = "MATH-101 série 7 : énoncé révisé, 12 exercices · MATH-101 série 8 : énoncé révisé, 12 exercices · CS-101 : 1 série"
+    let merged = NewsLines.merged(old, adding: "MATH-101 Series 7 : revised statement, 13 exercises · MATH-111 Series 9 : 17 exercises")
+    results.append((merged == "MATH-101 série 8 : énoncé révisé, 12 exercices · CS-101 : 1 série · MATH-101 Series 7 : revised statement, 13 exercises · MATH-111 Series 9 : 17 exercises",
+                    "une série notée en français puis en anglais : une seule ligne, la dernière (\(merged))"))
+    results.append((NewsLines.merged("CS-101 : 1 série", adding: "CS-101 : 1 série") == "CS-101 : 1 série", "une ligne sans série se dédoublonne au texte"))
+    results.append((NewsLines.merged("CS-101 : 1 série", adding: "CS-101 : 2 théorie") == "CS-101 : 1 série · CS-101 : 2 théorie", "deux nouvelles différentes d'un même cours restent"))
+    results.append((NewsLines.key(of: "MATH-101 Série 5b : x") == NewsLines.key(of: "MATH-101 series 5b : y"), "5b, accents et casse confondus"))
+    return results
+}
+
+func hoursLabelResults() -> [(Bool, String)] {
+    let labels = [0, 7200, 9000, 900].map { DateUtils.hoursLabel(seconds: $0).replacingOccurrences(of: ",", with: ".") }
+    return [(labels == ["0 h", "2 h", "2.5 h", "0.2 h"], "heures : « 0 h », « 2 h », « 2,5 h », arrondi pair comme Windows (\(labels))")]
+}

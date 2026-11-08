@@ -55,7 +55,7 @@ enum IdentityMigrationPlan {
         guard lock.completedAt != nil else {
             if lock.owner == me { return .copyAll }  // reprise après un arrêt en route
             if now.timeIntervalSince(lock.startedAt) > staleAfter { return .copyAll }  // à reprendre (voir `takeOver`)
-            return .wait("un autre appareil recopie les données (« \(lock.owner) »)")
+            return .wait(String(localized: "un autre appareil recopie les données (« \(lock.owner) »)"))
         }
         // D'abord que la nouvelle base ait reçu la copie : c'est ce qui relie ses objets, et
         // ce qui retient la synchronisation Supabase (voir `IdentityMigration.holdsBackSync`).
@@ -63,7 +63,7 @@ enum IdentityMigrationPlan {
         let arrived = lock.ids.intersection(storeIDs).count
         let settled = lock.completedAt.map { now.timeIntervalSince($0) > settleAfter } ?? false
         guard arrived == lock.ids.count || settled else {
-            return .wait("iCloud apporte encore les données recopiées par « \(lock.owner) » (\(arrived)/\(lock.ids.count))")
+            return .wait(String(localized: "iCloud apporte encore les données recopiées par « \(lock.owner) » (\(arrived)/\(lock.ids.count))"))
         }
         let mine = legacyIDs.subtracting(lock.ids)
         return mine.isEmpty ? .nothing : .copyOnly(mine)

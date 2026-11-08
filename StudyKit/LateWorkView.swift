@@ -51,7 +51,6 @@ struct LateWorkView: View {
                     if !late.toCorrect.isEmpty { correctSection(late.toCorrect) }
                     if !late.series.isEmpty { exercisesSection(late.series) }
                     if !late.theory.isEmpty { theorySection(late.theory) }
-                    footnote(late)
                 }
             }
             .padding(.horizontal, 20)
@@ -70,7 +69,7 @@ struct LateWorkView: View {
 
     private func header(_ late: LateWork) -> some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text(verbatim: [course.displayCode, late.currentWeek > 0 ? "semaine \(late.currentWeek)" : nil]
+            Text(verbatim: [course.displayCode, late.currentWeek > 0 ? String(localized: "semaine \(late.currentWeek)") : nil]
                 .compactMap { $0 }.joined(separator: " · ").uppercased())
                 .font(.caption.weight(.semibold))
                 .tracking(1.1)
@@ -78,6 +77,7 @@ struct LateWorkView: View {
             Text(late.isEmpty ? "Rien à rattraper" : "\(late.total) à rattraper")
                 .font(Carnet.serif(30))
                 .foregroundStyle(Carnet.ink)
+                .help("Compté dans le retard : ce qui était prévu avant la semaine \(late.currentWeek) et n'est pas fait ou pas vu, les exercices faits dont le corrigé est publié mais pas encore corrigés, et les exercices à refaire. La semaine en cours n'y entre pas, les bonus non plus.")
             if !late.isEmpty {
                 Text(late.summary.capitalizedFirstLetter + ".")
                     .font(.subheadline)
@@ -105,10 +105,9 @@ struct LateWorkView: View {
     // MARK: 1. À refaire
 
     private func redoSection(_ exercises: [Exercise]) -> some View {
-        section("À refaire", count: exercises.count,
-                why: "Corrigés faux. Reprends-les sans regarder la solution, tant que l'erreur est fraîche.") {
+        section(String(localized: "À refaire"), count: exercises.count) {
             rows(exercises) { exercise in
-                exerciseRow(exercise, detail: detail(exercise, extra: exercise.correctedAt.map { "corrigé \(relative($0))" }),
+                exerciseRow(exercise, detail: detail(exercise, extra: exercise.correctedAt.map { String(localized: "corrigé \(relative($0))") }),
                             mark: .icon("arrow.counterclockwise", Carnet.wrong))
             }
         }
@@ -117,10 +116,9 @@ struct LateWorkView: View {
     // MARK: 2. À corriger
 
     private func correctSection(_ exercises: [Exercise]) -> some View {
-        section("À corriger", count: exercises.count,
-                why: "Faits, et le corrigé est publié. Compare ta copie au corrigé et donne la couleur : juste, moyen ou faux.") {
+        section(String(localized: "À corriger"), count: exercises.count) {
             rows(exercises) { exercise in
-                exerciseRow(exercise, detail: detail(exercise, extra: exercise.doneAt.map { "fait \(relative($0))" }),
+                exerciseRow(exercise, detail: detail(exercise, extra: exercise.doneAt.map { String(localized: "fait \(relative($0))") }),
                             mark: .icon("checkmark.seal", Carnet.review),
                             trailing: AnyView(solutionButton(for: exercise)))
             }
@@ -142,8 +140,7 @@ struct LateWorkView: View {
 
     private func exercisesSection(_ groups: [LateWork.SeriesGroup]) -> some View {
         let count = groups.reduce(0) { $0 + $1.exercises.count }
-        return section(count == 1 ? "Exercice à faire" : "Exercices à faire", count: count,
-                       why: "Prévus les semaines passées, pas encore faits. Déjà faits sur papier ? Coche-les : ils passeront « à corriger ».") {
+        return section(Plural.count(count, "Exercice à faire", "Exercices à faire"), count: count) {
             ForEach(Array(groups.enumerated()), id: \.element.id) { index, group in
                 if index > 0 { rule(inset: 0) }
                 seriesHeader(group)
@@ -180,15 +177,14 @@ struct LateWorkView: View {
 
     private func theorySection(_ groups: [LateWork.TheoryGroup]) -> some View {
         let count = groups.reduce(0) { $0 + $1.items.count }
-        return section("Théorie à voir", count: count,
-                       why: "Vidéos, transparents, sections du polycopié des semaines passées.") {
+        return section(String(localized: "Théorie à voir"), count: count) {
             ForEach(Array(groups.enumerated()), id: \.element.id) { index, group in
                 if index > 0 { rule(inset: 0) }
                 HStack(alignment: .firstTextBaseline) {
                     Text("Semaine \(group.week)").font(.subheadline.weight(.semibold)).foregroundStyle(Carnet.ink)
                     Spacer(minLength: 8)
                     if group.items.count > 1 {
-                        Button("Tout marquer vu") { markWatched(group.items, label: "semaine \(group.week)") }
+                        Button("Tout marquer vu") { markWatched(group.items, label: String(localized: "semaine \(group.week)")) }
                             .font(.footnote.weight(.semibold))
                             .buttonStyle(.borderless)
                             .foregroundStyle(tint)
@@ -200,16 +196,6 @@ struct LateWorkView: View {
                 rows(group.items) { item in theoryRow(item) }
             }
         }
-    }
-
-    // MARK: Pied
-
-    private func footnote(_ late: LateWork) -> some View {
-        Text("Compté dans le retard : ce qui était prévu avant la semaine \(late.currentWeek) et n'est pas fait ou pas vu, les exercices faits dont le corrigé est publié mais pas encore corrigés, et les exercices à refaire. La semaine en cours n'y entre pas, les bonus non plus.")
-            .font(.footnote)
-            .foregroundStyle(Carnet.inkSecondary)
-            .fixedSize(horizontal: false, vertical: true)
-            .padding(.horizontal, 6)
     }
 
     @ViewBuilder
@@ -237,7 +223,7 @@ struct LateWorkView: View {
 
     private enum Mark { case check, icon(String, Color) }
 
-    private func section<Content: View>(_ title: String, count: Int, why: String,
+    private func section<Content: View>(_ title: String, count: Int,
                                         @ViewBuilder content: () -> Content) -> some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack(alignment: .firstTextBaseline) {
@@ -246,11 +232,6 @@ struct LateWorkView: View {
                 Text("\(count)").font(.subheadline.monospacedDigit()).foregroundStyle(Carnet.inkSecondary)
             }
             .padding(.horizontal, 6)
-            Text(why)
-                .font(.footnote)
-                .foregroundStyle(Carnet.inkSecondary)
-                .fixedSize(horizontal: false, vertical: true)
-                .padding(.horizontal, 6)
             VStack(alignment: .leading, spacing: 0) { content() }
                 .padding(.bottom, 4)
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -353,14 +334,14 @@ struct LateWorkView: View {
 
     /// « Série 3 · semaine 3 · corrigé il y a 4 jours ».
     private func detail(_ exercise: Exercise, extra: String?) -> String {
-        [exercise.series?.displayName, exercise.series.map { "semaine \($0.plannedWeek)" }, extra]
+        [exercise.series?.displayName, exercise.series.map { String(localized: "semaine \($0.plannedWeek)") }, extra]
             .compactMap { $0 }.joined(separator: " · ")
     }
 
     /// « 2 questions sur 4 » quand l'exercice est commencé.
     private func exerciseDetail(_ exercise: Exercise) -> String {
         if exercise.hasSubQuestions, exercise.subQuestionDoneCount > 0 {
-            return "commencé · \(exercise.subQuestionDoneCount) questions sur \(exercise.leafSubQuestions.count)"
+            return String(localized: "commencé · \(exercise.subQuestionDoneCount) questions sur \(exercise.leafSubQuestions.count)")
         }
         if exercise.hasSubQuestions {
             return Plural.count(exercise.leafSubQuestions.count, "\(exercise.leafSubQuestions.count) question",
@@ -371,13 +352,13 @@ struct LateWorkView: View {
 
     private func theoryDetail(_ item: TheoryItem) -> String {
         var parts: [String] = []
-        if item.kind == .video { parts.append(item.videoCount > 1 ? "\(item.videoCount) vidéos" : "vidéo") }
+        if item.kind == .video { parts.append(item.videoCount > 1 ? String(localized: "\(item.videoCount) vidéos") : String(localized: "vidéo")) }
         if !item.sectionTitle.isEmpty, item.sectionTitle != item.title { parts.append(item.sectionTitle) }
         return parts.isEmpty ? item.number : parts.joined(separator: " · ")
     }
 
     private func relative(_ date: Date) -> String {
-        date.formatted(.relative(presentation: .named).locale(Locale(identifier: "fr_CH")))
+        date.formatted(.relative(presentation: .named))
     }
 
     // MARK: Gestes

@@ -20,15 +20,15 @@ enum SearchKind: String, CaseIterable, Identifiable, Comparable {
 
     var label: String {
         switch self {
-        case .course: return "Cours"
-        case .series: return "Séries"
-        case .exercise: return "Exercices"
-        case .theory: return "Théorie"
-        case .exam: return "Évaluations"
+        case .course: return String(localized: "Cours")
+        case .series: return String(localized: "Séries")
+        case .exercise: return String(localized: "Exercices")
+        case .theory: return String(localized: "Théorie")
+        case .exam: return String(localized: "Évaluations")
         case .session: return "Sessions de travail"
-        case .task: return "Tâches"
-        case .milestone: return "Vie de l'EPFL"
-        case .group: return "Groupes"
+        case .task: return String(localized: "Tâches")
+        case .milestone: return String(localized: "Vie de l'EPFL")
+        case .group: return String(localized: "Groupes")
         }
     }
 
@@ -60,9 +60,9 @@ enum SearchMatch: String {
 
     var label: String {
         switch self {
-        case .title: return "intitulé"
-        case .detail: return "détail"
-        case .course: return "cours"
+        case .title: return String(localized: "intitulé")
+        case .detail: return String(localized: "détail")
+        case .course: return String(localized: "cours")
         }
     }
 }
@@ -237,10 +237,10 @@ enum SearchEngine {
     /// Une phrase qui dit ce qui a été trouvé, ou pourquoi rien ne l'a été.
     static func summary(_ hits: [SearchHit], query: String) -> String {
         guard !tokens(query).isEmpty else {
-            return "Tape un code de cours, un titre d'exercice, un mot d'un résumé…"
+            return String(localized: "Tape un code de cours, un titre d'exercice, un mot d'un résumé…")
         }
         guard !hits.isEmpty else {
-            return "Rien trouvé pour « \(query.trimmingCharacters(in: .whitespaces)) »."
+            return String(localized: "Rien trouvé pour « \(query.trimmingCharacters(in: .whitespaces)) ».")
         }
         let groups = grouped(hits)
         let parts = groups.map { "\($0.hits.count) \($0.kind.label.lowercased())" }

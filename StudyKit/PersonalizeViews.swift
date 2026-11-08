@@ -109,7 +109,7 @@ struct SchoolSection: View {
                 }
             }
         } header: {
-            personalizeHeader("École")
+            personalizeHeader(String(localized: "École"))
         } footer: {
             Text(isBuiltIn
                  ? String(localized: "Moodle, Courseware, MediaSpace et Ed se connectent tout seuls.")
@@ -128,7 +128,7 @@ struct SchoolSection: View {
     private func save() {
         if school.id == Institution.generic.id, school.moodle != nil || school.openEdX != nil || school.ed != nil {
             school.id = "custom"
-            school.name = "Mon école"
+            school.name = String(localized: "Mon école")
         }
         Institution.save(school)
         school = Institution.current
@@ -267,7 +267,7 @@ struct SessionFlowSection: View {
                                move: { _ in })
             }
         } header: {
-            personalizeHeader("Ta session")
+            personalizeHeader(String(localized: "Ta session"))
         } footer: {
             Text("Les étapes du bureau, sur le Mac et l'iPhone. Parmi celles qui restent, au plus une ne peut être retirée.")
         }
@@ -346,7 +346,7 @@ struct NotebookLMSection: View {
         Section {
             Toggle("NotebookLM", isOn: $enabled)
         } header: {
-            personalizeHeader("Fiche de révision")
+            personalizeHeader(String(localized: "Fiche de révision"))
         } footer: {
             Text("Ajoute l'onglet « Écouter » à la fiche : un podcast NotebookLM de ta fiche.")
         }
@@ -374,7 +374,7 @@ struct LanguageSection: View {
                 Haptics.tap()
             }
         } header: {
-            personalizeHeader("Langue")
+            personalizeHeader(String(localized: "Langue"))
         } footer: {
             if pending {
                 Text("La langue change au prochain lancement de l'app.")

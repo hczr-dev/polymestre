@@ -132,20 +132,20 @@ struct ProfileView: View {
             NavigationLink {
                 SchoolSetupView()
             } label: {
-                settingsRow("Semestre et cours", icon: "graduationcap",
-                            value: "\(courses.filter(\.isTracked).count) cours")
+                settingsRow(String(localized: "Semestre et cours"), icon: "graduationcap",
+                            value: String(localized: "\(courses.filter(\.isTracked).count) cours"))
             }
             NavigationLink {
-                subpage("Horaire et calendrier") {
+                subpage(String(localized: "Horaire et calendrier")) {
                     calendarSection(settings)
                     workloadSection(settings)
                 }
             } label: {
-                settingsRow("Horaire et calendrier", icon: "calendar",
-                            value: app.calendar.hasAccess ? "relié" : (settings.timetableURLString.isEmpty ? "à importer" : "flux .ics"))
+                settingsRow(String(localized: "Horaire et calendrier"), icon: "calendar",
+                            value: app.calendar.hasAccess ? String(localized: "relié") : (settings.timetableURLString.isEmpty ? String(localized: "à importer") : "flux .ics"))
             }
         } header: {
-            CarnetFormHeader("Études")
+            CarnetFormHeader(String(localized: "Études"))
         }
     }
 
@@ -155,32 +155,32 @@ struct ProfileView: View {
             NavigationLink {
                 ConnectionsView()
             } label: {
-                settingsRow("Connexions aux sites", icon: "person.badge.key",
-                            value: ConnectionCenter.shared.needingAttention().isEmpty ? nil : "à reconnecter")
+                settingsRow(String(localized: "Connexions aux sites"), icon: "person.badge.key",
+                            value: ConnectionCenter.shared.needingAttention().isEmpty ? nil : String(localized: "à reconnecter"))
             }
             NavigationLink {
-                subpage("Compte et groupes") {
+                subpage(String(localized: "Compte et groupes")) {
                     accountSection(app.settings)
                     privacySection(app.settings)
                 }
             } label: {
-                settingsRow("Compte et groupes", icon: "person.2",
-                            value: app.social.isSignedIn ? (app.social.email ?? "connecté·e") : "aucun")
+                settingsRow(String(localized: "Compte et groupes"), icon: "person.2",
+                            value: app.social.isSignedIn ? (app.social.email ?? String(localized: "connecté·e")) : String(localized: "aucun"))
             }
             NavigationLink {
-                subpage("Synchronisation") { SupabaseSyncSection() }
+                subpage(String(localized: "Synchronisation")) { SupabaseSyncSection() }
             } label: {
-                settingsRow("Synchronisation", icon: "arrow.triangle.2.circlepath",
-                            value: app.supabaseSync.isEnabled ? "activée" : nil)
+                settingsRow(String(localized: "Synchronisation"), icon: "arrow.triangle.2.circlepath",
+                            value: app.supabaseSync.isEnabled ? String(localized: "activée") : nil)
             }
             NavigationLink {
                 subpage("Spotify") { SpotifySettingsSection() }
             } label: {
                 settingsRow("Spotify", icon: "music.note",
-                            value: SpotifyAccount.shared.state == .ready ? "connecté" : nil)
+                            value: SpotifyAccount.shared.state == .ready ? String(localized: "connecté") : nil)
             }
         } header: {
-            CarnetFormHeader("Comptes")
+            CarnetFormHeader(String(localized: "Comptes"))
         }
     }
 
@@ -188,19 +188,19 @@ struct ProfileView: View {
     private var studyToolsSection: some View {
         Section {
             NavigationLink {
-                subpage("Chrono et Pomodoro") {
+                subpage(String(localized: "Chrono et Pomodoro")) {
                     PomodoroSettingsForm(settings: app.settings)
                     CountingSection()
                 }
             } label: {
-                settingsRow("Chrono et Pomodoro", icon: "timer",
+                settingsRow(String(localized: "Chrono et Pomodoro"), icon: "timer",
                             value: "\(app.settings.pomodoro.focusMinutes) / \(app.settings.pomodoro.shortBreakMinutes) min")
             }
             NavigationLink {
                 StudyModeSettingsView()
             } label: {
-                settingsRow("Mode étude", icon: "moon.stars",
-                            value: !StudyLock.isAvailable ? "sans blocage" : StudyLock.shared.isAuthorized ? Plural.count(StudyLock.shared.allowedAppCount, "\(StudyLock.shared.allowedAppCount) app permise", "\(StudyLock.shared.allowedAppCount) apps permises") : "à configurer")
+                settingsRow(String(localized: "Mode étude"), icon: "moon.stars",
+                            value: !StudyLock.isAvailable ? String(localized: "sans blocage") : StudyLock.shared.isAuthorized ? Plural.count(StudyLock.shared.allowedAppCount, "\(StudyLock.shared.allowedAppCount) app permise", "\(StudyLock.shared.allowedAppCount) apps permises") : String(localized: "à configurer"))
             }
         } header: {
             CarnetFormHeader("Chrono")
@@ -214,16 +214,16 @@ struct ProfileView: View {
                 AssistantSettingsView()
             } label: {
                 settingsRow("Assistant IA", icon: "bubble.left.and.text.bubble.right",
-                            value: app.settings.assistantToken.isEmpty ? "non relié" : "relié")
+                            value: app.settings.assistantToken.isEmpty ? String(localized: "non relié") : String(localized: "relié"))
             }
             NavigationLink {
                 AIImportSettingsView()
             } label: {
                 settingsRow("IA de lecture", icon: "sparkles",
-                            value: app.settings.aiExtractionEnabled ? "activée" : "désactivée")
+                            value: app.settings.aiExtractionEnabled ? String(localized: "activée") : String(localized: "désactivée"))
             }
         } header: {
-            CarnetFormHeader("Claude et IA")
+            CarnetFormHeader(String(localized: "Claude et IA"))
         }
     }
 
@@ -233,7 +233,7 @@ struct ProfileView: View {
             NavigationLink {
                 PersonalizeView()
             } label: {
-                settingsRow("École, langue et fiche", icon: "slider.horizontal.3", value: Institution.current.name)
+                settingsRow(String(localized: "École, langue et fiche"), icon: "slider.horizontal.3", value: Institution.current.name)
             }
             NavigationLink {
                 subpage("Notifications") {
@@ -244,7 +244,7 @@ struct ProfileView: View {
                 settingsRow("Notifications", icon: "bell", value: notificationsSummary(settings))
             }
         } header: {
-            CarnetFormHeader("Général")
+            CarnetFormHeader(String(localized: "Général"))
         }
     }
 
@@ -256,24 +256,24 @@ struct ProfileView: View {
                 AnkiSettingsView()
             } label: {
                 settingsRow("Anki", icon: "rectangle.stack",
-                            value: AnkiWebSync.shared.isSignedIn ? "AnkiWeb" : "non relié")
+                            value: AnkiWebSync.shared.isSignedIn ? "AnkiWeb" : String(localized: "non relié"))
             }
             NavigationLink {
                 TaskIntegrationsView()
             } label: {
-                settingsRow("Tâches", icon: "checklist",
-                            value: tasks.isEmpty ? "aucune" : tasks.map(\.provider.label).joined(separator: ", "))
+                settingsRow(String(localized: "Tâches"), icon: "checklist",
+                            value: tasks.isEmpty ? String(localized: "aucune") : tasks.map(\.provider.label).joined(separator: ", "))
             }
             NavigationLink {
                 OfflineSettingsView()
             } label: {
-                settingsRow("Hors ligne", icon: "arrow.down.circle",
-                            value: app.settings.offlineEnabled ? OfflinePlan.label(bytes: OfflineLibrary.shared.usedBytes) : "désactivé")
+                settingsRow(String(localized: "Hors ligne"), icon: "arrow.down.circle",
+                            value: app.settings.offlineEnabled ? OfflinePlan.label(bytes: OfflineLibrary.shared.usedBytes) : String(localized: "désactivé"))
             }
             NavigationLink {
-                subpage("Données") { dataSection }
+                subpage(String(localized: "Données")) { dataSection }
             } label: {
-                settingsRow("Données et sauvegarde", icon: "externaldrive",
+                settingsRow(String(localized: "Données et sauvegarde"), icon: "externaldrive",
                             value: Plural.count(sessions.count, "\(sessions.count) session", "\(sessions.count) sessions"))
             }
             // L'accueil rejoué : connexion EPFL, cours lus sur Moodle, import.
@@ -285,7 +285,7 @@ struct ProfileView: View {
                 dismiss()
                 app.settings.hasCompletedOnboarding = false
             } label: {
-                settingsRow("Revoir l'accueil", icon: "arrow.counterclockwise")
+                settingsRow(String(localized: "Revoir l'accueil"), icon: "arrow.counterclockwise")
             }
             .foregroundStyle(Carnet.ink)
         }
@@ -296,7 +296,7 @@ struct ProfileView: View {
         var parts: [String] = []
         if settings.moodleNewsEnabled { parts.append("Moodle") }
         if settings.dailyReminderEnabled { parts.append("\(settings.dailyReminderHour) h") }
-        return parts.isEmpty ? "désactivées" : parts.joined(separator: " · ")
+        return parts.isEmpty ? String(localized: "désactivées") : parts.joined(separator: " · ")
     }
 
     /// Une page de réglages au même style que l'accueil, avec le message en cours.
@@ -401,14 +401,14 @@ struct ProfileView: View {
         if !app.calendar.hasAccess {
             let granted = await app.calendar.requestAccess()
             guard granted else {
-                message = "Accès au calendrier refusé."
+                message = String(localized: "Accès au calendrier refusé.")
                 return
             }
         }
         let result = CalendarSync.sync(context: context, courses: courses, service: app.calendar)
         message = result.total == 0
-            ? "Aucun événement trouvé sur la période."
-            : "\(result.imported) importé(s) · \(result.updated) mis à jour."
+            ? String(localized: "Aucun événement trouvé sur la période.")
+            : String(localized: "\(result.imported) importé(s) · \(result.updated) mis à jour.")
     }
 
     // MARK: Charge EPFL
@@ -440,7 +440,7 @@ struct ProfileView: View {
         Task {
             let granted = await app.notifications.requestAuthorization()
             if !granted {
-                message = "Notifications refusées. Active-les dans Réglages › Polymestre."
+                message = String(localized: "Notifications refusées. Active-les dans Réglages › Polymestre.")
             }
         }
     }
@@ -464,11 +464,11 @@ struct ProfileView: View {
                 Task {
                     let granted = await app.notifications.requestAuthorization()
                     guard granted else {
-                        message = "Notifications refusées. Active-les dans Réglages › Polymestre."
+                        message = String(localized: "Notifications refusées. Active-les dans Réglages › Polymestre.")
                         return
                     }
                     await reschedule(settings)
-                    message = "Rappels replanifiés."
+                    message = String(localized: "Rappels replanifiés.")
                 }
             } label: {
                 Label("Autoriser les notifications", systemImage: "bell.badge")
@@ -506,7 +506,7 @@ struct ProfileView: View {
 
             Button {
                 exportURL = DataExporter.writeFile(courses: courses, sessions: sessions)
-                message = exportURL == nil ? "Sauvegarde impossible." : "Sauvegarde prête à partager."
+                message = exportURL == nil ? "Sauvegarde impossible." : String(localized: "Sauvegarde prête à partager.")
             } label: {
                 Label("Créer une sauvegarde (JSON)", systemImage: "square.and.arrow.down")
             }
@@ -540,7 +540,7 @@ struct ProfileView: View {
                 Label("Effacer toutes les données", systemImage: "trash")
             }
         } header: {
-            CarnetFormHeader("Données")
+            CarnetFormHeader(String(localized: "Données"))
         }
         .confirmationDialog("Effacer toutes les données ?",
                             isPresented: $showingReset,
@@ -569,7 +569,7 @@ struct ProfileView: View {
         Task { await app.notifications.cancelScheduled() }
         WidgetSnapshotWriter.refresh(context: context, settings: app.settings)
         Haptics.removed()
-        message = "Données effacées."
+        message = String(localized: "Données effacées.")
     }
 
     // MARK: Compte
@@ -590,7 +590,7 @@ struct ProfileView: View {
                 Button(role: .destructive) {
                     Task {
                         await app.social.signOut()
-                        message = "Déconnecté."
+                        message = String(localized: "Déconnecté.")
                     }
                 } label: {
                     Label("Se déconnecter", systemImage: "rectangle.portrait.and.arrow.right")
@@ -607,7 +607,7 @@ struct ProfileView: View {
                         Task {
                             do {
                                 try await app.social.deleteAccount()
-                                message = "Compte supprimé."
+                                message = String(localized: "Compte supprimé.")
                             } catch {
                                 message = nil
                             }
@@ -655,7 +655,7 @@ struct ProfileView: View {
                     .foregroundStyle(Carnet.wrong)
             }
         } header: {
-            CarnetFormHeader("Compte")
+            CarnetFormHeader(String(localized: "Compte"))
         }
     }
 
@@ -665,12 +665,12 @@ struct ProfileView: View {
             guard let credential = authorization.credential as? ASAuthorizationAppleIDCredential,
                   let tokenData = credential.identityToken,
                   let idToken = String(data: tokenData, encoding: .utf8) else {
-                message = "Jeton Apple illisible."
+                message = String(localized: "Jeton Apple illisible.")
                 return
             }
             Task {
                 let ok = await app.social.signInWithApple(idToken: idToken, nonce: appleNonce)
-                message = ok ? "Connecté avec Apple." : "Échec de la connexion Apple."
+                message = ok ? String(localized: "Connecté avec Apple.") : String(localized: "Échec de la connexion Apple.")
             }
         case .failure(let error):
             message = Self.appleMessage(for: error)
@@ -691,19 +691,19 @@ struct ProfileView: View {
         // d'être exhaustif à la prochaine.
         switch authError.code.rawValue {
         case ASAuthorizationError.canceled.rawValue:
-            return "Connexion Apple annulée."
+            return String(localized: "Connexion Apple annulée.")
         case ASAuthorizationError.unknown.rawValue:
-            return "Apple n'a pas pu traiter la demande. Vérifie que la capacité « Sign in with Apple » est activée pour l'app, et que l'appareil est connecté à iCloud."
+            return String(localized: "Apple n'a pas pu traiter la demande. Vérifie que la capacité « Sign in with Apple » est activée pour l'app, et que l'appareil est connecté à iCloud.")
         case ASAuthorizationError.invalidResponse.rawValue:
-            return "Réponse Apple invalide. Réessaie."
+            return String(localized: "Réponse Apple invalide. Réessaie.")
         case ASAuthorizationError.notHandled.rawValue:
-            return "Demande Apple non traitée. Réessaie."
+            return String(localized: "Demande Apple non traitée. Réessaie.")
         case ASAuthorizationError.failed.rawValue:
-            return "Apple a refusé la demande. Vérifie l'identifiant et la capacité dans le portail Apple Developer."
+            return String(localized: "Apple a refusé la demande. Vérifie l'identifiant et la capacité dans le portail Apple Developer.")
         case ASAuthorizationError.notInteractive.rawValue:
-            return "Connexion Apple impossible sans interaction."
+            return String(localized: "Connexion Apple impossible sans interaction.")
         default:
-            return "Apple : erreur \(authError.code.rawValue)."
+            return String(localized: "Apple : erreur \(authError.code.rawValue).")
         }
     }
 
@@ -711,7 +711,7 @@ struct ProfileView: View {
         let ok = signUp
             ? await app.social.signUp(email: email, password: password)
             : await app.social.signIn(email: email, password: password)
-        message = ok ? "Connecté." : "Échec de l'authentification."
+        message = ok ? String(localized: "Connecté.") : String(localized: "Échec de l'authentification.")
     }
 
     static func sha256Hex(_ input: String) -> String {
@@ -770,9 +770,9 @@ private struct ICloudStatusRow: View {
     private var value: String {
         guard isSynced else { return "base locale" }
         switch account {
-        case .available?: return "synchronisé"
-        case .noAccount?: return "connecte-toi à iCloud dans Réglages"
-        case .restricted?: return "iCloud restreint sur cet appareil"
+        case .available?: return String(localized: "synchronisé")
+        case .noAccount?: return String(localized: "connecte-toi à iCloud dans Réglages")
+        case .restricted?: return String(localized: "iCloud restreint sur cet appareil")
         default: return "…"
         }
     }

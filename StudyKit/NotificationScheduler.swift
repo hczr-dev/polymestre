@@ -24,7 +24,7 @@ final class NotificationScheduler {
         let fireDate = date.addingTimeInterval(TimeInterval(-minutesBefore * 60))
         guard fireDate > Date() else { return }
         let content = UNMutableNotificationContent()
-        content.title = "Session d'étude dans \(minutesBefore) min"
+        content.title = String(localized: "Session d'étude dans \(minutesBefore) min")
         content.body = location.isEmpty ? title : "\(title) · \(location)"
         content.sound = .default
         add(identifier: "session-\(id.uuidString)", content: content, date: fireDate)
@@ -37,7 +37,7 @@ final class NotificationScheduler {
             let fireDate = DateUtils.addDays(-days, to: examDate)
             guard fireDate > Date() else { continue }
             let content = UNMutableNotificationContent()
-            content.title = "Échéance dans \(Plural.count(days, "\(days) jour", "\(days) jours"))"
+            content.title = Plural.count(days, "Échéance dans \(days) jour", "Échéance dans \(days) jours")
             content.body = title
             content.sound = .default
             add(identifier: "exam-\(id.uuidString)-\(days)", content: content, date: fireDate)
@@ -68,18 +68,18 @@ final class NotificationScheduler {
         cancelPomodoro()
         if let blockEndsAt, blockEndsAt > Date() {
             let content = UNMutableNotificationContent()
-            content.title = "Bloc \(nextBlock - 1) terminé"
+            content.title = String(localized: "Bloc \(nextBlock - 1) terminé")
             content.body = breakKind == .long
-                ? "Pause longue de \(breakMinutes) min. Lève-toi, bois de l'eau."
-                : "Pause de \(breakMinutes) min. Le chrono de travail s'est arrêté."
+                ? String(localized: "Pause longue de \(breakMinutes) min. Lève-toi, bois de l'eau.")
+                : String(localized: "Pause de \(breakMinutes) min. Le chrono de travail s'est arrêté.")
             content.sound = .default
             content.interruptionLevel = .timeSensitive
             addRelative(identifier: Self.pomodoroIdentifier, content: content, date: blockEndsAt)
         }
         if breakEndsAt > Date() {
             let content = UNMutableNotificationContent()
-            content.title = "Fin de la pause"
-            content.body = "Bloc \(nextBlock) : on s'y remet quand tu es prêt·e."
+            content.title = String(localized: "Fin de la pause")
+            content.body = String(localized: "Bloc \(nextBlock) : on s'y remet quand tu es prêt·e.")
             content.sound = .default
             content.interruptionLevel = .timeSensitive
             addRelative(identifier: Self.pomodoroBreakIdentifier, content: content, date: breakEndsAt)
@@ -121,7 +121,7 @@ final class NotificationScheduler {
     func scheduleWeeklyRecap(weekday: Int = 1, hour: Int = 19, body: String) {
         center.removePendingNotificationRequests(withIdentifiers: ["weekly-recap"])
         let content = UNMutableNotificationContent()
-        content.title = "Récap de la semaine"
+        content.title = String(localized: "Récap de la semaine")
         content.body = body
         content.sound = .default
         var components = DateComponents()
@@ -196,7 +196,7 @@ final class NotificationScheduler {
         }
         if settings.dailyReminderEnabled {
             scheduleDailyReminder(hour: settings.dailyReminderHour,
-                                  body: "Pensez à consulter ce qui reste à faire cette semaine.")
+                                  body: String(localized: "Pensez à consulter ce qui reste à faire cette semaine."))
         }
         if settings.weeklyRecapEnabled {
             scheduleWeeklyRecap(weekday: 1, hour: 19, body: weeklySummary)
@@ -216,7 +216,7 @@ extension NotificationScheduler {
         await rescheduleAll(sessions: planned,
                             exams: exams,
                             settings: settings,
-                            weeklySummary: "Cette semaine : \(DateUtils.hoursLabel(seconds: weekSeconds)) de travail.")
+                            weeklySummary: String(localized: "Cette semaine : \(DateUtils.hoursLabel(seconds: weekSeconds)) de travail."))
         // Le jour d'examen s'affiche sur l'écran verrouillé, et il se déclenche par
         // le temps, pas par un geste : le raccord se fait là où les rappels sont
         // replanifiés — c'est le seul endroit que l'app traverse de toute façon

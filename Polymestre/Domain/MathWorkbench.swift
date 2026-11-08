@@ -30,7 +30,7 @@ enum MathWorkbench {
 
     static func run(_ line: String, in session: inout Session) throws -> Output {
         let text = line.trimmingCharacters(in: .whitespaces)
-        guard !text.isEmpty else { throw MathEngine.Failure.syntax("ligne vide") }
+        guard !text.isEmpty else { throw MathEngine.Failure.syntax(String(localized: "ligne vide")) }
         if MatrixParser.concerns(text, known: Set(session.matrices.keys)) {
             return try MatrixParser.run(text, in: &session)
         }
@@ -114,7 +114,7 @@ enum MathWorkbench {
         let complex = free.contains("i") && free.count > 1
         if complex { free.remove("i") }
         guard free.count == 1, let variable = free.first else {
-            throw MathEngine.Failure.domain(free.isEmpty ? "Aucune inconnue à trouver." : "Une seule inconnue, s'il te plaît.")
+            throw MathEngine.Failure.domain(free.isEmpty ? String(localized: "Aucune inconnue à trouver.") : String(localized: "Une seule inconnue, s'il te plaît."))
         }
         if let polynomial = try? Polynomial.from(difference, variable: variable, in: environment), polynomial.degree >= 1 {
             let roots = polynomial.roots().sorted { ($0.re, $0.im) < ($1.re, $1.im) }
@@ -124,7 +124,7 @@ enum MathWorkbench {
         var local = environment
         local.functions["__solve"] = ([variable], difference)
         let roots = MathEngine.roots("__solve", from: -100, to: 100, in: local)
-        guard !roots.isEmpty else { throw MathEngine.Failure.domain("Pas de solution réelle trouvée entre −100 et 100.") }
+        guard !roots.isEmpty else { throw MathEngine.Failure.domain(String(localized: "Pas de solution réelle trouvée entre −100 et 100.")) }
         return .solutions(variable: variable, roots.map(format))
     }
 
@@ -234,10 +234,10 @@ enum ComplexMath {
             case "-": return x - y
             case "*": return x * y
             case "/":
-                guard y.modulus > 0 else { throw MathEngine.Failure.domain("division par zéro") }
+                guard y.modulus > 0 else { throw MathEngine.Failure.domain(String(localized: "division par zéro")) }
                 return x / y
             case "^": return Complex.pow(x, y)
-            default: throw MathEngine.Failure.syntax("« \(op) »")
+            default: throw MathEngine.Failure.syntax(String(localized: "« \(op) »"))
             }
         case .call(let name, let arguments):
             guard arguments.count == 1 else { throw MathEngine.Failure.arity(name) }
@@ -254,7 +254,7 @@ enum ComplexMath {
             case "sin": return (Complex.exp(.i * z) - Complex.exp(-(.i * z))) / Complex(re: 0, im: 2)
             case "cos": return (Complex.exp(.i * z) + Complex.exp(-(.i * z))) / Complex(re: 2, im: 0)
             default:
-                guard z.im == 0 else { throw MathEngine.Failure.domain("\(name) d'un complexe : pas pris en charge") }
+                guard z.im == 0 else { throw MathEngine.Failure.domain(String(localized: "\(name) d'un complexe : pas pris en charge")) }
                 return Complex(re: try MathEngine.evaluate(.call(name, [.number(z.re)]), in: environment), im: 0)
             }
         case .factorial, .derivative:
@@ -370,7 +370,7 @@ struct Matrix: Equatable {
     }
 
     static func + (a: Matrix, b: Matrix) throws -> Matrix {
-        guard a.rowCount == b.rowCount, a.columnCount == b.columnCount else { throw MathEngine.Failure.domain("Tailles différentes.") }
+        guard a.rowCount == b.rowCount, a.columnCount == b.columnCount else { throw MathEngine.Failure.domain(String(localized: "Tailles différentes.")) }
         return Matrix(rows: zip(a.rows, b.rows).map { zip($0, $1).map(+) })
     }
 
@@ -402,16 +402,16 @@ struct Matrix: Equatable {
     }
 
     func determinant() throws -> Double {
-        guard rowCount == columnCount else { throw MathEngine.Failure.domain("Le déterminant demande une matrice carrée.") }
+        guard rowCount == columnCount else { throw MathEngine.Failure.domain(String(localized: "Le déterminant demande une matrice carrée.")) }
         let reduced = self.reduced()
         return reduced.rank < rowCount ? 0 : reduced.determinantSign * reduced.pivotProduct
     }
 
     func inverse() throws -> Matrix {
-        guard rowCount == columnCount else { throw MathEngine.Failure.domain("Seule une matrice carrée s'inverse.") }
+        guard rowCount == columnCount else { throw MathEngine.Failure.domain(String(localized: "Seule une matrice carrée s'inverse.")) }
         let augmented = Matrix(rows: zip(rows, Matrix.identity(rowCount).rows).map { $0 + $1 }).reduced()
         guard augmented.rank == rowCount, (0..<rowCount).allSatisfy({ abs(augmented.matrix.rows[$0][$0] - 1) < 1e-9 }) else {
-            throw MathEngine.Failure.domain("Matrice non inversible (déterminant nul).")
+            throw MathEngine.Failure.domain(String(localized: "Matrice non inversible (déterminant nul)."))
         }
         return Matrix(rows: augmented.matrix.rows.map { Array($0[rowCount...]) })
     }
@@ -445,7 +445,7 @@ enum MatrixParser {
         var parser = Parser(chars: Array(source), session: session)
         let value = try parser.expression()
         parser.skip()
-        guard parser.index == parser.chars.count else { throw MathEngine.Failure.syntax("fin inattendue") }
+        guard parser.index == parser.chars.count else { throw MathEngine.Failure.syntax(String(localized: "fin inattendue")) }
         switch value {
         case .matrix(let m):
             if let target { session.matrices[target] = m }
@@ -507,9 +507,9 @@ enum MatrixParser {
 
         mutating func primary() throws -> Value {
             skip()
-            guard index < chars.count else { throw MathEngine.Failure.syntax("expression incomplète") }
+            guard index < chars.count else { throw MathEngine.Failure.syntax(String(localized: "expression incomplète")) }
             let c = chars[index]
-            if c == "(" { index += 1; let v = try expression(); guard eat(")") else { throw MathEngine.Failure.syntax("« ) » manquante") }; return v }
+            if c == "(" { index += 1; let v = try expression(); guard eat(")") else { throw MathEngine.Failure.syntax(String(localized: "« ) » manquante")) }; return v }
             if c == "[" { return .matrix(try literal()) }
             if c.isNumber || c == "." {
                 var text = ""
@@ -523,39 +523,39 @@ enum MatrixParser {
                 if MatrixParser.functions.contains(name), eat("(") {
                     var arguments = [try expression()]
                     while eat(",") { arguments.append(try expression()) }
-                    guard eat(")") else { throw MathEngine.Failure.syntax("« ) » manquante") }
+                    guard eat(")") else { throw MathEngine.Failure.syntax(String(localized: "« ) » manquante")) }
                     return try apply(name, arguments)
                 }
                 if let m = session.matrices[name] { return .matrix(m) }
                 if let x = session.engine.variables[name] ?? MathEngine.constants[name] { return .scalar(x) }
                 throw MathEngine.Failure.unknownName(name)
             }
-            throw MathEngine.Failure.syntax("« \(c) » inattendu")
+            throw MathEngine.Failure.syntax(String(localized: "« \(c) » inattendu"))
         }
 
         mutating func literal() throws -> Matrix {
-            guard eat("[") else { throw MathEngine.Failure.syntax("« [ » attendu") }
+            guard eat("[") else { throw MathEngine.Failure.syntax(String(localized: "« [ » attendu")) }
             var rows: [[Double]] = []
             if eat("[") {
                 index -= 1
                 repeat { rows.append(try row()) } while eat(",")
             } else {
                 rows = [try numbers(until: "]")]
-                guard eat("]") else { throw MathEngine.Failure.syntax("« ] » manquant") }
+                guard eat("]") else { throw MathEngine.Failure.syntax(String(localized: "« ] » manquant")) }
                 // `[1,2,3]` : un vecteur colonne.
                 return Matrix(rows: rows[0].map { [$0] })
             }
-            guard eat("]") else { throw MathEngine.Failure.syntax("« ] » manquant") }
+            guard eat("]") else { throw MathEngine.Failure.syntax(String(localized: "« ] » manquant")) }
             guard let width = rows.first?.count, rows.allSatisfy({ $0.count == width }) else {
-                throw MathEngine.Failure.domain("Les lignes n'ont pas toutes la même longueur.")
+                throw MathEngine.Failure.domain(String(localized: "Les lignes n'ont pas toutes la même longueur."))
             }
             return Matrix(rows: rows)
         }
 
         mutating func row() throws -> [Double] {
-            guard eat("[") else { throw MathEngine.Failure.syntax("« [ » attendu") }
+            guard eat("[") else { throw MathEngine.Failure.syntax(String(localized: "« [ » attendu")) }
             let values = try numbers(until: "]")
-            guard eat("]") else { throw MathEngine.Failure.syntax("« ] » manquant") }
+            guard eat("]") else { throw MathEngine.Failure.syntax(String(localized: "« ] » manquant")) }
             return values
         }
 
@@ -580,7 +580,7 @@ enum MatrixParser {
         func apply(_ name: String, _ arguments: [Value]) throws -> Value {
             func matrix(_ value: Value) throws -> Matrix {
                 if case .matrix(let m) = value { return m }
-                throw MathEngine.Failure.domain("\(name) attend une matrice")
+                throw MathEngine.Failure.domain(String(localized: "\(name) attend une matrice"))
             }
             switch name {
             case "det": return .scalar(try matrix(arguments[0]).determinant())
@@ -607,7 +607,7 @@ enum MatrixParser {
             case (.matrix(let m), .matrix(let n), "-"): return .matrix(try m + n.scaled(-1))
             case (.matrix(let m), .matrix(let n), _): return .matrix(try m * n)
             case (.scalar(let x), .matrix(let m), "*"), (.matrix(let m), .scalar(let x), "*"): return .matrix(m.scaled(x))
-            default: throw MathEngine.Failure.domain("On n'ajoute pas un nombre à une matrice.")
+            default: throw MathEngine.Failure.domain(String(localized: "On n'ajoute pas un nombre à une matrice."))
             }
         }
     }

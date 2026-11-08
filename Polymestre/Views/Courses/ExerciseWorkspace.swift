@@ -183,7 +183,7 @@ struct SubQuestionRow: View {
     /// « 1. », « (a) », « Partie » pour une partie sans numéro ; « Question 1 »
     /// quand le libellé est seul (il n'y a pas de texte pour le compléter).
     private var label: String {
-        if question.kind == .part { return "Partie" }
+        if question.kind == .part { return String(localized: "Partie") }
         let shown = question.displayLabel
         guard question.text.isEmpty else { return shown }
         let bare = shown.trimmingCharacters(in: CharacterSet(charactersIn: ".) ("))
@@ -239,7 +239,7 @@ struct ExerciseRow: View {
                                     .accessibilityLabel("bonus")
                             }
                             if exercise.redoRequired {
-                                Pill(text: "à refaire", color: .red, icon: "arrow.counterclockwise")
+                                Pill(text: String(localized: "à refaire"), color: .red, icon: "arrow.counterclockwise")
                             }
                             if seconds >= 60 {
                                 Text(DateUtils.durationLabel(seconds: seconds))
@@ -621,7 +621,7 @@ private struct ExerciseDetailContent: View {
     private var doSection: some View {
         let leaves = exercise.leafSubQuestions
         return VStack(alignment: .leading, spacing: 10) {
-            stepTitle(number: 1, title: "Faire",
+            stepTitle(number: 1, title: String(localized: "Faire"),
                       isActive: !exercise.isDone,
                       trailing: leaves.isEmpty ? nil : "\(exercise.subQuestionDoneCount)/\(leaves.count)")
             VStack(spacing: 0) {
@@ -734,7 +734,7 @@ private struct ExerciseDetailContent: View {
 
     /// « (a) », « 1. », « Question 1 » quand le libellé est seul.
     private func label(for question: SubQuestion) -> String {
-        if question.kind == .part { return "Partie" }
+        if question.kind == .part { return String(localized: "Partie") }
         let shown = question.displayLabel
         guard question.text.isEmpty else { return shown }
         let bare = shown.trimmingCharacters(in: CharacterSet(charactersIn: ".) ("))
@@ -746,7 +746,7 @@ private struct ExerciseDetailContent: View {
     private var correctSection: some View {
         VStack(alignment: .leading, spacing: 10) {
             // Le résultat se lit sur le bouton choisi : pas de rappel à côté du titre.
-            stepTitle(number: 2, title: "Corriger", isActive: exercise.isDone && !exercise.isCorrected, trailing: nil)
+            stepTitle(number: 2, title: String(localized: "Corriger"), isActive: exercise.isDone && !exercise.isCorrected, trailing: nil)
             VStack(alignment: .leading, spacing: 12) {
                 CorrectionPicker(value: exercise.correctness) { setCorrection($0) }
                     .opacity(exercise.isDone ? 1 : 0.45)
@@ -867,7 +867,7 @@ private struct ExerciseDetailContent: View {
             let theory = course.sortedTheoryItems.filter { $0.plannedWeek == series.plannedWeek }
             if !theory.isEmpty {
                 VStack(alignment: .leading, spacing: 10) {
-                    CarnetSectionTitle("Théorie de la semaine") { Text("S\(series.plannedWeek)") }
+                    CarnetSectionTitle(String(localized: "Théorie de la semaine")) { Text("S\(series.plannedWeek)") }
                     VStack(spacing: 0) {
                         ForEach(theory.prefix(12)) { item in
                             TheoryLinkRow(item: item, onOpen: onOpenLink)
@@ -1018,7 +1018,7 @@ private struct ExerciseStepBar: View {
                             .font(Carnet.mono(.body, weight: .semibold))
                             .foregroundStyle(Carnet.ink)
                             .contentTransition(.numericText())
-                        Text(running ? "en cours" : (onThis ? "en pause" : (focus.hasSession ? "chrono ailleurs" : "chrono")))
+                        Text(running ? "en cours" : (onThis ? String(localized: "en pause") : (focus.hasSession ? String(localized: "chrono ailleurs") : String(localized: "chrono"))))
                             .font(.caption2)
                             .foregroundStyle(running ? Carnet.wrong : Carnet.inkSecondary)
                     }
@@ -1029,8 +1029,8 @@ private struct ExerciseStepBar: View {
             }
             .buttonStyle(PressableStyle(scale: 0.96))
             .accessibilityLabel(running ? "Mettre le chrono en pause"
-                                : (onThis ? "Reprendre le chrono"
-                                   : (focus.hasSession ? "Passer le chrono sur cet exercice" : "Démarrer le chrono sur cet exercice")))
+                                : (onThis ? String(localized: "Reprendre le chrono")
+                                   : (focus.hasSession ? String(localized: "Passer le chrono sur cet exercice") : String(localized: "Démarrer le chrono sur cet exercice"))))
             .accessibilityValue(TimerText.clock(TimeInterval(spent)))
         }
     }

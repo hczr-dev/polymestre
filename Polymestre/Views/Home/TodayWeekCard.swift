@@ -60,9 +60,9 @@ struct WeekTimeCard: View {
                 }
                 Rectangle().fill(Carnet.rule).frame(height: 1)
                 HStack(spacing: 18) {
-                    axis("Théorie", theory)
-                    axis("Séries", series)
-                    axis("Corrigés", corrections)
+                    axis(String(localized: "Théorie"), theory)
+                    axis(String(localized: "Séries"), series)
+                    axis(String(localized: "Corrigés"), corrections)
                 }
                 if late > 0 {
                     Label("\(late) à rattraper dans tes cours",
@@ -162,10 +162,10 @@ struct WeekCourseRow: View {
                 }
                 if week.hasItems {
                     HStack(spacing: 14) {
-                        axis("Théorie", done: week.watchedCount, total: week.videoCount, tint: tint)
-                        axis("Exercices", done: week.doneCount, total: week.exerciseCount, tint: tint)
+                        axis(String(localized: "Théorie"), done: week.watchedCount, total: week.videoCount, tint: tint)
+                        axis(String(localized: "Exercices"), done: week.doneCount, total: week.exerciseCount, tint: tint)
                         if week.doneCount > 0 {
-                            axis("Corrigés", done: week.correctedCount, total: week.doneCount, tint: tint)
+                            axis(String(localized: "Corrigés"), done: week.correctedCount, total: week.doneCount, tint: tint)
                         }
                     }
                 }

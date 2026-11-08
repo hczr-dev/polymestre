@@ -43,10 +43,10 @@ struct AgendaFilter: Equatable {
         var label: String {
             switch self {
             case .epfl: return "EPFL"
-            case .lectures: return "Cours"
-            case .exams: return "Évaluations"
+            case .lectures: return String(localized: "Cours")
+            case .exams: return String(localized: "Évaluations")
             case .sessions: return "Sessions"
-            case .tasks: return "Tâches"
+            case .tasks: return String(localized: "Tâches")
             }
         }
         var icon: String {
@@ -190,7 +190,7 @@ struct AgendaView: View {
                 date: due,
                 endDate: nil,
                 title: task.title,
-                subtitle: [task.course?.displayCode ?? task.provider.label, task.isOverdue ? "en retard" : nil]
+                subtitle: [task.course?.displayCode ?? task.provider.label, task.isOverdue ? String(localized: "en retard") : nil]
                     .compactMap { $0 }.joined(separator: " · "),
                 icon: "checklist",
                 color: task.isOverdue ? .red : .teal,
@@ -230,7 +230,7 @@ struct AgendaView: View {
         var parts: [String] = []
         if let course = event.course { parts.append(course.displayCode) }
         if !event.location.isEmpty { parts.append(event.location) }
-        if event.isLecture, event.isSkipped { parts.append("manqué") }
+        if event.isLecture, event.isSkipped { parts.append(String(localized: "manqué")) }
         return parts.isEmpty ? event.kind.label : parts.joined(separator: " · ")
     }
 
@@ -396,9 +396,9 @@ struct AgendaView: View {
         let tracked = courses.filter(\.isTracked)
         if let term = AcademicTerm.resolve(from: tracked.compactMap(\.term)),
            weekStart >= DateUtils.startOfWeek(term.startDate), weekStart < term.endDate {
-            return "Semaine \(DateUtils.clampedWeek(for: weekStart.addingTimeInterval(3600 * 12), term: term))"
+            return String(localized: "Semaine \(DateUtils.clampedWeek(for: weekStart.addingTimeInterval(3600 * 12), term: term))")
         }
-        return "Semaine du \(DateUtils.shortDay.string(from: weekStart))"
+        return String(localized: "Semaine du \(DateUtils.shortDay.string(from: weekStart))")
     }
 
     private var weekSubtitle: String {
@@ -469,7 +469,7 @@ struct AgendaView: View {
     private var filterBar: some View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: Layout.inline) {
-                chip("Tout", icon: nil, color: nil, isOn: filter.isEverything) {
+                chip(String(localized: "Tout"), icon: nil, color: nil, isOn: filter.isEverything) {
                     filter = AgendaFilter()
                 }
                 ForEach(AgendaFilter.Family.allCases) { family in
@@ -526,12 +526,12 @@ struct AgendaView: View {
         let isToday = calendar.isDateInToday(selectedDay)
         return VStack(alignment: .leading, spacing: Layout.control) {
             SectionHeader(title: dayTitle,
-                          trailing: total > 0 ? "\(DateUtils.durationLabel(seconds: total)) prévues" : nil)
+                          trailing: total > 0 ? String(localized: "\(DateUtils.durationLabel(seconds: total)) prévues") : nil)
             if items.isEmpty {
                 EmptyCard(icon: "calendar",
-                          title: isToday ? "Rien aujourd'hui" : "Rien ce jour-là",
-                          message: filter.isEverything ? "" : "Rien avec ce filtre.",
-                          actionTitle: "Planifier une session") {
+                          title: isToday ? String(localized: "Rien aujourd'hui") : String(localized: "Rien ce jour-là"),
+                          message: filter.isEverything ? "" : String(localized: "Rien avec ce filtre."),
+                          actionTitle: String(localized: "Planifier une session")) {
                     showingPlan = true
                 }
             } else {
@@ -634,9 +634,9 @@ struct AgendaView: View {
     }
 
     private var dayTitle: String {
-        if calendar.isDateInToday(selectedDay) { return "Aujourd'hui" }
-        if calendar.isDateInTomorrow(selectedDay) { return "Demain" }
-        if calendar.isDateInYesterday(selectedDay) { return "Hier" }
+        if calendar.isDateInToday(selectedDay) { return String(localized: "Aujourd'hui") }
+        if calendar.isDateInTomorrow(selectedDay) { return String(localized: "Demain") }
+        if calendar.isDateInYesterday(selectedDay) { return String(localized: "Hier") }
         return DateUtils.fullDayLabel(selectedDay).capitalizedFirst
     }
 
@@ -682,7 +682,7 @@ struct AgendaView: View {
                         let on = event.isChecked()
                         CheckCircleButton(isOn: on,
                                           tint: TaskType.lecture.tint,
-                                          label: on ? "Marquer \(event.title) manqué" : "J'étais à \(event.title)") {
+                                          label: on ? String(localized: "Marquer \(event.title) manqué") : String(localized: "J'étais à \(event.title)")) {
                             event.toggleChecked()
                             try? context.save()
                         }
@@ -706,7 +706,7 @@ struct AgendaView: View {
         let days = upcomingDays
         if !days.isEmpty {
             VStack(alignment: .leading, spacing: Layout.control) {
-                SectionHeader(title: "Les jours suivants", trailing: nil)
+                SectionHeader(title: String(localized: "Les jours suivants"), trailing: nil)
                 Card {
                     VStack(alignment: .leading, spacing: Layout.block) {
                         ForEach(Array(days.enumerated()), id: \.element.day) { index, group in
@@ -758,8 +758,8 @@ struct AgendaView: View {
     }
 
     private func upcomingDayLabel(_ day: Date) -> String {
-        if calendar.isDateInToday(day) { return "Aujourd'hui" }
-        if calendar.isDateInTomorrow(day) { return "Demain" }
+        if calendar.isDateInToday(day) { return String(localized: "Aujourd'hui") }
+        if calendar.isDateInTomorrow(day) { return String(localized: "Demain") }
         return DateUtils.fullDayLabel(day)
     }
 
@@ -841,7 +841,7 @@ struct AgendaView: View {
     /// Change le type de toutes les séances du créneau, et le dit.
     private func retype(_ event: LinkedCalendarEvent, as kind: CalendarEventKind) {
         let count = CalendarSync.setKind(kind, forSlotOf: event, context: context)
-        syncMessage = "\(Plural.count(count, "\(count) séance", "\(count) séances")) du même créneau : \(kind.label.lowercased())."
+        syncMessage = String(localized: "\(Plural.count(count, "\(count) séance", "\(count) séances")) du même créneau : \(kind.label.lowercased()).")
         Haptics.success()
     }
 
@@ -864,7 +864,7 @@ struct AgendaView: View {
         if !app.calendar.hasAccess {
             let granted = await app.calendar.requestAccess()
             guard granted else {
-                syncMessage = "Accès au calendrier refusé. Autorise-le dans Réglages › Polymestre."
+                syncMessage = String(localized: "Accès au calendrier refusé. Autorise-le dans Réglages › Polymestre.")
                 return
             }
         }
@@ -873,7 +873,7 @@ struct AgendaView: View {
                                        courses: courses,
                                        service: app.calendar)
         syncMessage = result.total == 0
-            ? "Calendrier relu · aucun nouvel événement."
-            : "Calendrier relu · \(Plural.count(result.imported, "\(result.imported) ajouté", "\(result.imported) ajoutés")), \(result.updated) mis à jour."
+            ? String(localized: "Calendrier relu · aucun nouvel événement.")
+            : String(localized: "Calendrier relu · \(Plural.count(result.imported, "\(result.imported) ajouté", "\(result.imported) ajoutés")), \(result.updated) mis à jour.")
     }
 }

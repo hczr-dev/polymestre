@@ -52,7 +52,7 @@ final class SiteHub {
             return
         }
         guard let url = URL(string: address), url.scheme?.hasPrefix("http") == true else {
-            documents[address] = .failed("Pas de document.")
+            documents[address] = .failed(String(localized: "Pas de document."))
             return
         }
         if case .ready? = documents[address] { return }
@@ -84,7 +84,7 @@ final class SiteHub {
                         return
                     }
                 }
-                documents[address] = Institution.current.owns(host: url.host) ? .needsLogin : .failed("Document introuvable.")
+                documents[address] = Institution.current.owns(host: url.host) ? .needsLogin : .failed(String(localized: "Document introuvable."))
             }
         }
     }

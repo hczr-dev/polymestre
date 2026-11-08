@@ -45,7 +45,7 @@ final class OnboardingAutoSetup {
     }
 
     private(set) var phase: Phase = .idle
-    private(set) var headline = "Connexion à Moodle…"
+    private(set) var headline = String(localized: "Connexion à Moodle…")
     private(set) var progress = ImportProgress()
     private(set) var feed = ImportFeed()
     private(set) var weeks = 14
@@ -72,9 +72,9 @@ final class OnboardingAutoSetup {
     func currentLine(at now: Date) -> (code: String, step: String)? {
         guard let id = currentID, let card = cards.first(where: { $0.id == id }),
               let course = progress.courses.first(where: { $0.id == id }) else { return nil }
-        if isPaused { return (card.code, "en pause") }
+        if isPaused { return (card.code, String(localized: "en pause")) }
         if course.stage == .activities, course.total > 0 {
-            return (card.code, "activités \(course.done) / \(course.total)")
+            return (card.code, String(localized: "activités \(course.done) / \(course.total)"))
         }
         return (card.code, course.stage.label)
     }
@@ -116,25 +116,25 @@ final class OnboardingAutoSetup {
         self.context = context
         phase = .working
         isPaused = false
-        headline = "Connexion à Moodle…"
+        headline = String(localized: "Connexion à Moodle…")
         observeLifecycle()
         let client = MoodleClient.background
         guard await client.ensureSignedIn() else {
-            phase = .failed("Moodle ne te reconnaît pas encore. Réessaie la connexion, ou continue sans Moodle.")
+            phase = .failed(String(localized: "Moodle ne te reconnaît pas encore. Réessaie la connexion, ou continue sans Moodle."))
             return
         }
         // Les autres sites de l'école (Courseware, MediaSpace, Ed, Explique) par
         // la même connexion, pendant la lecture des cours.
         let others = Task { @MainActor in await SchoolConnect.shared.connectAll() }
 
-        headline = "Lecture de tes cours…"
+        headline = String(localized: "Lecture de tes cours…")
         var refs = (try? await client.enrolled(classification: "inprogress")) ?? []
         if MoodleOnboarding.courses(from: refs).isEmpty {
             refs = (try? await client.enrolled()) ?? []
         }
         let planned = MoodleOnboarding.courses(from: refs)
         guard !planned.isEmpty else {
-            phase = .failed("Aucun cours EPFL trouvé dans tes inscriptions Moodle. Ajoute-les depuis ton horaire ou à la main.")
+            phase = .failed(String(localized: "Aucun cours EPFL trouvé dans tes inscriptions Moodle. Ajoute-les depuis ton horaire ou à la main."))
             return
         }
 
@@ -170,7 +170,7 @@ final class OnboardingAutoSetup {
         feed.reset(cards.map { (id: $0.id, code: $0.code, name: $0.name, colorHex: $0.colorHex) })
         progress.reset(courseIDs: cards.map(\.id), now: Date())
         totals.courses = targets.count
-        headline = "Ton semestre se construit"
+        headline = String(localized: "Ton semestre se construit")
         startActivity()
 
         // 2. Le contenu, cours par cours.
@@ -216,7 +216,7 @@ final class OnboardingAutoSetup {
         extraSites = SchoolConnect.shared.sites
             .filter { $0 != .moodle && SchoolConnect.shared.state($0) == .connected }
             .map(\.title).sorted()
-        headline = "C'est prêt"
+        headline = String(localized: "C'est prêt")
         phase = .done
         finishActivity()
         notifyIfBackground()
@@ -373,12 +373,12 @@ final class OnboardingAutoSetup {
 
     private func notifyIfBackground() {
         guard UIApplication.shared.applicationState != .active else { return }
-        post("Ton semestre est prêt",
-             "\(totals.courses) cours, \(totals.series) séries et \(totals.theory) éléments de théorie rangés semaine par semaine.")
+        post(String(localized: "Ton semestre est prêt"),
+             String(localized: "\(totals.courses) cours, \(totals.series) séries et \(totals.theory) éléments de théorie rangés semaine par semaine."))
     }
 
     private func notifyPaused() {
-        post("Import en pause", "iOS a mis Polymestre en pause. Rouvre l'app : l'import reprend là où il s'est arrêté.")
+        post(String(localized: "Import en pause"), String(localized: "iOS a mis Polymestre en pause. Rouvre l'app : l'import reprend là où il s'est arrêté."))
     }
 
     private func post(_ title: String, _ body: String) {
@@ -395,7 +395,7 @@ final class OnboardingAutoSetup {
     /// l'accueil sans Moodle.
     func runDemo(fast: Bool = false) async {
         phase = .working
-        headline = "Ton semestre se construit"
+        headline = String(localized: "Ton semestre se construit")
         let courses = DemoSemester.courses
         weeks = 14
         currentWeek = 4
@@ -425,7 +425,7 @@ final class OnboardingAutoSetup {
                 progress.activities(done: min(start + 18, openable.count), total: openable.count, course: id, now: Date())
             }
             enter(.sources, course: id)
-            for message in ["lecture du plan du cours…", "vidéos MediaSpace…"] {
+            for message in [String(localized: "lecture du plan du cours…"), String(localized: "vidéos MediaSpace…")] {
                 feed.note(message, course: id)
                 try? await Task.sleep(for: .seconds(1.0 * pace))
             }
@@ -442,7 +442,7 @@ final class OnboardingAutoSetup {
             try? await Task.sleep(for: .seconds(0.6 * pace))
         }
         extraSites = ["Courseware", "MediaSpace"]
-        headline = "C'est prêt"
+        headline = String(localized: "C'est prêt")
         phase = .done
         finishActivity()
     }

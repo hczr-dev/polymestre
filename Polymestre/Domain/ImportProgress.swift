@@ -36,13 +36,13 @@ struct ImportProgress: Equatable {
         /// Ce qu'on dit de l'étape, en clair.
         var label: String {
             switch self {
-            case .waiting: return "en attente"
-            case .outline: return "plan du cours"
-            case .activities: return "lecture des activités"
-            case .sources: return "vidéos, MOOC et plan"
-            case .analysis: return "rangement par semaine"
-            case .writing: return "écriture"
-            case .done: return "prêt"
+            case .waiting: return String(localized: "en attente")
+            case .outline: return String(localized: "plan du cours")
+            case .activities: return String(localized: "lecture des activités")
+            case .sources: return String(localized: "vidéos, MOOC et plan")
+            case .analysis: return String(localized: "rangement par semaine")
+            case .writing: return String(localized: "écriture")
+            case .done: return String(localized: "prêt")
             }
         }
 
@@ -178,7 +178,7 @@ struct ImportProgress: Equatable {
     /// « ~1 min 40 », « ~25 s », « encore un instant ».
     static func remainingLabel(_ seconds: Double?) -> String {
         guard let seconds else { return "estimation…" }
-        if seconds < 8 { return "encore un instant" }
+        if seconds < 8 { return String(localized: "encore un instant") }
         if seconds < 60 { return "~\(Int((seconds / 5).rounded()) * 5) s" }
         let minutes = Int(seconds) / 60
         let rest = (Int(seconds) % 60) / 10 * 10

@@ -8,7 +8,7 @@ enum ClaudeDesktopSetup {
 
     enum Failure: LocalizedError {
         case zip
-        var errorDescription: String? { "l'extension n'a pas pu être fabriquée." }
+        var errorDescription: String? { String(localized: "l'extension n'a pas pu être fabriquée.") }
     }
 
     static var packageURL: URL {

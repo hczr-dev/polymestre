@@ -16,8 +16,8 @@ enum SupabasePasswordUpdate {
         case tooShort, mismatch
         var message: String {
             switch self {
-            case .tooShort: return "6 caractères au moins."
-            case .mismatch: return "Les deux mots de passe ne sont pas identiques."
+            case .tooShort: return String(localized: "6 caractères au moins.")
+            case .mismatch: return String(localized: "Les deux mots de passe ne sont pas identiques.")
             }
         }
     }
@@ -49,13 +49,13 @@ enum SupabasePasswordUpdate {
     static func message(forStatus status: Int, body: String) -> String {
         let lower = body.lowercased()
         if lower.contains("same_password") || lower.contains("different from the old") {
-            return "Ce mot de passe est déjà le tien : choisis-en un autre."
+            return String(localized: "Ce mot de passe est déjà le tien : choisis-en un autre.")
         }
         if lower.contains("weak") || lower.contains("at least") || lower.contains("short") {
-            return "Le mot de passe est trop faible (6 caractères au moins)."
+            return String(localized: "Le mot de passe est trop faible (6 caractères au moins).")
         }
-        if status == 401 || status == 403 { return "Session expirée : reconnecte-toi, puis réessaie." }
-        if status >= 500 { return "Le serveur a un problème (\(status)) : réessaie dans un instant." }
-        return "Le serveur a refusé le changement (\(status))."
+        if status == 401 || status == 403 { return String(localized: "Session expirée : reconnecte-toi, puis réessaie.") }
+        if status >= 500 { return String(localized: "Le serveur a un problème (\(status)) : réessaie dans un instant.") }
+        return String(localized: "Le serveur a refusé le changement (\(status)).")
     }
 }

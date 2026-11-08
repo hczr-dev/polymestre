@@ -149,10 +149,10 @@ struct StudyModeScreen: View {
         var title: String {
             switch self {
             case .desk: return "Bureau"
-            case .series: return "Série"
-            case .course: return "Cours"
-            case .calc: return "Calcul"
-            case .music: return "Musique"
+            case .series: return String(localized: "Série")
+            case .course: return String(localized: "Cours")
+            case .calc: return String(localized: "Calcul")
+            case .music: return String(localized: "Musique")
             }
         }
         var icon: String {
@@ -200,7 +200,7 @@ struct StudyModeScreen: View {
             VStack(spacing: 12) {
                 Image(systemName: kind == .onBreak ? "cup.and.saucer" : (kind == .paused ? "pause.circle" : "hourglass"))
                     .font(.largeTitle).foregroundStyle(Carnet.inkSecondary)
-                Text(kind == .onBreak ? "Pause" : (kind == .paused ? "En pause" : "Bientôt fini"))
+                Text(kind == .onBreak ? "Pause" : (kind == .paused ? String(localized: "En pause") : String(localized: "Bientôt fini")))
                     .font(Carnet.serif(.title)).foregroundStyle(Carnet.ink)
                 HStack(spacing: 10) {
                     switch kind {
@@ -615,15 +615,15 @@ struct StudyModeScreen: View {
             ForEach(Array(SessionFlow.load().steps.enumerated()), id: \.element) { index, item in
                 switch item {
                 case .course:
-                    step(index + 1, item.title, theoryLeft == 0 ? "À jour pour cette semaine" : "\(theoryLeft) à voir cette semaine",
+                    step(index + 1, item.title, theoryLeft == 0 ? String(localized: "À jour pour cette semaine") : String(localized: "\(theoryLeft) à voir cette semaine"),
                          done: theoryLeft == 0) { tab = .course }
                 case .series:
-                    step(index + 1, item.title, series.map { "\($0.title.isEmpty ? "Série \($0.seriesNumber)" : $0.title) · \($0.doneCount)/\($0.requiredExercises.count)" } ?? "Pas de série",
+                    step(index + 1, item.title, series.map { "\($0.title.isEmpty ? $0.displayName : $0.title) · \($0.doneCount)/\($0.requiredExercises.count)" } ?? String(localized: "Pas de série"),
                          done: series?.isComplete == true) { tab = .series }
                 case .help:
                     step(index + 1, item.title, "Un indice de Claude", done: false) { askClaude(ClaudeTutor.QuickAction.hint.prompt) }
                 case .debrief:
-                    step(index + 1, item.title, "Post-mortem quand la série est corrigée", done: false) {
+                    step(index + 1, item.title, String(localized: "Post-mortem quand la série est corrigée"), done: false) {
                         askClaude(ClaudeTutor.postMortemPrompt(useSkill: false))
                     }
                 }
@@ -719,7 +719,7 @@ struct StudyModeScreen: View {
     private var headline: String {
         let target = FocusController.target(of: focus.state?.targetID, in: course)
         return target.exercise?.displayNumber ?? target.theoryItem?.displayNumber
-            ?? (course == nil ? "Session libre" : (focus.state?.taskType.label ?? ""))
+            ?? (course == nil ? String(localized: "Session libre") : (focus.state?.taskType.label ?? ""))
     }
 
     private var tools: [StudyMode.Tool] {
@@ -768,7 +768,7 @@ struct StudyModeSettingsView: View {
                         }
                     }
                 } header: {
-                    CarnetFormHeader("Temps d'écran")
+                    CarnetFormHeader(String(localized: "Temps d'écran"))
                 } footer: {
                     Text("Seulement tes apps et sites de cours, jusqu'à la fin.")
                 }
@@ -793,7 +793,7 @@ struct StudyModeSettingsView: View {
                     Text("Dans cette version, l'iPhone ne bloque pas les autres apps : Apple doit encore autoriser le Temps d'écran pour Polymestre. Le mode étude reste ton écran de travail, et le Mac, lui, bloque.")
                         .font(.subheadline)
                 } header: {
-                    CarnetFormHeader("Temps d'écran")
+                    CarnetFormHeader(String(localized: "Temps d'écran"))
                 }
             }
 
@@ -813,7 +813,7 @@ struct StudyModeSettingsView: View {
                     Button("Ajouter", action: addSite).disabled(StudyMode.normalizedDomain(newSite) == nil)
                 }
             } header: {
-                CarnetFormHeader("Sites permis")
+                CarnetFormHeader(String(localized: "Sites permis"))
             } footer: {
                 Text("« epfl.ch » ouvre aussi Moodle, Botafogo…")
             }

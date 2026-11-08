@@ -181,10 +181,10 @@ private struct StudySetupView: View {
                 .buttonStyle(.plain)
             }
 
-            field("Sur quoi") {
+            field(String(localized: "Sur quoi")) {
                 VStack(alignment: .leading, spacing: 12) {
                     FlowLayout(spacing: 7) {
-                        CourseChip(title: "Libre", color: StudyPalette.inkSecondary, selected: screen.courseID == nil) {
+                        CourseChip(title: String(localized: "Libre"), color: StudyPalette.inkSecondary, selected: screen.courseID == nil) {
                             screen.courseID = nil
                             screen.targetID = nil
                         }
@@ -210,7 +210,7 @@ private struct StudySetupView: View {
                 }
             }
 
-            field("Durée") {
+            field(String(localized: "Durée")) {
                 VStack(alignment: .leading, spacing: 10) {
                     HStack(spacing: 8) {
                         ForEach(StudyMode.durations, id: \.self) { value in
@@ -220,7 +220,7 @@ private struct StudySetupView: View {
                                 openEnded = false
                             }
                         }
-                        durationChip("Sans fin", icon: "infinity", selected: openEnded) { openEnded = true }
+                        durationChip(String(localized: "Sans fin"), icon: "infinity", selected: openEnded) { openEnded = true }
                             .help("Pas d'heure de fin : tu termines quand tu as fini.")
                     }
                     // Une durée libre, en minutes, ou une heure de fin.
@@ -245,7 +245,7 @@ private struct StudySetupView: View {
             }
 
             HStack(alignment: .top, spacing: 36) {
-            field("Rythme") {
+            field(String(localized: "Rythme")) {
                 Toggle(isOn: $pomodoro) {
                     VStack(alignment: .leading, spacing: 2) {
                         Text("Pomodoro").foregroundStyle(StudyPalette.ink)
@@ -260,7 +260,7 @@ private struct StudySetupView: View {
             }
             }
 
-            field("Blocage") {
+            field(String(localized: "Blocage")) {
                 VStack(alignment: .leading, spacing: 8) {
                     Toggle(isOn: Bindable(screen).locks) {
                         Text("Bloquer le reste").foregroundStyle(StudyPalette.ink)
@@ -287,7 +287,7 @@ private struct StudySetupView: View {
             }
 
             if screen.locks {
-                field("Ouverts") {
+                field(String(localized: "Ouverts")) {
                     StudyToolStrip(course: course)
                 }
             }
@@ -349,8 +349,8 @@ private struct StudySetupView: View {
     }
 
     private var endLabel: String {
-        if openEnded { return "sans heure de fin" }
-        return "jusqu'à " + DateUtils.time.string(from: Date().addingTimeInterval(TimeInterval(minutes * 60)))
+        if openEnded { return String(localized: "sans heure de fin") }
+        return String(localized: "jusqu'à ") + DateUtils.time.string(from: Date().addingTimeInterval(TimeInterval(minutes * 60)))
     }
 
     private func durationChip(_ title: String, icon: String? = nil, selected: Bool, action: @escaping () -> Void) -> some View {
@@ -431,7 +431,7 @@ struct StudyDial: View {
             }
             VStack(spacing: 8) {
                 TimerTimeline { date in
-                    Kicker(timer.phase == .paused ? "En pause" : (timer.statusLabel(at: date) ?? (StudyMode.isOpenEnded(timer.state) ? "Sans fin" : "Reste")),
+                    Kicker(timer.phase == .paused ? String(localized: "En pause") : (timer.statusLabel(at: date) ?? (StudyMode.isOpenEnded(timer.state) ? String(localized: "Sans fin") : String(localized: "Reste"))),
                            color: timer.phase == .onBreak ? MacStyle.breakTint : tint)
                 }
                 StudyTimeline { date in
@@ -443,7 +443,7 @@ struct StudyDial: View {
                 HStack(spacing: 5) {
                     Image(systemName: timer.phase == .onBreak ? "cup.and.saucer" : "timer")
                     TimerClockText(font: .callout.monospacedDigit())
-                    Text(timer.state?.pomodoro == true ? (timer.phase == .onBreak ? "de pause" : "du bloc") : "de travail")
+                    Text(timer.state?.pomodoro == true ? (timer.phase == .onBreak ? "de pause" : String(localized: "du bloc")) : "de travail")
                 }
                 .font(.callout)
                 .foregroundStyle(StudyPalette.inkSecondary)

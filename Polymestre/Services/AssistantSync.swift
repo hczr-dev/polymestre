@@ -226,7 +226,7 @@ enum AssistantSync {
         let (data, response) = try await URLSession.shared.data(for: request)
         guard let http = response as? HTTPURLResponse, (200..<300).contains(http.statusCode) else {
             let detail = String(decoding: data.prefix(200), as: UTF8.self)
-            throw HiddenSiteSession.SiteError.failed("Serveur de l'assistant : \((response as? HTTPURLResponse)?.statusCode ?? 0) \(detail)")
+            throw HiddenSiteSession.SiteError.failed(String(localized: "Serveur de l'assistant : \((response as? HTTPURLResponse)?.statusCode ?? 0) \(detail)"))
         }
         return try JSONDecoder().decode(Reply.self, from: data)
     }

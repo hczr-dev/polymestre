@@ -77,7 +77,7 @@ final class AcademicMilestone {
     /// « dans 12 j », « aujourd'hui » — avec la mention d'approximation.
     func countdown(from reference: Date = Date()) -> String {
         let base = value.countdown(from: reference)
-        return isApproximate ? "vers le \(DateUtils.shortDay.string(from: date))" : base
+        return isApproximate ? String(localized: "vers le \(DateUtils.shortDay.string(from: date))") : base
     }
 
     /// Installe l'instantané embarqué si l'app ne connaît encore aucune échéance.

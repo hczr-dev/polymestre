@@ -91,13 +91,13 @@ enum DataRepair {
         var summary: String {
             var parts: [String] = []
             if coursesAttached > 0 {
-                parts.append("\(Plural.count(coursesAttached, "\(coursesAttached) cours rattaché", "\(coursesAttached) cours rattachés")) à leur semestre")
+                parts.append(String(localized: "\(Plural.count(coursesAttached, "\(coursesAttached) cours rattaché", "\(coursesAttached) cours rattachés")) à leur semestre"))
             }
             if milestonesInstalled > 0 {
-                parts.append("\(milestonesInstalled) échéances de l'EPFL installées")
+                parts.append(String(localized: "\(milestonesInstalled) échéances de l'EPFL installées"))
             }
             if bonusCleared > 0 {
-                parts.append("\(bonusCleared) exercices remis au programme")
+                parts.append(String(localized: "\(bonusCleared) exercices remis au programme"))
             }
             return parts.joined(separator: " · ")
         }

@@ -46,10 +46,10 @@ struct TimerControls: View {
 
     private var primaryHelp: String {
         switch timer.phase {
-        case .idle: return "Démarrer (⌘T)"
+        case .idle: return String(localized: "Démarrer (⌘T)")
         case .running: return "Pause (⌘T)"
-        case .paused: return "Reprendre (⌘T)"
-        case .onBreak: return "Reprendre"
+        case .paused: return String(localized: "Reprendre (⌘T)")
+        case .onBreak: return String(localized: "Reprendre")
         }
     }
 }
@@ -101,7 +101,7 @@ struct TimerSetupRow: View {
                     }
                 }
             } label: {
-                PillLabel(dot: course.map { Carnet.tint($0.colorHex) }, title: course?.displayCode ?? "Sans cours")
+                PillLabel(dot: course.map { Carnet.tint($0.colorHex) }, title: course?.displayCode ?? String(localized: "Sans cours"))
             }
             .pillMenu()
             .help(course?.name ?? "Choisir un cours")
@@ -167,7 +167,7 @@ struct TargetMenu: View {
     @Binding var selection: UUID?
 
     var body: some View {
-        let label = MacTargets.label(selection, in: course) ?? "Tout le cours"
+        let label = MacTargets.label(selection, in: course) ?? String(localized: "Tout le cours")
         Menu {
             Button("Tout le cours") { selection = nil }
             Divider()

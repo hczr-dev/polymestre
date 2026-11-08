@@ -143,8 +143,8 @@ final class TimerEngine {
                                             durationSeconds: seconds,
                                             isManual: false,
                                             note: saved.note.isEmpty
-                                                ? "Chrono resté ouvert — durée à vérifier"
-                                                : saved.note + " · chrono resté ouvert"))
+                                                ? String(localized: "Chrono resté ouvert — durée à vérifier")
+                                                : saved.note + String(localized: " · chrono resté ouvert")))
                 try? context.save()
             }
             scheduleBoundary()
@@ -340,7 +340,7 @@ final class TimerEngine {
                                        startedAt: start,
                                        durationSeconds: part.seconds,
                                        isManual: false,
-                                       note: current.groupSession.map { "Session « \($0.groupName) »" + (index == 0 && !current.note.isEmpty ? " · " + current.note : "") }
+                                       note: current.groupSession.map { String(localized: "Session « \($0.groupName) »") + (index == 0 && !current.note.isEmpty ? " · " + current.note : "") }
                                            ?? (index == 0 ? current.note : ""),
                                        exercise: target.exercise,
                                        theoryItem: target.theoryItem)

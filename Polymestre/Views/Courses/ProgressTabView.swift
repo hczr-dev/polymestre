@@ -41,15 +41,15 @@ struct ProgressTabView: View {
         let ahead = ProgressEngine.aheadCount(for: course)
         let sentence: String
         if late > 0 {
-            sentence = late == 1 ? "1 élément à rattraper" : "\(late) éléments à rattraper"
+            sentence = late == 1 ? String(localized: "1 élément à rattraper") : String(localized: "\(late) éléments à rattraper")
         } else if ahead > 0 {
-            sentence = "À jour, et \(ahead) d'avance"
+            sentence = String(localized: "À jour, et \(ahead) d'avance")
         } else {
-            sentence = "À jour"
+            sentence = String(localized: "À jour")
         }
         return VStack(alignment: .leading, spacing: 14) {
             VStack(alignment: .leading, spacing: 4) {
-                CarnetKicker(current > 0 ? "Semaine \(current) sur \(course.term?.totalWeeks ?? 14)" : "Semestre", color: tint)
+                CarnetKicker(current > 0 ? String(localized: "Semaine \(current) sur \(course.term?.totalWeeks ?? 14)") : String(localized: "Semestre"), color: tint)
                 HStack(spacing: 8) {
                     Image(systemName: late > 0 ? "exclamationmark.circle.fill" : "checkmark.circle.fill")
                         .foregroundStyle(late > 0 ? Carnet.review : Carnet.correct)
@@ -64,9 +64,9 @@ struct ProgressTabView: View {
                 }
             }
             HStack(spacing: 14) {
-                axis("Théorie", progress.watchedCount, progress.videoCount)
-                axis("Séries", progress.doneCount, progress.exerciseCount)
-                axis("Corrigés", progress.correctedCount, progress.doneCount)
+                axis(String(localized: "Théorie"), progress.watchedCount, progress.videoCount)
+                axis(String(localized: "Séries"), progress.doneCount, progress.exerciseCount)
+                axis(String(localized: "Corrigés"), progress.correctedCount, progress.doneCount)
             }
             if progress.wrongOrRedoCount > 0 {
                 Label("\(Plural.count(progress.wrongOrRedoCount, "\(progress.wrongOrRedoCount) exercice", "\(progress.wrongOrRedoCount) exercices")) à refaire",
@@ -128,11 +128,11 @@ struct ProgressTabView: View {
     @ViewBuilder
     private var weeksSection: some View {
         VStack(alignment: .leading, spacing: 10) {
-            CarnetSectionTitle("Semaine par semaine")
+            CarnetSectionTitle(String(localized: "Semaine par semaine"))
             if weeks.allSatisfy({ !$0.hasItems }) {
-                CarnetEmpty(icon: "calendar", title: "Rien de planifié",
-                            message: "Importe la théorie et les séries du cours.",
-                            actionTitle: "Importer du contenu") {
+                CarnetEmpty(icon: "calendar", title: String(localized: "Rien de planifié"),
+                            message: String(localized: "Importe la théorie et les séries du cours."),
+                            actionTitle: String(localized: "Importer du contenu")) {
                     app.router.openContentImport(courseID: course.id)
                 }
             } else {
@@ -214,11 +214,11 @@ struct ProgressTabView: View {
 
     /// « Théorie 1/1 · Série 4 : 3/5 ».
     private func weekSummary(_ week: WeeklyProgress) -> String {
-        guard week.hasItems else { return "Rien de prévu" }
+        guard week.hasItems else { return String(localized: "Rien de prévu") }
         var parts: [String] = []
-        if week.videoCount > 0 { parts.append("Théorie \(week.watchedCount)/\(week.videoCount)") }
+        if week.videoCount > 0 { parts.append(String(localized: "Théorie \(week.watchedCount)/\(week.videoCount)")) }
         if week.exerciseCount > 0 {
-            let name = week.seriesNumbers.isEmpty ? "Séries" : "Série " + week.seriesNumbers.map(String.init).joined(separator: ", ")
+            let name = week.seriesNumbers.isEmpty ? String(localized: "Séries") : String(localized: "Série ") + week.seriesNumbers.map(String.init).joined(separator: ", ")
             parts.append("\(name) : \(week.doneCount)/\(week.exerciseCount)")
         }
         return parts.joined(separator: " · ")
@@ -239,7 +239,7 @@ struct ProgressTabView: View {
             ForEach(exercises) { exercise in
                 line(done: exercise.isDone, week: 0,
                      title: exercise.displayNumber + (exercise.isBonus ? " (bonus)" : ""),
-                     detail: exercise.isCorrected ? (exercise.correctness?.shortLabel ?? "corrigé") : ExerciseStage(exercise).label,
+                     detail: exercise.isCorrected ? (exercise.correctness?.shortLabel ?? String(localized: "corrigé")) : ExerciseStage(exercise).label,
                      toggle: {
                         exercise.setDone(!exercise.isDone)
                         try? context.save()
@@ -249,8 +249,9 @@ struct ProgressTabView: View {
     }
 
     private func accessibility(_ week: WeeklyProgress, isCurrent: Bool) -> String {
-        guard week.hasItems else { return "Semaine \(week.week), rien de prévu" }
-        return "Semaine \(week.week)\(isCurrent ? ", en cours" : ""). \(weekSummary(week))"
+        guard week.hasItems else { return String(localized: "Semaine \(week.week), rien de prévu") }
+        return isCurrent ? String(localized: "Semaine \(week.week), en cours. \(weekSummary(week))")
+                         : String(localized: "Semaine \(week.week). \(weekSummary(week))")
     }
 
     // MARK: Sans semaine
@@ -260,11 +261,11 @@ struct ProgressTabView: View {
         let items = ProgressEngine.unplannedTheory(for: course)
         if !items.isEmpty {
             VStack(alignment: .leading, spacing: 10) {
-                CarnetSectionTitle("Sans semaine") { Text("\(items.count)") }
+                CarnetSectionTitle(String(localized: "Sans semaine")) { Text("\(items.count)") }
                 CarnetSheet {
                     ForEach(Array(items.prefix(8).enumerated()), id: \.element.id) { index, item in
                         line(done: item.isWatched, week: 0, title: item.title.isEmpty ? item.number : item.title,
-                             detail: "Ouvre-le pour lui donner une semaine", toggle: {
+                             detail: String(localized: "Ouvre-le pour lui donner une semaine"), toggle: {
                                 item.watchedAt = item.isWatched ? nil : Date()
                                 try? context.save()
                              }, open: { openedVideo = item })
@@ -284,7 +285,7 @@ struct ProgressTabView: View {
         let byType = Dictionary(grouping: course.sessions.filter { $0.startedAt >= weekStart }) { $0.taskType.canonical }
             .mapValues { $0.reduce(0) { $0 + $1.durationSeconds } }
         return VStack(alignment: .leading, spacing: 10) {
-            CarnetSectionTitle("Ton temps cette semaine")
+            CarnetSectionTitle(String(localized: "Ton temps cette semaine"))
             VStack(alignment: .leading, spacing: 12) {
                 HStack(alignment: .firstTextBaseline) {
                     Text(weekly.actualLabel).font(Carnet.serif(.title2)).foregroundStyle(Carnet.ink)

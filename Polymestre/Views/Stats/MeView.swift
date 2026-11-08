@@ -108,14 +108,14 @@ struct MeView: View {
         }
         let right = corrected.filter { $0.correctness == .correct }.count
         return VStack(alignment: .leading, spacing: 10) {
-            CarnetSectionTitle("Cette semaine")
+            CarnetSectionTitle(String(localized: "Cette semaine"))
             HStack(spacing: 8) {
                 CarnetStat(label: "Travail", value: DateUtils.hoursLabel(seconds: seconds),
                            detail: Plural.count(weekSessions.count, "\(weekSessions.count) session", "\(weekSessions.count) sessions"))
-                CarnetStat(label: "Fait", value: total == 0 ? "—" : "\(done)/\(total)",
-                           detail: "du programme")
-                CarnetStat(label: "Juste", value: corrected.isEmpty ? "—" : "\(Int((Double(right) / Double(corrected.count) * 100).rounded())) %",
-                           detail: corrected.isEmpty ? "rien de corrigé" : Plural.count(corrected.count, "\(corrected.count) corrigé", "\(corrected.count) corrigés"))
+                CarnetStat(label: String(localized: "Fait"), value: total == 0 ? "—" : "\(done)/\(total)",
+                           detail: String(localized: "du programme"))
+                CarnetStat(label: String(localized: "Juste"), value: corrected.isEmpty ? "—" : "\(Int((Double(right) / Double(corrected.count) * 100).rounded())) %",
+                           detail: corrected.isEmpty ? String(localized: "rien de corrigé") : Plural.count(corrected.count, "\(corrected.count) corrigé", "\(corrected.count) corrigés"))
             }
         }
     }
@@ -127,7 +127,7 @@ struct MeView: View {
             NavigationLink {
                 StatsView()
             } label: {
-                CarnetRow(icon: "chart.bar.xaxis", tint: Carnet.inkSecondary, title: "Bilan") {
+                CarnetRow(icon: "chart.bar.xaxis", tint: Carnet.inkSecondary, title: String(localized: "Bilan")) {
                     Image(systemName: "chevron.right").font(.caption.weight(.semibold)).foregroundStyle(Carnet.inkTertiary)
                 }
             }
@@ -136,7 +136,7 @@ struct MeView: View {
             NavigationLink {
                 ProfileView(isEmbedded: true)
             } label: {
-                CarnetRow(icon: "gearshape", tint: Carnet.inkSecondary, title: "Réglages") {
+                CarnetRow(icon: "gearshape", tint: Carnet.inkSecondary, title: String(localized: "Réglages")) {
                     Image(systemName: "chevron.right").font(.caption.weight(.semibold)).foregroundStyle(Carnet.inkTertiary)
                 }
             }

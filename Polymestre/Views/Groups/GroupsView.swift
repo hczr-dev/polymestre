@@ -68,7 +68,7 @@ struct GroupsView: View {
                     }
                 }
             }
-            .navigationTitle(groups.isEmpty ? "Groupes" : (selected?.name ?? "Groupes"))
+            .navigationTitle(groups.isEmpty ? "Groupes" : (selected?.name ?? String(localized: "Groupes")))
             .carnetSubtitle(subtitle)
             .sheet(isPresented: $showingSubjects) {
                 if let selected { GroupSubjectsView(group: selected) }
@@ -193,7 +193,7 @@ struct GroupsView: View {
     }
 
     private var subtitle: String {
-        guard let selected else { return "Travailler ensemble" }
+        guard let selected else { return String(localized: "Travailler ensemble") }
         var parts = [Plural.count(selected.members.count, "\(selected.members.count) membre", "\(selected.members.count) membres")]
         if !selected.subjectCodes.isEmpty { parts.append(selected.subjectCodes.prefix(3).joined(separator: ", ")) }
         return parts.joined(separator: " · ")
@@ -227,9 +227,9 @@ struct GroupsView: View {
     private var emptyState: some View {
         VStack(alignment: .leading, spacing: 14) {
             CarnetEmpty(icon: "person.2",
-                        title: "Travailler à plusieurs",
-                        message: "Qui travaille, qui en est où, entraide et sessions.",
-                        actionTitle: "Créer un groupe") {
+                        title: String(localized: "Travailler à plusieurs"),
+                        message: String(localized: "Qui travaille, qui en est où, entraide et sessions."),
+                        actionTitle: String(localized: "Créer un groupe")) {
                 showingCreate = true
             }
             Button("Rejoindre avec un code") {

@@ -55,7 +55,7 @@ struct WeekQuizView: View {
                     Button {
                         withAnimation(.snappy) { index += 1 }
                     } label: {
-                        Text(index + 1 == quizzes.count ? "Voir le score" : (answers[index] == nil ? "Passer" : "Suivant"))
+                        Text(index + 1 == quizzes.count ? "Voir le score" : (answers[index] == nil ? "Passer" : String(localized: "Suivant")))
                             .font(.headline)
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 14)
@@ -66,7 +66,7 @@ struct WeekQuizView: View {
                     .padding(20)
                 }
             } else {
-                ProgressView("Les quiz de la semaine…").frame(maxHeight: .infinity)
+                ProgressView(String(localized: "Les quiz de la semaine…")).frame(maxHeight: .infinity)
             }
         }
         .background(Carnet.ground)
@@ -150,14 +150,14 @@ struct OnTheGoCard: View {
                     Button { openExercise(exercise) } label: {
                         row(icon: "arrow.counterclockwise.circle.fill", color: Carnet.review,
                             title: "Reprise : \(exercise.series?.course?.displayCode ?? "") \(exercise.displayNumber)",
-                            detail: "sur papier, l'énoncé seul — " + (exercise.redoWhy.isEmpty ? "15 min" : exercise.redoWhy))
+                            detail: String(localized: "sur papier, l'énoncé seul — ") + (exercise.redoWhy.isEmpty ? "15 min" : exercise.redoWhy))
                     }
                     .buttonStyle(.plain)
                 }
                 ForEach(quizCourses) { course in
                     Button { quizCourse = course } label: {
-                        row(icon: "checklist", color: Carnet.tint(course.colorHex), title: "Quiz de la semaine · \(course.displayCode)",
-                            detail: "les quiz des séances et du polycopié, un par un")
+                        row(icon: "checklist", color: Carnet.tint(course.colorHex), title: String(localized: "Quiz de la semaine · \(course.displayCode)"),
+                            detail: String(localized: "les quiz des séances et du polycopié, un par un"))
                     }
                     .buttonStyle(.plain)
                 }

@@ -56,13 +56,13 @@ final class AnkiWebClient {
             switch self {
             case .badCredentials: return "Identifiant ou mot de passe AnkiWeb incorrect."
             case .server(let code, let body, let method):
-                let step = method.isEmpty ? "" : " (étape « \(method) »)"
+                let step = method.isEmpty ? "" : String(localized: " (étape « \(method) »)")
                 let detail = body.trimmingCharacters(in: .whitespacesAndNewlines)
                 return "AnkiWeb a répondu \(code)\(step)\(detail.isEmpty || detail == String(code) ? "" : " : \(detail.prefix(160))")."
-            case .decoding(let what): return "Réponse d'AnkiWeb illisible (\(what))."
+            case .decoding(let what): return String(localized: "Réponse d'AnkiWeb illisible (\(what)).")
             case .unsupported(let message): return message
-            case .sanity(let detail): return "AnkiWeb a refusé l'envoi (contrôle de cohérence) — rien n'a été modifié. \(detail)"
-            case .fullSyncRequired: return "Ta collection AnkiWeb demande une synchronisation complète : synchronise d'abord Anki sur ton ordinateur ou ton téléphone."
+            case .sanity(let detail): return String(localized: "AnkiWeb a refusé l'envoi (contrôle de cohérence) — rien n'a été modifié. \(detail)")
+            case .fullSyncRequired: return String(localized: "Ta collection AnkiWeb demande une synchronisation complète : synchronise d'abord Anki sur ton ordinateur ou ton téléphone.")
             }
         }
     }
@@ -131,7 +131,7 @@ final class AnkiWebClient {
             guard redirects < 3,
                   let location = http.value(forHTTPHeaderField: "Location") ?? String(data: payload, encoding: .utf8),
                   let target = Self.endpoint(fromRedirect: location, relativeTo: request.url) else {
-                throw Failure.server(http.statusCode, "redirection sans adresse", method: method)
+                throw Failure.server(http.statusCode, String(localized: "redirection sans adresse"), method: method)
             }
             // Le compte vit sur un autre serveur : on y passe, et on rejoue.
             endpoint = target
@@ -232,7 +232,7 @@ final class AnkiWebClient {
             AppLog.record(.info, "anki", "AnkiWeb : le serveur sync\(meta.hostNumber) ne répond pas, on reste sur le serveur principal")
             endpoint = Self.defaultEndpoint
         }
-        guard meta.shouldContinue else { throw Failure.unsupported(meta.message.isEmpty ? "AnkiWeb refuse la synchronisation." : meta.message) }
+        guard meta.shouldContinue else { throw Failure.unsupported(meta.message.isEmpty ? String(localized: "AnkiWeb refuse la synchronisation.") : meta.message) }
         return meta
     }
 

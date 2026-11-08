@@ -160,14 +160,14 @@ struct OnboardingView: View {
     }
 
     private var titles: [String] {
-        ["Bienvenue sur Polymestre", "Tes cours", "Tes comptes", "Le contenu de tes cours"]
+        [String(localized: "Bienvenue sur Polymestre"), String(localized: "Tes cours"), String(localized: "Tes comptes"), String(localized: "Le contenu de tes cours")]
     }
 
     private var subtitles: [String] {
-        ["Ta théorie, tes exercices et ton temps de travail, semaine par semaine. Commence par ta section.",
-               "Importe ton horaire EPFL ou ajoute tes classes à la main.",
-               "Relie ce dont l'app a besoin, une fois pour toutes : elle se reconnecte ensuite toute seule.",
-         "Importe la théorie et les séries depuis Moodle, Courseware ou Botafogo : tout arrive rangé par semaine."]
+        [String(localized: "Ta théorie, tes exercices et ton temps de travail, semaine par semaine. Commence par ta section."),
+               String(localized: "Importe ton horaire EPFL ou ajoute tes classes à la main."),
+               String(localized: "Relie ce dont l'app a besoin, une fois pour toutes : elle se reconnecte ensuite toute seule."),
+         String(localized: "Importe la théorie et les séries depuis Moodle, Courseware ou Botafogo : tout arrive rangé par semaine.")]
     }
 
     /// Connexion Moodle faite (ou abandonnée) : on lance tout.
@@ -239,8 +239,8 @@ struct OnboardingView: View {
             let results = EPFLCatalog.search(search)
             if results.isEmpty {
                 EmptyCard(icon: "questionmark.circle",
-                          title: "Aucune section trouvée",
-                          message: "Essaie un autre mot-clé.")
+                          title: String(localized: "Aucune section trouvée"),
+                          message: String(localized: "Essaie un autre mot-clé."))
             } else {
                 ForEach(groupedResults(results), id: \.faculty) { group in
                     VStack(alignment: .leading, spacing: 10) {
@@ -320,9 +320,9 @@ struct OnboardingView: View {
             if courses.isEmpty {
                 VStack(spacing: Layout.control) {
                     EmptyCard(icon: "calendar.badge.plus",
-                              title: "Importe ton horaire EPFL",
-                              message: "Ton horaire .ics crée tes cours d'un coup.",
-                              actionTitle: "Importer mon horaire") {
+                              title: String(localized: "Importe ton horaire EPFL"),
+                              message: String(localized: "Ton horaire .ics crée tes cours d'un coup."),
+                              actionTitle: String(localized: "Importer mon horaire")) {
                         showingImport = true
                     }
                     Button {
@@ -345,20 +345,20 @@ struct OnboardingView: View {
                     }
                 }
 
-                Card(title: "Heures de cours (amphi)",
+                Card(title: String(localized: "Heures de cours (amphi)"),
                      icon: "building.columns.fill") {
                     VStack(alignment: .leading, spacing: 12) {
 
                         HStack(spacing: 12) {
                             StatCard(icon: "building.columns.fill",
                                      value: "\(lectureCourses.count)/\(courses.count)",
-                                     title: "avec amphi", onCard: true)
+                                     title: String(localized: "avec amphi"), onCard: true)
                             StatCard(icon: "clock.fill",
                                      value: DateUtils.hoursLabel(hours: courses.reduce(0) { $0 + ($1.hasLectures ? $1.weeklyLectureHours : 0) }),
-                                     title: "par semaine", onCard: true)
+                                     title: String(localized: "par semaine"), onCard: true)
                             StatCard(icon: "book.fill",
                                      value: DateUtils.hoursLabel(hours: courses.reduce(0) { $0 + $1.weeklyExerciseHours }),
-                                     title: "exercices / sem.", onCard: true)
+                                     title: String(localized: "exercices / sem."), onCard: true)
                         }
                     }
                 }
@@ -449,7 +449,7 @@ struct OnboardingView: View {
                 }
             }
             if importedTheory + series.count > 0 {
-                Card(title: "Déjà importé", icon: "checkmark.circle.fill") {
+                Card(title: String(localized: "Déjà importé"), icon: "checkmark.circle.fill") {
                     VStack(alignment: .leading, spacing: Layout.snug) {
                         ForEach(trackedCourses.filter { !$0.theoryItems.isEmpty || !$0.series.isEmpty }) { course in
                             Text("\(course.displayCode) · \(course.theoryItems.count) théorie · \(Plural.count(course.series.count, "\(course.series.count) série", "\(course.series.count) séries"))")

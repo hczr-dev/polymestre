@@ -332,31 +332,31 @@ enum TaskProvider: String, Codable, CaseIterable, Identifiable {
     var credentialLabel: String? {
         switch self {
         case .reminders: return nil
-        case .todoist: return "Jeton API Todoist"
+        case .todoist: return String(localized: "Jeton API Todoist")
         case .things: return nil
-        case .notion: return "Jeton d'intégration Notion"
-        case .webhook: return "URL du webhook"
+        case .notion: return String(localized: "Jeton d'intégration Notion")
+        case .webhook: return String(localized: "URL du webhook")
         case .googleTasks: return "Refresh token OAuth Google"
-        case .tickTick: return "Jeton d'accès TickTick"
+        case .tickTick: return String(localized: "Jeton d'accès TickTick")
         }
     }
 
     var helpText: String {
         switch self {
         case .reminders:
-            return "Synchronisation native avec l'app Rappels. Aucun réglage nécessaire."
+            return String(localized: "Synchronisation native avec l'app Rappels. Aucun réglage nécessaire.")
         case .todoist:
-            return "Créez un jeton dans Todoist › Paramètres › Intégrations › Développeur."
+            return String(localized: "Créez un jeton dans Todoist › Paramètres › Intégrations › Développeur.")
         case .things:
-            return "Things 3 est en écriture seule : l'app peut y envoyer des tâches, mais pas les relire."
+            return String(localized: "Things 3 est en écriture seule : l'app peut y envoyer des tâches, mais pas les relire.")
         case .notion:
-            return "Créez une intégration Notion, partagez-lui une base de données, puis collez le jeton et l'ID de la base."
+            return String(localized: "Créez une intégration Notion, partagez-lui une base de données, puis collez le jeton et l'ID de la base.")
         case .webhook:
-            return "Polymestre envoie un JSON à cette URL (compatible Shortcuts, Home Assistant, Zapier, n8n)."
+            return String(localized: "Polymestre envoie un JSON à cette URL (compatible Shortcuts, Home Assistant, Zapier, n8n).")
         case .googleTasks:
-            return "Identifiant client, secret et refresh token OAuth : l'app renouvelle ensuite l'accès toute seule."
+            return String(localized: "Identifiant client, secret et refresh token OAuth : l'app renouvelle ensuite l'accès toute seule.")
         case .tickTick:
-            return "Jeton d'accès de l'API ouverte TickTick (OAuth2)."
+            return String(localized: "Jeton d'accès de l'API ouverte TickTick (OAuth2).")
         }
     }
 }

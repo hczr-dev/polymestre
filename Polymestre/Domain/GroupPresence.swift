@@ -47,7 +47,7 @@ struct PresenceEntry: Identifiable, Equatable, Sendable {
         if !courseCode.isEmpty { parts.append(courseCode) }
         if !taskLabel.isEmpty { parts.append(taskLabel) }
         if !target.isEmpty { parts.append(target) }
-        return parts.isEmpty ? "Travail en cours" : parts.joined(separator: " · ")
+        return parts.isEmpty ? String(localized: "Travail en cours") : parts.joined(separator: " · ")
     }
 }
 
@@ -73,12 +73,14 @@ enum PresenceBoard {
     static func summary(_ entries: [PresenceEntry]) -> String {
         let others = entries.filter { !$0.isMe }
         guard !others.isEmpty else {
-            return entries.contains { $0.isMe } ? "Tu travailles en ce moment" : "Personne ne travaille"
+            return entries.contains { $0.isMe } ? String(localized: "Tu travailles en ce moment") : String(localized: "Personne ne travaille")
         }
         let names = others.map(\.displayName)
-        if names.count == 1 { return "\(names[0]) travaille en ce moment" }
-        if names.count == 2 { return "\(names[0]) et \(names[1]) travaillent" }
-        return "\(names[0]), \(names[1]) et \(names.count - 2) autre\(names.count > 3 ? "s" : "") travaillent"
+        if names.count == 1 { return String(localized: "\(names[0]) travaille en ce moment") }
+        if names.count == 2 { return String(localized: "\(names[0]) et \(names[1]) travaillent") }
+        let rest = names.count - 2
+        return Plural.count(rest, "\(names[0]), \(names[1]) et \(rest) autre travaillent",
+                            "\(names[0]), \(names[1]) et \(rest) autres travaillent")
     }
 }
 
@@ -100,11 +102,11 @@ enum PresenceAvailability: Equatable {
         case .ready:
             return nil
         case .notConfigured:
-            return "Cette version de l'app n'a pas de projet Supabase : le direct entre membres est indisponible."
+            return String(localized: "Cette version de l'app n'a pas de projet Supabase : le direct entre membres est indisponible.")
         case .notSignedIn:
-            return "Connecte-toi (Réglages › Compte et groupes) pour voir qui travaille."
+            return String(localized: "Connecte-toi (Réglages › Compte et groupes) pour voir qui travaille.")
         case .groupNotSynced:
-            return "Ce groupe n'est pas encore synchronisé : lance une synchronisation depuis la liste des groupes."
+            return String(localized: "Ce groupe n'est pas encore synchronisé : lance une synchronisation depuis la liste des groupes.")
         case .failing(let detail):
             return detail
         }

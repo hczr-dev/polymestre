@@ -257,7 +257,7 @@ private struct CoursesScreen: View {
     }
 
     private var kept: Int { setup.cards.count - unchecked.count }
-    private var importLabel: String { kept == 1 ? "Importer 1 cours" : "Importer \(kept) cours" }
+    private var importLabel: String { kept == 1 ? String(localized: "Importer 1 cours") : String(localized: "Importer \(kept) cours") }
 
     private func row(_ card: OnboardingAutoSetup.CourseCard) -> some View {
         let on = !unchecked.contains(card.id)
@@ -360,8 +360,8 @@ private struct ConnectionsScreen: View {
                 .rise(appeared, delay: 0.12)
 
                 VStack(spacing: 10) {
-                    row(icon: "person.2", title: "Compte Polymestre",
-                        detail: "Pour étudier en groupe",
+                    row(icon: "person.2", title: String(localized: "Compte Polymestre"),
+                        detail: String(localized: "Pour étudier en groupe"),
                         connected: app.social.isSignedIn) { sheet = .groups }
                 }
                 .rise(appeared, delay: 0.22)

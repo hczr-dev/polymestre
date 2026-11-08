@@ -18,11 +18,11 @@ enum MoodleNews {
 
         var label: String {
             switch self {
-            case .series: return "Séries"
-            case .solution: return "Corrigés"
-            case .deadline: return "Rendus"
-            case .lecture: return "Cours et vidéos"
-            case .document: return "Autres documents"
+            case .series: return String(localized: "Séries")
+            case .solution: return String(localized: "Corrigés")
+            case .deadline: return String(localized: "Rendus")
+            case .lecture: return String(localized: "Cours et vidéos")
+            case .document: return String(localized: "Autres documents")
             }
         }
 
@@ -39,11 +39,11 @@ enum MoodleNews {
         /// « Nouvelle série », en tête d'une notification d'un seul élément.
         var newLabel: String {
             switch self {
-            case .series: return "Nouvelle série"
-            case .solution: return "Nouveau corrigé"
-            case .deadline: return "Nouveau rendu"
-            case .lecture: return "Nouveau cours"
-            case .document: return "Nouveau document"
+            case .series: return String(localized: "Nouvelle série")
+            case .solution: return String(localized: "Nouveau corrigé")
+            case .deadline: return String(localized: "Nouveau rendu")
+            case .lecture: return String(localized: "Nouveau cours")
+            case .document: return String(localized: "Nouveau document")
             }
         }
 
@@ -109,7 +109,7 @@ enum MoodleNews {
         let shown = items.prefix(3).map(\.name)
         let rest = items.count - shown.count
         let body = shown.joined(separator: " · ") + (rest > 0 ? " · +\(rest)" : "")
-        return ("\(items.count) nouveautés · \(courseCode)", body)
+        return (String(localized: "\(items.count) nouveautés · \(courseCode)"), body)
     }
 
     /// Quand dire la nouvelle : maintenant (`nil`), ou à la fin des heures

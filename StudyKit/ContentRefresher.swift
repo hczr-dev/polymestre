@@ -131,7 +131,7 @@ enum ContentRefresher {
         let result = ContentDraftWriter.apply(draft, to: course, context: context, updateWeeks: false)
         var parts: [String] = []
         if result.seriesAdded > 0 { parts.append(Plural.count(result.seriesAdded, "\(result.seriesAdded) série", "\(result.seriesAdded) séries")) }
-        if result.theoryAdded > 0 { parts.append("\(result.theoryAdded) théorie") }
+        if result.theoryAdded > 0 { parts.append(String(localized: "\(result.theoryAdded) théorie")) }
         return parts.isEmpty ? nil : "\(course.displayCode) : " + parts.joined(separator: ", ")
     }
 }

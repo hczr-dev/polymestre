@@ -50,7 +50,7 @@ enum StudyActivityController {
         publishedTitle = state.title
         publishedSubtitle = state.subtitle
         guard ActivityAuthorizationInfo().areActivitiesEnabled else {
-            lastError = "Les Live Activities sont désactivées pour Polymestre."
+            lastError = String(localized: "Les Live Activities sont désactivées pour Polymestre.")
             AppLog.record(.warning, "îlot", "Live Activities désactivées dans les réglages")
             return
         }
@@ -83,7 +83,7 @@ enum StudyActivityController {
         } catch {
             // `\(…)` et non `\\(…)` : la seconde écrit un `\(` **littéral**, et le
             // message affichait le texte de l'expression au lieu de l'erreur.
-            lastError = "Démarrage impossible : \(error.localizedDescription)"
+            lastError = String(localized: "Démarrage impossible : \(error.localizedDescription)")
             AppLog.record(.error, "îlot", "Live Activity refusée par le système",
                           detail: error.localizedDescription)
         }
@@ -270,10 +270,10 @@ enum StudyActivityController {
     /// refuse l'activité » de « l'activité existe mais l'îlot ne l'affiche pas ».
     static func startTest() {
         sync(attributes: StudyActivityAttributes(courseCode: "TEST-100",
-                                                  courseName: "Essai",
+                                                  courseName: String(localized: "Essai"),
                                                   taskLabel: TaskType.theory.label,
                                                   taskIcon: TaskType.theory.icon,
-                                                  target: "Vérification"),
+                                                  target: String(localized: "Vérification")),
              state: StudyActivityAttributes.ContentState.make(elapsed: 90, running: true))
     }
 

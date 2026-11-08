@@ -76,7 +76,7 @@ struct MacStatsView: View {
         var colors: [String: Color] = [:]
         for block in blocks {
             let course = block.courseCode.flatMap { byCode[$0] }
-            let code = course?.displayCode ?? "Sans cours"
+            let code = course?.displayCode ?? String(localized: "Sans cours")
             seconds[code, default: 0] += block.seconds
             colors[code] = course.map { Carnet.tint($0.colorHex) } ?? Carnet.inkTertiary
         }
@@ -114,10 +114,10 @@ struct MacStatsView: View {
                     .help("Ajouter une session")
                 }
                 HStack(spacing: 36) {
-                    figure(DateUtils.hoursLabel(seconds: total), "d'étude")
-                    figure(days > 0 ? DateUtils.hoursLabel(seconds: total / days) : "—", "par jour actif")
-                    figure("\(days)", days > 1 ? "jours actifs" : "jour actif")
-                    figure("\(goalDays)", "objectif atteint")
+                    figure(DateUtils.hoursLabel(seconds: total), String(localized: "d'étude"))
+                    figure(days > 0 ? DateUtils.hoursLabel(seconds: total / days) : "—", String(localized: "par jour actif"))
+                    figure("\(days)", days > 1 ? String(localized: "jours actifs") : String(localized: "jour actif"))
+                    figure("\(goalDays)", String(localized: "objectif atteint"))
                     Spacer()
                 }
 
@@ -138,7 +138,7 @@ struct MacStatsView: View {
                 sessionsCard
             }
             .padding(Carnet.pagePadding)
-            .frame(maxWidth: 1100, alignment: .leading)
+            .frame(maxWidth: 1180, alignment: .leading)
             .frame(maxWidth: .infinity)
         }
         .navigationTitle("Bilan")
@@ -167,9 +167,9 @@ struct MacStatsView: View {
     private static let categories = TaskType.reportCategories
 
     private var rangeTitle: String {
-        if period == .month { return "30 derniers jours" }
-        if weekOffset == 0 { return "Cette semaine" }
-        if weekOffset == -1 { return "La semaine dernière" }
+        if period == .month { return String(localized: "30 derniers jours") }
+        if weekOffset == 0 { return String(localized: "Cette semaine") }
+        if weekOffset == -1 { return String(localized: "La semaine dernière") }
         let r = range
         return "\(DateUtils.shortDay.string(from: r.start)) – \(DateUtils.shortDay.string(from: DateUtils.addDays(-1, to: r.end)))"
     }
@@ -177,7 +177,7 @@ struct MacStatsView: View {
     private var dayChart: some View {
         let bars = bars(blocks)
         let goal = Double(settings.dailyGoalSeconds(in: context)) / 3600
-        return card("Jour par jour") {
+        return card(String(localized: "Jour par jour")) {
             Chart {
                 ForEach(bars) { bar in
                     BarMark(x: .value("Jour", bar.day, unit: .day), y: .value("Heures", bar.hours))
@@ -210,7 +210,7 @@ struct MacStatsView: View {
 
     private var subjectCard: some View {
         let slices = slices(blocks)
-        return card("Par matière") {
+        return card(String(localized: "Par matière")) {
             if slices.isEmpty {
                 Text("Rien sur cette période.").foregroundStyle(.secondary).frame(maxWidth: .infinity, minHeight: 220)
             } else {

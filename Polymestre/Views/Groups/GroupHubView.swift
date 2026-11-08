@@ -127,7 +127,7 @@ struct GroupHubView: View {
         let type = TaskType.allCases.first { $0.label == entry.taskLabel } ?? .exercise
         let course = myCourses.first { $0.code.uppercased() == entry.courseCode.uppercased() }
         app.router.startFocus(courseID: course?.id, courseCode: entry.courseCode, taskType: type,
-                              label: "\(entry.courseCode) · \(type.label) · avec \(entry.displayName)")
+                              label: String(localized: "\(entry.courseCode) · \(type.label) · avec \(entry.displayName)"))
         Haptics.success()
     }
 
@@ -139,12 +139,12 @@ struct GroupHubView: View {
         }
         let peak = max(members.first?.weeklySeconds ?? 0, 1)
         return VStack(alignment: .leading, spacing: 10) {
-            CarnetSectionTitle("Classement") {
+            CarnetSectionTitle(String(localized: "Classement")) {
                 NavigationLink("7 derniers jours", value: GroupPageRoute(groupID: group.id, page: .time))
             }
             CarnetSheet {
                 if members.isEmpty {
-                    CarnetRow(title: "Aucun membre")
+                    CarnetRow(title: String(localized: "Aucun membre"))
                 }
                 ForEach(Array(members.enumerated()), id: \.element.id) { index, member in
                     HStack(spacing: 12) {
@@ -188,7 +188,7 @@ struct GroupHubView: View {
         let boards = currentBoards
         if !boards.isEmpty {
             VStack(alignment: .leading, spacing: 10) {
-                CarnetSectionTitle("Qui en est où") {
+                CarnetSectionTitle(String(localized: "Qui en est où")) {
                     NavigationLink("Toutes les séries", value: GroupPageRoute(groupID: group.id, page: .series))
                 }
                 ForEach(boards, id: \.code) { entry in
@@ -260,7 +260,7 @@ struct GroupHubView: View {
 
     private var helpSection: some View {
         VStack(alignment: .leading, spacing: 10) {
-            CarnetSectionTitle("Entraide") {
+            CarnetSectionTitle(String(localized: "Entraide")) {
                 if isOnline {
                     Button {
                         composing = true
@@ -275,14 +275,14 @@ struct GroupHubView: View {
             CarnetSheet {
                 if !isOnline {
                     CarnetRow(icon: "bubble.left.and.bubble.right", tint: Carnet.inkSecondary,
-                              title: "Entraide disponible une fois le groupe partagé")
+                              title: String(localized: "Entraide disponible une fois le groupe partagé"))
                 } else if let postsError {
-                    CarnetRow(icon: "exclamationmark.triangle", tint: Carnet.wrong, title: "Entraide indisponible",
+                    CarnetRow(icon: "exclamationmark.triangle", tint: Carnet.wrong, title: String(localized: "Entraide indisponible"),
                               subtitle: postsError)
                 } else if questions.isEmpty {
                     Button { composing = true } label: {
                         CarnetRow(icon: "bubble.left.and.bubble.right", tint: Carnet.inkSecondary,
-                                  title: "Poser une question au groupe")
+                                  title: String(localized: "Poser une question au groupe"))
                     }
                     .buttonStyle(.plain)
                 }
@@ -360,7 +360,7 @@ struct GroupHubView: View {
             }
             CarnetSheet {
                 if sessions.isEmpty {
-                    CarnetRow(icon: "calendar", tint: Carnet.inkSecondary, title: "Aucune session prévue")
+                    CarnetRow(icon: "calendar", tint: Carnet.inkSecondary, title: String(localized: "Aucune session prévue"))
                 }
                 ForEach(Array(sessions.prefix(4).enumerated()), id: \.element.id) { index, session in
                     NavigationLink(value: GroupPageRoute(groupID: group.id, page: .planning)) {
@@ -809,8 +809,8 @@ struct GroupSessionCard: View {
 
     private func participants(_ session: RemoteGroupSession) -> String {
         let names = session.present.map { member in
-            member.user_id == app.social.userID ? "toi" : (member.profiles?.display_name ?? "un membre")
+            member.user_id == app.social.userID ? "toi" : (member.profiles?.display_name ?? String(localized: "un membre"))
         }
-        return names.isEmpty ? "personne pour l'instant" : names.joined(separator: ", ")
+        return names.isEmpty ? String(localized: "personne pour l'instant") : names.joined(separator: ", ")
     }
 }

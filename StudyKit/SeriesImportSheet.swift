@@ -132,9 +132,9 @@ struct SeriesImportSheet: View {
 
     private var title: String {
         switch phase {
-        case .review: return "Vérifier l'import"
+        case .review: return String(localized: "Vérifier l'import")
         case .reading, .analyzing: return "Analyse"
-        default: return "Importer une série"
+        default: return String(localized: "Importer une série")
         }
     }
 
@@ -146,15 +146,15 @@ struct SeriesImportSheet: View {
                 Button {
                     showingPicker = true
                 } label: {
-                    bigChoice(icon: "doc.badge.plus", title: "Choisir un PDF",
-                              detail: "Une série ou plusieurs à la fois, depuis Fichiers.")
+                    bigChoice(icon: "doc.badge.plus", title: String(localized: "Choisir un PDF"),
+                              detail: String(localized: "Une série ou plusieurs à la fois, depuis Fichiers."))
                 }
                 Button {
                     pastedText = ""
                     showingPaste = true
                 } label: {
-                    bigChoice(icon: "doc.on.clipboard", title: "Coller l'énoncé",
-                              detail: "Depuis Moodle, un mail ou une page web.")
+                    bigChoice(icon: "doc.on.clipboard", title: String(localized: "Coller l'énoncé"),
+                              detail: String(localized: "Depuis Moodle, un mail ou une page web."))
                 }
             }
             if let course {
@@ -189,15 +189,15 @@ struct SeriesImportSheet: View {
         List {
             Section {
                 stepRow(done: phase == .analyzing, running: phase == .reading,
-                        title: "Lecture du document",
+                        title: String(localized: "Lecture du document"),
                         detail: phase == .reading ? sourceName
                             : "\(sourceName)\(pageCount > 0 ? " · \(Plural.count(pageCount, "\(pageCount) page", "\(pageCount) pages"))" : "") · \(localSummary)")
                 if phase == .analyzing {
                     stepRow(done: false, running: true,
-                            title: pageImages.isEmpty ? "Vérification par l'IA" : "Lecture des pages par l'IA",
+                            title: pageImages.isEmpty ? String(localized: "Vérification par l'IA") : String(localized: "Lecture des pages par l'IA"),
                             detail: pageImages.isEmpty
-                                ? "Structure, intitulés et bonus."
-                                : "Environ 5 à 20 s.")
+                                ? String(localized: "Structure, intitulés et bonus.")
+                                : String(localized: "Environ 5 à 20 s."))
                 }
             }
             if phase == .analyzing {
@@ -304,8 +304,8 @@ struct SeriesImportSheet: View {
     private var analysisStatus: some View {
         switch ai {
         case .idle, .unavailable:
-            statusRow(icon: "text.magnifyingglass", tint: .secondary, title: "Lecture rapide",
-                      detail: ai == .unavailable ? "IA désactivée (Réglages › IA de lecture). Vérifie les questions." : "")
+            statusRow(icon: "text.magnifyingglass", tint: .secondary, title: String(localized: "Lecture rapide"),
+                      detail: ai == .unavailable ? String(localized: "IA désactivée (Réglages › IA de lecture). Vérifie les questions.") : "")
         case .running:
             HStack(spacing: Layout.control) {
                 ProgressView()
@@ -316,7 +316,7 @@ struct SeriesImportSheet: View {
                     .buttonStyle(.borderless)
             }
         case .applied(let detail):
-            statusRow(icon: "checkmark.seal.fill", tint: .green, title: "Lu par l'IA", detail: detail)
+            statusRow(icon: "checkmark.seal.fill", tint: .green, title: String(localized: "Lu par l'IA"), detail: detail)
             Button("Revenir à la lecture rapide") {
                 apply(localResult)
                 ai = .idle
@@ -324,7 +324,7 @@ struct SeriesImportSheet: View {
             }
             .font(.subheadline)
         case .pending(let detail):
-            statusRow(icon: "sparkles", tint: Theme.accent, title: "L'IA propose une autre lecture", detail: detail)
+            statusRow(icon: "sparkles", tint: Theme.accent, title: String(localized: "L'IA propose une autre lecture"), detail: detail)
             Button("Utiliser la lecture de l'IA (remplace tes corrections)") {
                 if let aiResult { apply(aiResult) }
                 ai = .applied(detail)
@@ -333,7 +333,7 @@ struct SeriesImportSheet: View {
             .font(.subheadline)
         case .failed(let message):
             statusRow(icon: "exclamationmark.triangle.fill", tint: .orange,
-                      title: "Lecture rapide — l'IA n'a pas abouti", detail: message)
+                      title: String(localized: "Lecture rapide — l'IA n'a pas abouti"), detail: message)
             Button("Réessayer l'IA") { runAI() }
                 .font(.subheadline)
         }
@@ -358,7 +358,7 @@ struct SeriesImportSheet: View {
 
     private func preview(_ exercise: ExerciseDraft, in draft: SeriesDraft) {
         guard let page = exercise.pageIndex, page < pageImages.count, !pageImages[page].isEmpty else { return }
-        previewing = SourcePreview(title: "Exercice \(draft.number).\(exercise.minor)",
+        previewing = SourcePreview(title: String(localized: "Exercice \(draft.number).\(exercise.minor)"),
                                    page: page, top: exercise.top, bottom: exercise.bottom)
     }
 
@@ -429,7 +429,7 @@ struct SeriesImportSheet: View {
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Analyser") {
                         showingPaste = false
-                        sourceName = "Texte collé"
+                        sourceName = String(localized: "Texte collé")
                         analyze(text: pastedText)
                     }
                     .disabled(pastedText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
@@ -498,8 +498,8 @@ struct SeriesImportSheet: View {
             if result.lines.allSatisfy(\.isEmpty) {
                 if result.unreadable == urls.count {
                     phase = .failed(urls.count == 1
-                                    ? "Ce fichier n'a pas pu être ouvert comme PDF."
-                                    : "Aucun de ces fichiers n'a pu être ouvert comme PDF.")
+                                    ? String(localized: "Ce fichier n'a pas pu être ouvert comme PDF.")
+                                    : String(localized: "Aucun de ces fichiers n'a pu être ouvert comme PDF."))
                 } else {
                     drafts = []
                     phase = .noText
@@ -616,7 +616,7 @@ struct SeriesImportSheet: View {
     private func cancelAnalysis() {
         analysisTask?.cancel()
         analysisTask = nil
-        ai = .failed("Analyse arrêtée.")
+        ai = .failed(String(localized: "Analyse arrêtée."))
         phase = .review
         Haptics.removed()
     }
@@ -628,7 +628,7 @@ struct SeriesImportSheet: View {
         let changed = zip(local.flatMap(\.exercises), merged.flatMap(\.exercises))
             .filter { $0.number == $1.number && $0.subQuestions != $1.subQuestions }.count
         var parts = ["\(Plural.count(after, "\(after) exercice", "\(after) exercices")), \(leaves) cases"]
-        if changed > 0 { parts.append("questions relues pour \(changed)") }
+        if changed > 0 { parts.append(String(localized: "questions relues pour \(changed)")) }
         if after > before { parts.append(Plural.count(after - before, "\(after - before) ajouté", "\(after - before) ajoutés")) }
         if after < before { parts.append(Plural.count(before - after, "\(before - after) repère douteux écarté", "\(before - after) repères douteux écartés")) }
         return parts.joined(separator: " · ") + " — \(source.label)"
@@ -684,7 +684,7 @@ struct SeriesImportSheet: View {
         } catch {
             AppLog.record(.error, AppLog.Category.storage, "Import de série non enregistré",
                           detail: error.localizedDescription)
-            saveError = "L'enregistrement a échoué : \(error.localizedDescription)"
+            saveError = String(localized: "L'enregistrement a échoué : \(error.localizedDescription)")
         }
     }
 }

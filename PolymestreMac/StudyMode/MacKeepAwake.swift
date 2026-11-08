@@ -49,8 +49,8 @@ final class MacKeepAwake {
             kIOPMAssertionLevelKey: kIOPMAssertionLevelOn,
             // En ASCII : `pmset -g assertions` écorche les accents.
             kIOPMAssertionNameKey: "Polymestre study mode",
-            kIOPMAssertionDetailsKey: hold == .display ? "Le Mac et l'écran restent allumés pendant la session."
-                                                       : "Le Mac reste éveillé pendant la session ; l'écran peut s'éteindre.",
+            kIOPMAssertionDetailsKey: hold == .display ? String(localized: "Le Mac et l'écran restent allumés pendant la session.")
+                                                       : String(localized: "Le Mac reste éveillé pendant la session ; l'écran peut s'éteindre."),
             kIOPMAssertionTimeoutKey: timeout,
             kIOPMAssertionTimeoutActionKey: kIOPMAssertionTimeoutActionRelease,
         ]

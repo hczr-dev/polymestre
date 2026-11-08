@@ -9,10 +9,10 @@ struct GroupPageRoute: Hashable {
 
         var title: String {
             switch self {
-            case .members: return "Membres"
-            case .time: return "Temps d'étude"
-            case .series: return "Avancement des séries"
-            case .planning: return "Sessions planifiées"
+            case .members: return String(localized: "Membres")
+            case .time: return String(localized: "Temps d'étude")
+            case .series: return String(localized: "Avancement des séries")
+            case .planning: return String(localized: "Sessions planifiées")
             }
         }
 
@@ -153,10 +153,10 @@ struct GroupMembersView: View {
 
     private func subjectsLabel(_ member: GroupMember) -> String {
         let all = group.subjectCodes
-        guard !all.isEmpty else { return "Toutes les matières" }
+        guard !all.isEmpty else { return String(localized: "Toutes les matières") }
         let mine = member.courseCodes.isEmpty ? all : all.filter { member.follows($0) }
-        if mine.count == all.count { return "Toutes les matières du groupe" }
-        if mine.isEmpty { return "Aucune matière du groupe" }
+        if mine.count == all.count { return String(localized: "Toutes les matières du groupe") }
+        if mine.isEmpty { return String(localized: "Aucune matière du groupe") }
         return mine.joined(separator: " · ")
     }
 
@@ -175,7 +175,7 @@ struct GroupMembersView: View {
                 memberError = nil
                 Haptics.success()
             } catch {
-                memberError = "Changement de rôle impossible — \(GroupSync.explain(error))"
+                memberError = String(localized: "Changement de rôle impossible — \(GroupSync.explain(error))")
             }
         }
     }
@@ -194,7 +194,7 @@ struct GroupMembersView: View {
                 memberError = nil
                 Haptics.removed()
             } catch {
-                memberError = "Retrait impossible — \(GroupSync.explain(error))"
+                memberError = String(localized: "Retrait impossible — \(GroupSync.explain(error))")
             }
         }
     }
@@ -215,7 +215,7 @@ struct GroupStudyTimeView: View {
     enum Scope: String, CaseIterable, Identifiable {
         case week, total
         var id: String { rawValue }
-        var label: String { self == .week ? "7 derniers jours" : "Depuis le début" }
+        var label: String { self == .week ? String(localized: "7 derniers jours") : String(localized: "Depuis le début") }
     }
 
     private var members: [GroupMember] {
@@ -257,16 +257,16 @@ struct GroupStudyTimeView: View {
         return HStack(spacing: Layout.block) {
             StatCard(icon: "clock.fill",
                      value: DateUtils.hoursLabel(seconds: total),
-                     title: "groupe entier")
+                     title: String(localized: "groupe entier"))
             StatCard(icon: "person.fill",
                      value: DateUtils.hoursLabel(seconds: average),
-                     title: "par membre")
+                     title: String(localized: "par membre"))
         }
     }
 
     private var membersCard: some View {
         let top = max(members.map(seconds).max() ?? 1, 1)
-        return Card(title: "Membres", icon: "person.3.fill") {
+        return Card(title: String(localized: "Membres"), icon: "person.3.fill") {
             VStack(alignment: .leading, spacing: Layout.block) {
                 if members.isEmpty {
                     Text("Aucun membre.")

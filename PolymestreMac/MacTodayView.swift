@@ -104,9 +104,9 @@ struct MacTodayView: View {
     /// le premier cours de la liste pouvait appartenir à un autre semestre.
     private var weekTitle: String {
         if let term = AcademicTerm.resolve(from: tracked.compactMap(\.term)), term.isRunning {
-            return "Semaine \(term.currentWeek)"
+            return String(localized: "Semaine \(term.currentWeek)")
         }
-        return "Cette semaine"
+        return String(localized: "Cette semaine")
     }
 
     /// Le temps de la semaine, compté comme partout (`StudyTime`).
@@ -161,7 +161,9 @@ struct MacTodayView: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .paperSheet(padding: 14)
             }
-            LazyVGrid(columns: [GridItem(.adaptive(minimum: 230), spacing: 14)], spacing: 14) {
+            // Un seul cours prend la largeur : une carte dans une grille à deux colonnes laissait un trou.
+            LazyVGrid(columns: summaries.count == 1 ? [GridItem(.flexible())] : [GridItem(.adaptive(minimum: 230), spacing: 14)],
+                      spacing: 14) {
                 ForEach(summaries, id: \.course.id) { summary in
                     // Le cours visé lui-même ouvre « À rattraper » (`MacCourseView`).
                     Button { open(summary.course.id, nil) } label: {
@@ -184,7 +186,7 @@ struct MacTodayView: View {
         let due = openTasks.filter { task in task.dueDate.map { $0 < soon } ?? false }.prefix(8)
         if !due.isEmpty {
             VStack(alignment: .leading, spacing: 10) {
-                SectionTitle(title: "Tâches")
+                SectionTitle(title: String(localized: "Tâches"))
                 VStack(spacing: 0) {
                     ForEach(Array(due)) { task in
                         HStack(spacing: 10) {
@@ -212,7 +214,7 @@ struct MacTodayView: View {
 
     private func schedule(_ events: [LinkedCalendarEvent]) -> some View {
         VStack(alignment: .leading, spacing: 10) {
-            SectionTitle(title: "Horaire du jour")
+            SectionTitle(title: String(localized: "Horaire du jour"))
             if let live = DeskSchedule.current(in: DeskSchedule.classes(from: events)) {
                 FollowClassButton(klass: live)
             }
@@ -228,7 +230,7 @@ struct MacTodayView: View {
 
     private func deadlineList(_ items: [Deadline]) -> some View {
         VStack(alignment: .leading, spacing: 10) {
-            SectionTitle(title: "Échéances", trailing: "14 jours")
+            SectionTitle(title: String(localized: "Échéances"), trailing: String(localized: "14 jours"))
             VStack(spacing: 0) {
                 ForEach(items.prefix(6)) { item in
                     Button { open(item.courseID, item.targetID) } label: { DeadlineLine(item: item) }
@@ -244,7 +246,7 @@ struct MacTodayView: View {
     private var todaySessions: some View {
         let today = sessions.filter { Calendar.current.isDateInToday($0.startedAt) }
         VStack(alignment: .leading, spacing: 10) {
-            SectionTitle(title: "Sessions du jour",
+            SectionTitle(title: String(localized: "Sessions du jour"),
                          trailing: today.isEmpty ? nil : DateUtils.hoursLabel(seconds: today.reduce(0) { $0 + $1.durationSeconds }))
             VStack(spacing: 0) {
                 if today.isEmpty {
@@ -275,7 +277,7 @@ struct MacTodayView: View {
         }
         let goalHours = Double(settings.dailyGoalSeconds(in: context)) / 3600
         return VStack(alignment: .leading, spacing: 10) {
-            SectionTitle(title: "7 derniers jours")
+            SectionTitle(title: String(localized: "7 derniers jours"))
             if days.allSatisfy({ $0.seconds == 0 }) {
                 Text("Pas encore de temps compté cette semaine.")
                     .font(.callout).foregroundStyle(Carnet.inkSecondary)
@@ -378,9 +380,9 @@ private struct WeekCourseCard: View {
             }
             Text(course.name).font(Carnet.serif(18)).foregroundStyle(Carnet.ink).lineLimit(2, reservesSpace: true)
             HStack(spacing: 14) {
-                meter("Théorie", week.watchedCount, week.videoCount, tint)
-                meter("Exercices", week.doneCount, week.exerciseCount, tint)
-                if week.doneCount > 0 { meter("Corrigés", week.correctedCount, week.doneCount, tint) }
+                meter(String(localized: "Théorie"), week.watchedCount, week.videoCount, tint)
+                meter(String(localized: "Exercices"), week.doneCount, week.exerciseCount, tint)
+                if week.doneCount > 0 { meter(String(localized: "Corrigés"), week.correctedCount, week.doneCount, tint) }
             }
             if !summary.corrections.isEmpty {
                 // Hors retard : celles des séries échues sont dans « N en retard ».
@@ -463,7 +465,7 @@ struct FollowClassButton: View {
                     Text(following ? "Revenir au cours" : "Suivre le cours · \(klass.slot.courseCode)")
                         .font(compact ? .callout.weight(.semibold) : .headline)
                     Text([klass.kindLabel, klass.location.isEmpty ? nil : klass.location,
-                          "jusqu'à \(DateUtils.time.string(from: klass.slot.end))"].compactMap { $0 }.joined(separator: " · "))
+                          String(localized: "jusqu'à \(DateUtils.time.string(from: klass.slot.end))")].compactMap { $0 }.joined(separator: " · "))
                         .font(.caption).opacity(0.85).lineLimit(1)
                 }
                 Spacer(minLength: 0)

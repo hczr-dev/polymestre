@@ -83,7 +83,7 @@ struct NotesPane: View {
         return List(selection: $selection) {
             Section {
                 if let copy {
-                    row(copy, tint: tint, caption: series.map { "Ta copie · Série \($0.seriesNumber)" })
+                    row(copy, tint: tint, caption: series.map { String(localized: "Ta copie · Série \($0.seriesNumber)") })
                 }
                 Label {
                     VStack(alignment: .leading, spacing: 1) {

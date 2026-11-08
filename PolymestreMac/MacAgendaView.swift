@@ -82,7 +82,9 @@ struct MacAgendaView: View {
     @State private var weekOffset = 0
 
     private var tracked: [Course] { courses.filter(\.isTracked) }
-    private var weekStart: Date { DateUtils.addDays(7 * weekOffset, to: DateUtils.startOfWeek(Date())) }
+    /// Le week-end, la semaine qui vient : celle qui finit n'a plus rien à faire.
+    private var baseOffset: Int { Calendar.current.isDateInWeekend(Date()) ? 1 : 0 }
+    private var weekStart: Date { DateUtils.addDays(7 * (weekOffset + baseOffset), to: DateUtils.startOfWeek(Date())) }
 
     /// Les heures montrées : 8 h à 19 h, élargies si un cours déborde.
     private static let firstHour = 8
@@ -111,7 +113,7 @@ struct MacAgendaView: View {
                 let coming = Deadline.upcoming(in: tracked, days: 30)
                 if !coming.isEmpty {
                     VStack(alignment: .leading, spacing: 10) {
-                        SectionTitle(title: "À venir", trailing: "30 jours")
+                        SectionTitle(title: String(localized: "À venir"), trailing: String(localized: "30 jours"))
                         VStack(spacing: 0) {
                             ForEach(coming) { item in
                                 Button { open(item.courseID, item.targetID) } label: {
@@ -142,8 +144,8 @@ struct MacAgendaView: View {
     private func header(_ start: Date) -> some View {
         HStack(alignment: .firstTextBaseline) {
             VStack(alignment: .leading, spacing: 6) {
-                let week = tracked.first.map { $0.currentWeek + weekOffset }
-                Kicker(week.map { $0 > 0 ? "Semaine \($0)" : "Hors semestre" } ?? "Semaine")
+                let week = tracked.first.map { $0.currentWeek + weekOffset + baseOffset }
+                Kicker(week.map { $0 > 0 ? String(localized: "Semaine \($0)") : String(localized: "Hors semestre") } ?? String(localized: "Semaine"))
                 Text(weekLabel(start)).font(Carnet.serif(30)).foregroundStyle(Carnet.ink)
             }
             Spacer()
@@ -161,9 +163,9 @@ struct MacAgendaView: View {
     private func weekLabel(_ start: Date) -> String {
         let end = DateUtils.addDays(6, to: start)
         let formatter = DateFormatter()
-        formatter.locale = Locale(identifier: "fr_CH")
+        formatter.locale = DateUtils.appLocale
         formatter.setLocalizedDateFormatFromTemplate("d MMMM")
-        return "Du \(formatter.string(from: start)) au \(formatter.string(from: end))"
+        return String(localized: "Du \(formatter.string(from: start)) au \(formatter.string(from: end))")
     }
 
     // MARK: Grille

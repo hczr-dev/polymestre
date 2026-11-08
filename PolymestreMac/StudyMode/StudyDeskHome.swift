@@ -243,7 +243,7 @@ struct StudyDeskHome: View {
                                 desk.pane = .exercise
                             }
                         case .help:
-                            step(index + 1, item.title, detail: "Un indice, ou fais vérifier ta copie", icon: "sparkle", done: false) { desk.showClaude() }
+                            step(index + 1, item.title, detail: String(localized: "Un indice, ou fais vérifier ta copie"), icon: "sparkle", done: false) { desk.showClaude() }
                         case .debrief:
                             step(index + 1, item.title, detail: debriefDetail, icon: "checklist", done: false) { desk.showClaude() }
                         }
@@ -474,13 +474,13 @@ struct StudyDeskHome: View {
     }
 
     private var theoryDetail: String {
-        theoryLeft == 0 ? "À jour pour cette semaine" : "\(theoryLeft) à voir cette semaine"
+        theoryLeft == 0 ? String(localized: "À jour pour cette semaine") : String(localized: "\(theoryLeft) à voir cette semaine")
     }
 
     private var seriesDetail: String {
-        guard let series else { return "Pas de série" }
+        guard let series else { return String(localized: "Pas de série") }
         let name = series.title.isEmpty ? series.displayName : series.title
-        return "\(name) · \(series.doneCount)/\(series.requiredExercises.count)" + (nextExercise.map { " · ensuite \($0.displayNumber)" } ?? "")
+        return "\(name) · \(series.doneCount)/\(series.requiredExercises.count)" + (nextExercise.map { String(localized: " · ensuite \($0.displayNumber)") } ?? "")
     }
 
     private func step(_ number: Int, _ title: String, detail: String, icon: String, done: Bool, action: @escaping () -> Void) -> some View {

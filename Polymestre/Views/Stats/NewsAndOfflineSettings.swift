@@ -45,7 +45,7 @@ struct MoodleNewsSettingsSections: View {
                 .disabled(checking)
             }
         } header: {
-            CarnetFormHeader("Nouveautés des cours")
+            CarnetFormHeader(String(localized: "Nouveautés des cours"))
         } footer: {
             if settings.moodleNewsEnabled {
                 Text(statusLine)
@@ -86,7 +86,7 @@ struct MoodleNewsSettingsSections: View {
                         }
                     }
                 } header: {
-                    CarnetFormHeader("Cours")
+                    CarnetFormHeader(String(localized: "Cours"))
                 }
             }
         }
@@ -94,18 +94,18 @@ struct MoodleNewsSettingsSections: View {
 
     /// « Dernier relevé il y a 2 h », ou ce qui bloque.
     private var statusLine: String {
-        if denied { return "Notifications refusées : active-les dans Réglages › Polymestre." }
+        if denied { return String(localized: "Notifications refusées : active-les dans Réglages › Polymestre.") }
         if let result { return result }
-        if linkedCourses.isEmpty { return "Aucun cours relié à Moodle pour l'instant." }
+        if linkedCourses.isEmpty { return String(localized: "Aucun cours relié à Moodle pour l'instant.") }
         switch MoodleWatcher.lastStatus {
-        case .signedOut?: return "Moodle demande de te reconnecter : ouvre « Importer du contenu »."
-        case .offline?: return "Dernier relevé impossible : pas de réseau."
+        case .signedOut?: return String(localized: "Moodle demande de te reconnecter : ouvre « Importer du contenu ».")
+        case .offline?: return String(localized: "Dernier relevé impossible : pas de réseau.")
         default:
             guard let last = MoodleWatcher.lastCheck else {
-                return "Relevé toutes les deux heures environ, quand iOS le permet."
+                return String(localized: "Relevé toutes les deux heures environ, quand iOS le permet.")
             }
             let ago = RelativeDateTimeFormatter().localizedString(for: last, relativeTo: Date())
-            return "Dernier relevé \(ago). iOS choisit le moment, au mieux toutes les deux heures."
+            return String(localized: "Dernier relevé \(ago). iOS choisit le moment, au mieux toutes les deux heures.")
         }
     }
 
@@ -124,13 +124,13 @@ struct MoodleNewsSettingsSections: View {
         await CookieKeeper.save()
         let report = await MoodleWatcher.check(container: app.modelContainer, settings: app.settings)
         switch report.status {
-        case .signedOut: result = "Moodle demande de te reconnecter : ouvre « Importer du contenu »."
-        case .offline: result = "Pas de réseau."
+        case .signedOut: result = String(localized: "Moodle demande de te reconnecter : ouvre « Importer du contenu ».")
+        case .offline: result = String(localized: "Pas de réseau.")
         case .ok:
             let count = report.news.reduce(0) { $0 + $1.items.count }
             result = count == 0
-                ? "Rien de neuf dans \(report.courses) cours."
-                : "\(Plural.count(count, "\(count) nouveauté", "\(count) nouveautés")) : la notification arrive."
+                ? String(localized: "Rien de neuf dans \(report.courses) cours.")
+                : String(localized: "\(Plural.count(count, "\(count) nouveauté", "\(count) nouveautés")) : la notification arrive.")
         }
         Haptics.tap()
     }

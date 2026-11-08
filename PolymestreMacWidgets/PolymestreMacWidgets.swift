@@ -227,7 +227,7 @@ extension WidgetSnapshot {
                              expectedSeconds: 60_000, days: [7800, 9000, 5400, 10800, 11000, 0, 0]),
             schedule: [WidgetEvent(id: "e", start: now.addingTimeInterval(3600), end: now.addingTimeInterval(7200),
                                    title: "Analyse I", subtitle: "MATH-101 · CE1", colorHex: "#3E7CB1")],
-            deadlines: [WidgetDeadline(id: "d", title: "Série 4 à rendre", courseCode: "CS-107",
+            deadlines: [WidgetDeadline(id: "d", title: String(localized: "Série 4 à rendre"), courseCode: "CS-107",
                                        date: now.addingTimeInterval(2 * 86400), colorHex: "#C0504D")])
     }
 }

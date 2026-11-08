@@ -37,7 +37,7 @@ final class EdWatcher {
             let before = unread[course.id] ?? 0
             unread[course.id] = fresh
             if fresh > before {
-                DeskNotifications.shared.post(.info, "\(fresh) nouveau\(fresh > 1 ? "x" : "") message\(fresh > 1 ? "s" : "") sur Ed · \(course.displayCode)",
+                DeskNotifications.shared.post(.info, Plural.count(fresh, "\(fresh) nouveau message sur Ed · \(course.displayCode)", "\(fresh) nouveaux messages sur Ed · \(course.displayCode)"),
                                               icon: "bubble.left.and.bubble.right")
             }
         }

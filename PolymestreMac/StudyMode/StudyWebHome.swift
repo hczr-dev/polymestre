@@ -10,7 +10,7 @@ struct StudyWebHome: View {
 
     var body: some View {
         let tools = StudyTools.tools(for: course, settings: settings).filter { !$0.isApp }
-            + [StudyMode.Tool(id: "geogebra", title: "GeoGebra", subtitle: "Géométrie", icon: "compass.drawing",
+            + [StudyMode.Tool(id: "geogebra", title: "GeoGebra", subtitle: String(localized: "Géométrie"), icon: "compass.drawing",
                               kind: .web(URL(string: "https://www.geogebra.org/calculator")!))]
         VStack(alignment: .leading, spacing: 14) {
             Text("Sites permis").font(Carnet.serif(.title2)).foregroundStyle(StudyPalette.ink)

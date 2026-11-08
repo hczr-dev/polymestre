@@ -19,7 +19,7 @@ struct ImportSheet: View {
         var id: String { rawValue }
         var title: String {
             switch self {
-            case .timetable: return "Horaire .ics"
+            case .timetable: return String(localized: "Horaire .ics")
             case .json: return "JSON"
             case .csv: return "CSV"
             }

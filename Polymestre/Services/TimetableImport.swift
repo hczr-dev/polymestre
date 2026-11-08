@@ -18,12 +18,12 @@ enum TimetableImport {
 
         var message: String {
             var parts: [String] = []
-            if coursesCreated > 0 { parts.append("\(coursesCreated) cours créé(s)") }
-            if coursesMatched > 0 { parts.append("\(coursesMatched) cours reconnu(s)") }
-            if eventsCreated > 0 { parts.append("\(eventsCreated) séance(s) importée(s)") }
-            if eventsSkipped > 0 { parts.append("\(eventsSkipped) déjà présente(s)") }
-            if lecturesDetected > 0 { parts.append("\(lecturesDetected) cours avec amphi détecté(s)") }
-            return parts.isEmpty ? "Aucun événement trouvé dans le flux." : parts.joined(separator: " · ")
+            if coursesCreated > 0 { parts.append(String(localized: "\(coursesCreated) cours créé(s)")) }
+            if coursesMatched > 0 { parts.append(String(localized: "\(coursesMatched) cours reconnu(s)")) }
+            if eventsCreated > 0 { parts.append(String(localized: "\(eventsCreated) séance(s) importée(s)")) }
+            if eventsSkipped > 0 { parts.append(String(localized: "\(eventsSkipped) déjà présente(s)")) }
+            if lecturesDetected > 0 { parts.append(String(localized: "\(lecturesDetected) cours avec amphi détecté(s)")) }
+            return parts.isEmpty ? String(localized: "Aucun événement trouvé dans le flux.") : parts.joined(separator: " · ")
         }
     }
 
@@ -36,9 +36,9 @@ enum TimetableImport {
 
         var errorDescription: String? {
             switch self {
-            case .invalidURL: return "URL du flux invalide."
-            case .network(let detail): return "Téléchargement impossible : \(detail)"
-            case .empty: return "Le flux ne contient aucun événement."
+            case .invalidURL: return String(localized: "URL du flux invalide.")
+            case .network(let detail): return String(localized: "Téléchargement impossible : \(detail)")
+            case .empty: return String(localized: "Le flux ne contient aucun événement.")
             }
         }
     }

@@ -243,7 +243,9 @@ function fixed1(value: number): string {
 
 /** « 2,5 h » (1 décimale, virgule suisse). */
 function hoursLabel(seconds: number): string {
-  const formatted = fixed1(seconds / 3600).replace(".", usesDecimalComma() ? "," : ".");
+  // « 2 h » plutôt que « 2,0 h » : la décimale seulement quand elle dit quelque chose.
+  const raw = fixed1(seconds / 3600).replace(/\.0$/, "");
+  const formatted = raw.replace(".", usesDecimalComma() ? "," : ".");
   return `${formatted} h`;
 }
 

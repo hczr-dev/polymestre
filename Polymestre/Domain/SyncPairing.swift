@@ -34,12 +34,12 @@ enum SyncPairingError: LocalizedError, Equatable {
 
     var errorDescription: String? {
         switch self {
-        case .invalidCode: return "Ce code n'est pas valide : 26 caractères, par groupes de 4."
-        case .timeout: return "Aucun appareil n'a répondu. Vérifie le code, et que l'autre appareil affiche toujours « Ajouter un appareil »."
-        case .wrongCode: return "Le code ne correspond pas. Vérifie-le et réessaie."
-        case .otherAccount: return "Cet appareil est connecté à un autre compte que celui qui affiche le code."
-        case .relay: return "La connexion au relais a été coupée : réessaie."
-        case .cancelled: return "Appairage annulé."
+        case .invalidCode: return String(localized: "Ce code n'est pas valide : 26 caractères, par groupes de 4.")
+        case .timeout: return String(localized: "Aucun appareil n'a répondu. Vérifie le code, et que l'autre appareil affiche toujours « Ajouter un appareil ».")
+        case .wrongCode: return String(localized: "Le code ne correspond pas. Vérifie-le et réessaie.")
+        case .otherAccount: return String(localized: "Cet appareil est connecté à un autre compte que celui qui affiche le code.")
+        case .relay: return String(localized: "La connexion au relais a été coupée : réessaie.")
+        case .cancelled: return String(localized: "Appairage annulé.")
         }
     }
 }
@@ -127,7 +127,7 @@ actor SyncPairingHost {
     }
 
     private func closed() {
-        if state == .waiting || state == .verifying { finish(.failed("La connexion au relais a été coupée.")) }
+        if state == .waiting || state == .verifying { finish(.failed(String(localized: "La connexion au relais a été coupée."))) }
     }
 
     private func finish(_ new: State) {
@@ -158,10 +158,10 @@ actor SyncPairingHost {
                 socket?.send(pairMessage(step: "offer", pub: pubA, box: box))
             } else if message.step == "ok", state == .verifying, let key {
                 if let box = message.box, SyncCrypto.openOK(key, box: box) { finish(.done) }
-                else { finish(.failed("Le code saisi sur l'autre appareil ne correspond pas.")) }
+                else { finish(.failed(String(localized: "Le code saisi sur l'autre appareil ne correspond pas."))) }
             }
         } catch {
-            finish(.failed("L'appairage a échoué."))
+            finish(.failed(String(localized: "L'appairage a échoué.")))
         }
     }
 }

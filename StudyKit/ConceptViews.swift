@@ -154,9 +154,9 @@ struct ConceptDetailView: View {
                             .foregroundStyle(Carnet.review)
                             .fixedSize(horizontal: false, vertical: true)
                     }
-                    related("À comprendre avant", near.before, sheet: sheet, map: map)
-                    related("Ce qui en découle", near.after, sheet: sheet, map: map)
-                    related("À ne pas confondre avec", near.aside, sheet: sheet, map: map)
+                    related(String(localized: "À comprendre avant"), near.before, sheet: sheet, map: map)
+                    related(String(localized: "Ce qui en découle"), near.after, sheet: sheet, map: map)
+                    related(String(localized: "À ne pas confondre avec"), near.aside, sheet: sheet, map: map)
                     linksEditor(sheet: sheet, map: map)
                     if let check = extra?.check { selfTest(check) }
                     noteField

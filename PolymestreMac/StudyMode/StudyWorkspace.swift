@@ -91,7 +91,7 @@ struct StudyWorkspace: View {
         }
         .onChange(of: arrangementContext.solutionAvailable) { old, new in
             if !old, new, arrangementContext.hasTarget {
-                DeskNotifications.shared.post(.solution, "Le corrigé de cette série est publié", icon: "checkmark.seal")
+                DeskNotifications.shared.post(.solution, String(localized: "Le corrigé de cette série est publié"), icon: "checkmark.seal")
             }
         }
         .task { await watchNotices() }
@@ -160,7 +160,7 @@ struct StudyWorkspace: View {
             if timer.phase == .running, let status = timer.pomodoroStatus(at: date),
                status.remaining > 0, status.remaining <= 60, warnedBlock != status.blockNumber {
                 warnedBlock = status.blockNumber
-                DeskNotifications.shared.post(.breakSoon, "Pause dans une minute", icon: "cup.and.saucer")
+                DeskNotifications.shared.post(.breakSoon, String(localized: "Pause dans une minute"), icon: "cup.and.saucer")
             }
         }
     }
@@ -506,7 +506,7 @@ struct StudyWorkspace: View {
                                   detail: copy.title))
             }
             if let address = solutionAddress(series) {
-                work.append(.init(item: .init(kind: .reading(.pdf(title: "Corrigé", address: address)), title: String(localized: "Corrigé"), icon: "checkmark.seal", courseID: id),
+                work.append(.init(item: .init(kind: .reading(.pdf(title: String(localized: "Corrigé"), address: address)), title: String(localized: "Corrigé"), icon: "checkmark.seal", courseID: id),
                                   detail: name))
             }
         }

@@ -123,8 +123,8 @@ struct ShareResultView: View {
 
     private var message: String {
         guard let item else {
-            return "Aucun PDF ni texte n'a pu être lu dans ce partage."
+            return String(localized: "Aucun PDF ni texte n'a pu être lu dans ce partage.")
         }
-        return "\(item.displayName) t'attend dans Polymestre. Ouvre l'app : la relecture de la série s'affichera, et rien ne sera créé avant que tu valides."
+        return String(localized: "\(item.displayName) t'attend dans Polymestre. Ouvre l'app : la relecture de la série s'affichera, et rien ne sera créé avant que tu valides.")
     }
 }

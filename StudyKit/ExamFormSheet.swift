@@ -96,8 +96,8 @@ struct ExamFormSheet: View {
 
     private var reminderLabel: String {
         date > Date()
-            ? "Rappel 3 jours et 1 jour avant."
-            : "Évaluation passée : aucun rappel."
+            ? String(localized: "Rappel 3 jours et 1 jour avant.")
+            : String(localized: "Évaluation passée : aucun rappel.")
     }
 
     private func load() {

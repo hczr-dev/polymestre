@@ -182,8 +182,8 @@ final class NotesStore {
         /// Le titre du document pour Claude : quelles pages, et pourquoi elles seules.
         func title(_ notebook: String, firstTime: Bool) -> String {
             let list = Self.ranges(pages)
-            if firstTime { return "\(notebook) — pages \(list) sur \(total)" }
-            return "\(notebook) — pages \(list) sur \(total), nouvelles ou modifiées depuis le dernier envoi (les autres sont celles déjà envoyées)"
+            if firstTime { return String(localized: "\(notebook) — pages \(list) sur \(total)") }
+            return String(localized: "\(notebook) — pages \(list) sur \(total), nouvelles ou modifiées depuis le dernier envoi (les autres sont celles déjà envoyées)")
         }
 
         /// 3, 4, 5, 9 → « 3–5, 9 ».

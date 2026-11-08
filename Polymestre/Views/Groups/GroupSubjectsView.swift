@@ -37,7 +37,7 @@ struct GroupSubjectsView: View {
             result.append((code, course.name))
         }
         for code in groupSelection + group.subjectCodes where seen.insert(code.uppercased()).inserted {
-            result.append((code.uppercased(), "Hors de tes cours"))
+            result.append((code.uppercased(), String(localized: "Hors de tes cours")))
         }
         return result.sorted { $0.code.localizedStandardCompare($1.code) == .orderedAscending }
     }
@@ -183,7 +183,7 @@ struct GroupSubjectsView: View {
         group.subjectCodes = groupSelection
         try? context.save()
         guard let remoteID = group.remoteID, app.social.isSignedIn else {
-            message = "Matières enregistrées sur cet appareil. Connecte-toi pour les partager."
+            message = String(localized: "Matières enregistrées sur cet appareil. Connecte-toi pour les partager.")
             return
         }
         isSaving = true
@@ -192,12 +192,12 @@ struct GroupSubjectsView: View {
                 try await app.social.setGroupCourses(groupID: remoteID, codes: groupSelection)
                 await MainActor.run {
                     isSaving = false
-                    message = "Matières partagées avec le groupe."
+                    message = String(localized: "Matières partagées avec le groupe.")
                 }
             } catch {
                 await MainActor.run {
                     isSaving = false
-                    message = "Enregistré localement, mais le partage a échoué — \(GroupSync.explain(error))"
+                    message = String(localized: "Enregistré localement, mais le partage a échoué — \(GroupSync.explain(error))")
                 }
             }
         }

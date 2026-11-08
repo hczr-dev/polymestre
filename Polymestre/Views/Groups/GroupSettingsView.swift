@@ -51,7 +51,7 @@ struct GroupSettingsView: View {
                         .disabled(name.trimmingCharacters(in: .whitespaces).isEmpty || isBusy)
                     }
                 } header: {
-                    CarnetFormHeader("Groupe")
+                    CarnetFormHeader(String(localized: "Groupe"))
                 } footer: {
                     if !canEdit { Text("Réservé aux administrateurs.") }
                 }
@@ -116,7 +116,7 @@ struct GroupSettingsView: View {
                               systemImage: "books.vertical")
                     }
                 } header: {
-                    CarnetFormHeader("Matières")
+                    CarnetFormHeader(String(localized: "Matières"))
                 }
 
                 Section {
@@ -133,7 +133,7 @@ struct GroupSettingsView: View {
                         Label("Sessions planifiées", systemImage: "calendar")
                     }
                 } header: {
-                    CarnetFormHeader("Membres")
+                    CarnetFormHeader(String(localized: "Membres"))
                 }
 
                 Section {
@@ -144,7 +144,7 @@ struct GroupSettingsView: View {
                         Label("Apparaître anonymement", systemImage: "eye.slash")
                     }
                 } header: {
-                    CarnetFormHeader("Ce que je partage")
+                    CarnetFormHeader(String(localized: "Ce que je partage"))
                 }
 
                 Section {
@@ -195,7 +195,7 @@ struct GroupSettingsView: View {
     private var syncStatus: some View {
         let synced = group.remoteID != nil
         return Label(synced ? "Synchronisé avec les membres"
-                            : (app.social.isSignedIn ? "Seulement sur cet appareil" : "Connecte-toi pour inviter"),
+                            : (app.social.isSignedIn ? String(localized: "Seulement sur cet appareil") : String(localized: "Connecte-toi pour inviter")),
                      systemImage: synced ? "checkmark.icloud" : "icloud.slash")
             .font(.footnote)
             .foregroundStyle(synced ? Carnet.correct : Carnet.inkSecondary)
@@ -204,9 +204,9 @@ struct GroupSettingsView: View {
     private var leaveWarning: String {
         let admins = group.members.filter(\.isAdmin)
         if iAmAdmin, admins.count <= 1, group.members.count > 1 {
-            return "Tu es le seul administrateur : plus personne ne pourra gérer les membres après ton départ."
+            return String(localized: "Tu es le seul administrateur : plus personne ne pourra gérer les membres après ton départ.")
         }
-        return "Tu n'apparaîtras plus dans ce groupe. Ton historique de temps reste sur ton appareil."
+        return String(localized: "Tu n'apparaîtras plus dans ce groupe. Ton historique de temps reste sur ton appareil.")
     }
 
     // MARK: Actions
@@ -219,7 +219,7 @@ struct GroupSettingsView: View {
             do {
                 try await app.social.updateGroup(id: remoteID, name: trimmed, description: details)
             } catch {
-                message = "Enregistrement impossible — \(GroupSync.explain(error))"
+                message = String(localized: "Enregistrement impossible — \(GroupSync.explain(error))")
                 return
             }
         }

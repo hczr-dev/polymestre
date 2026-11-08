@@ -85,9 +85,10 @@ describe("DateUtils : formats", () => {
     expect(DateUtils.durationLabel(-10)).toBe("0 min");
   });
 
-  it("hoursLabel : une décimale, virgule suisse, arrondi pair sur les égalités exactes", () => {
+  it("hoursLabel : une décimale quand elle compte, virgule suisse, arrondi pair sur les égalités exactes", () => {
     expect(DateUtils.hoursLabel(9000)).toBe("2,5 h");
-    expect(DateUtils.hoursLabel(0)).toBe("0,0 h");
+    expect(DateUtils.hoursLabel(0)).toBe("0 h");
+    expect(DateUtils.hoursLabel(7200)).toBe("2 h");
     expect(DateUtils.hoursLabel(900)).toBe("0,2 h"); // 0,25 → printf arrondit au pair
     expect(DateUtils.hoursLabel(2700)).toBe("0,8 h"); // 0,75
     expect(DateUtils.hoursLabelFromHours(1.5)).toBe("1,5 h");

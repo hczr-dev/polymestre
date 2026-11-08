@@ -56,7 +56,9 @@ export function AgendaScreen({ onOpenCourse }: { onOpenCourse?: OpenCourse } = {
     [store, version],
   );
 
-  const weekStart = DateUtils.addWeeks(weekOffset, DateUtils.startOfWeek(now));
+  // Le week-end, la semaine qui vient : celle qui finit n'a plus rien à faire.
+  const baseOffset = now.getDay() === 0 || now.getDay() === 6 ? 1 : 0;
+  const weekStart = DateUtils.addWeeks(weekOffset + baseOffset, DateUtils.startOfWeek(now));
   const weekEnd = DateUtils.addDays(7, weekStart);
   const term = AcademicTerm.resolve(
     tracked.map((course) => course.term).filter((value): value is AcademicTerm => value !== null),

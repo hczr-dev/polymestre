@@ -61,32 +61,32 @@ struct ConnectionsList: View {
     var body: some View {
         CarnetSheet {
             siteRow(.moodle, icon: "graduationcap", title: "Moodle",
-                    purpose: "Séries, énoncés, théorie et échéances, mis à jour tout seuls")
+                    purpose: String(localized: "Séries, énoncés, théorie et échéances, mis à jour tout seuls"))
             CarnetRule()
             siteRow(.courseware, icon: "play.rectangle", title: "Courseware",
-                    purpose: "Vidéos des MOOC que les cours demandent de regarder")
+                    purpose: String(localized: "Vidéos des MOOC que les cours demandent de regarder"))
             CarnetRule()
-            siteRow(.explique, icon: "sparkles.tv", title: "Explique",
-                    purpose: "Cours en replay et exercices d'AICC (CS-101)")
+            siteRow(.explique, icon: "sparkles.tv", title: String(localized: "Explique"),
+                    purpose: String(localized: "Cours en replay et exercices d'AICC (CS-101)"))
             CarnetRule()
             siteRow(.mediaspace, icon: "video", title: "MediaSpace",
-                    purpose: "Enregistrements des cours, lus dans l'app")
+                    purpose: String(localized: "Enregistrements des cours, lus dans l'app"))
             CarnetRule()
-            row(icon: "person.2", title: "Compte Polymestre",
-                purpose: "Groupes, entraide, progression partagée",
-                status: app.social.isSignedIn ? "Connecté·e" : (center.state(of: .groups) == .expired ? "Session expirée" : "Pas de compte"),
+            row(icon: "person.2", title: String(localized: "Compte Polymestre"),
+                purpose: String(localized: "Groupes, entraide, progression partagée"),
+                status: app.social.isSignedIn ? String(localized: "Connecté·e") : (center.state(of: .groups) == .expired ? String(localized: "Session expirée") : String(localized: "Pas de compte")),
                 connected: app.social.isSignedIn,
                 action: app.social.isSignedIn ? nil : { sheet = .groups })
             CarnetRule()
             row(icon: "rectangle.stack", title: "AnkiWeb",
-                purpose: "Cartes, révisions et temps de révision",
+                purpose: String(localized: "Cartes, révisions et temps de révision"),
                 status: ankiStatus,
                 connected: AnkiWebSync.shared.isSignedIn && center.state(of: .ankiweb) != .expired,
                 action: { sheet = .ankiweb })
             CarnetRule()
             row(icon: "calendar", title: "Calendrier de l'iPhone",
-                purpose: "Ton horaire et tes sessions dans l'agenda",
-                status: calendarGranted ? "Accès accordé" : "Accès à autoriser",
+                purpose: String(localized: "Ton horaire et tes sessions dans l'agenda"),
+                status: calendarGranted ? String(localized: "Accès accordé") : String(localized: "Accès à autoriser"),
                 connected: calendarGranted,
                 action: calendarGranted ? nil : {
                     Task { calendarGranted = await app.calendar.requestAccess() }
@@ -108,13 +108,13 @@ struct ConnectionsList: View {
         let connected = sites[site] == true
         let status: String
         if checking.contains(site) {
-            status = "Vérification…"
+            status = String(localized: "Vérification…")
         } else if connected {
-            status = "Connecté·e"
+            status = String(localized: "Connecté·e")
         } else if site == .moodle, center.state(of: .moodle) == .expired {
-            status = "Reconnexion nécessaire"
+            status = String(localized: "Reconnexion nécessaire")
         } else {
-            status = sites[site] == false ? "Pas connecté·e" : "—"
+            status = sites[site] == false ? String(localized: "Pas connecté·e") : "—"
         }
         return row(icon: icon, title: title, purpose: purpose, status: status, connected: connected,
                    action: checking.contains(site) ? nil : { sheet = site }, actionTitle: connected ? "Reconnecter" : "Connecter")
@@ -138,8 +138,8 @@ struct ConnectionsList: View {
     }
 
     private var ankiStatus: String {
-        guard AnkiWebSync.shared.isSignedIn else { return "Facultatif" }
-        return center.state(of: .ankiweb) == .expired ? "Reconnexion nécessaire" : "Connecté·e (\(AnkiWebSync.shared.username))"
+        guard AnkiWebSync.shared.isSignedIn else { return String(localized: "Facultatif") }
+        return center.state(of: .ankiweb) == .expired ? String(localized: "Reconnexion nécessaire") : String(localized: "Connecté·e (\(AnkiWebSync.shared.username))")
     }
 
     private func row(icon: String, title: String, purpose: String, status: String,
@@ -167,7 +167,7 @@ struct ConnectionsList: View {
                 } else {
                     Button(actionTitle ?? "Connecter", action: action).buttonStyle(.carnetSecondary)
                 }
-            } else if !connected, status == "Vérification…" {
+            } else if !connected, status == String(localized: "Vérification…") {
                 ProgressView()
             }
         }

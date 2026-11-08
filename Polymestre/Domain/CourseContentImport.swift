@@ -25,9 +25,9 @@ enum ContentSource: String, Codable, CaseIterable, Identifiable {
     /// Ce que la source apporte, en une ligne.
     var detail: String {
         switch self {
-        case .moodle: return "Semaines, vidéos, supports et séries du cours"
-        case .courseware: return "Chapitres et leçons d'un MOOC EPFL"
-        case .botafogo: return "Polycopié d'Analyse en ligne (S. Friedli), avec ses vidéos"
+        case .moodle: return String(localized: "Semaines, vidéos, supports et séries du cours")
+        case .courseware: return String(localized: "Chapitres et leçons d'un MOOC EPFL")
+        case .botafogo: return String(localized: "Polycopié d'Analyse en ligne (S. Friedli), avec ses vidéos")
         }
     }
 
@@ -114,9 +114,9 @@ enum ContentItemKind: String, CaseIterable, Identifiable {
     var id: String { rawValue }
     var label: String {
         switch self {
-        case .theory: return "Théorie"
-        case .series: return "Série"
-        case .deadline: return "Échéance"
+        case .theory: return String(localized: "Théorie")
+        case .series: return String(localized: "Série")
+        case .deadline: return String(localized: "Échéance")
         case .pastExam: return "Annale"
         case .resource: return "Document"
         case .ignore: return "Ignorer"
@@ -750,7 +750,7 @@ enum BotafogoParser {
         let parts = html.components(separatedBy: #"<div class="video">"#).dropFirst()
         return parts.compactMap { part in
             guard part.contains("video-plyr") else { return nil }
-            return firstCapture(part, #"class="video-button"[^>]*>([^<]+)</a>"#).map { decode($0) } ?? "Vidéo"
+            return firstCapture(part, #"class="video-button"[^>]*>([^<]+)</a>"#).map { decode($0) } ?? String(localized: "Vidéo")
         }
     }
 

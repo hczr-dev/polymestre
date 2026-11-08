@@ -28,9 +28,9 @@ final class SupabaseOAuthWebSession: NSObject, ASWebAuthenticationPresentationCo
                 Task { @MainActor in self?.session = nil }
                 if let callback { continuation.resume(returning: callback); return }
                 if let error = error as? ASWebAuthenticationSessionError, error.code == .canceledLogin {
-                    continuation.resume(throwing: OAuthFlowError(text: "Connexion annulée."))
+                    continuation.resume(throwing: OAuthFlowError(text: String(localized: "Connexion annulée.")))
                 } else {
-                    continuation.resume(throwing: error ?? OAuthFlowError(text: "La connexion Google a été interrompue."))
+                    continuation.resume(throwing: error ?? OAuthFlowError(text: String(localized: "La connexion Google a été interrompue.")))
                 }
             }
             session.presentationContextProvider = self
@@ -38,7 +38,7 @@ final class SupabaseOAuthWebSession: NSObject, ASWebAuthenticationPresentationCo
             self.session = session
             if !session.start() {
                 self.session = nil
-                continuation.resume(throwing: OAuthFlowError(text: "Impossible d'ouvrir la fenêtre de connexion."))
+                continuation.resume(throwing: OAuthFlowError(text: String(localized: "Impossible d'ouvrir la fenêtre de connexion.")))
             }
         }
     }
@@ -70,7 +70,7 @@ extension SupabaseClient {
         case .error(let description):
             throw OAuthFlowError(text: OAuthPKCE.callbackMessage(description, link: link))
         case nil:
-            throw OAuthFlowError(text: "La connexion Google a été interrompue.")
+            throw OAuthFlowError(text: String(localized: "La connexion Google a été interrompue."))
         }
     }
 

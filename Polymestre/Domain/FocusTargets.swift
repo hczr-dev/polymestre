@@ -175,16 +175,16 @@ enum FocusContext {
         let exercises = slots.filter { $0.kind == .exerciseSession }
         if let current = exercises.first(where: { $0.start.addingTimeInterval(-10 * 60) <= now && now < $0.end }) {
             return Suggestion(courseID: current.courseID, taskType: .exercise,
-                              reason: "Séance d'exercices de \(current.courseCode) en cours")
+                              reason: String(localized: "Séance d'exercices de \(current.courseCode) en cours"))
         }
         if let next = exercises.filter({ $0.start > now && $0.start.timeIntervalSince(now) <= leadTime }).min(by: { $0.start < $1.start }) {
             return Suggestion(courseID: next.courseID, taskType: .exercise,
-                              reason: "Séance d'exercices de \(next.courseCode) à \(DateUtils.time.string(from: next.start))")
+                              reason: String(localized: "Séance d'exercices de \(next.courseCode) à \(DateUtils.time.string(from: next.start))"))
         }
         let lectures = slots.filter { $0.kind == .lecture && $0.end <= now && now.timeIntervalSince($0.end) <= afterLecture }
         if let last = lectures.max(by: { $0.end < $1.end }) {
             return Suggestion(courseID: last.courseID, taskType: .theory,
-                              reason: "Juste après le cours de \(last.courseCode)")
+                              reason: String(localized: "Juste après le cours de \(last.courseCode)"))
         }
         return nil
     }

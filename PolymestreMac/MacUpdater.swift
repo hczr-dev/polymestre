@@ -41,16 +41,16 @@ final class MacUpdater {
         do {
             let (data, response) = try await URLSession.shared.data(for: request)
             guard (response as? HTTPURLResponse)?.statusCode == 200, let feed = MacUpdateFeed.decode(data) else {
-                status = "Le flux des mises à jour est illisible."
+                status = String(localized: "Le flux des mises à jour est illisible.")
                 return
             }
             UserDefaults.standard.set(Date(), forKey: lastCheckKey)
             UserDefaults.standard.set(data, forKey: cachedKey)
             available = feed.isNewer(thanBuild: AppDistribution.build) ? feed : nil
-            status = available == nil && manual ? "Polymestre est à jour." : nil
+            status = available == nil && manual ? String(localized: "Polymestre est à jour.") : nil
             if let available { log.notice("mise à jour disponible : \(available.version, privacy: .public) (\(available.build))") }
         } catch {
-            status = manual ? "Pas de réponse du site : \(error.localizedDescription)" : nil
+            status = manual ? String(localized: "Pas de réponse du site : \(error.localizedDescription)") : nil
         }
     }
 

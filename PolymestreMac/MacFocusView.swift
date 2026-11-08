@@ -91,8 +91,8 @@ struct MacFocusView: View {
 
     private func statusLine(at date: Date) -> String {
         switch timer.phase {
-        case .idle: return timer.pomodoro ? "Pomodoro" : "Prêt"
-        case .running: return timer.isStudying ? "Mode étude" : (timer.statusLabel(at: date) ?? (course?.displayCode ?? "En cours"))
+        case .idle: return timer.pomodoro ? "Pomodoro" : String(localized: "Prêt")
+        case .running: return timer.isStudying ? String(localized: "Mode étude") : (timer.statusLabel(at: date) ?? (course?.displayCode ?? String(localized: "En cours")))
         case .paused, .onBreak: return timer.statusLabel(at: date) ?? "En pause"
         }
     }
@@ -107,7 +107,7 @@ struct MacFocusView: View {
 
     private var setupCard: some View {
         VStack(alignment: .leading, spacing: 12) {
-            SectionTitle(title: "Nouvelle session")
+            SectionTitle(title: String(localized: "Nouvelle session"))
             TimerSetup(courses: tracked)
         }
         .paperSheet()
@@ -141,7 +141,7 @@ struct MacFocusView: View {
         HStack(spacing: 14) {
             Image(systemName: "lock.fill").foregroundStyle(Carnet.ink)
             TimerTimeline(interval: 60) { date in
-                Text((StudyMode.isOpenEnded(timer.state) ? "Mode étude · sans fin" : "Mode étude · reste \(StudyMode.remaining(timer.state, at: date).minuteLabel(roundingUp: true))"))
+                Text((StudyMode.isOpenEnded(timer.state) ? String(localized: "Mode étude · sans fin") : String(localized: "Mode étude · reste \(StudyMode.remaining(timer.state, at: date).minuteLabel(roundingUp: true))")))
                     .foregroundStyle(Carnet.ink)
             }
             Spacer()
@@ -157,7 +157,7 @@ struct MacFocusView: View {
     private var targetCard: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
-                SectionTitle(title: "Sur quoi")
+                SectionTitle(title: String(localized: "Sur quoi"))
                 Spacer()
                 if let course {
                     TargetMenu(course: course, taskType: timer.taskType, selection: Binding(
@@ -204,7 +204,7 @@ struct MacFocusView: View {
                 let parts = timer.state?.allocation(at: date) ?? []
                 if parts.count > 1 {
                     VStack(alignment: .leading, spacing: 8) {
-                        SectionTitle(title: "Cette session")
+                        SectionTitle(title: String(localized: "Cette session"))
                         ForEach(Array(parts.enumerated()), id: \.offset) { _, part in
                             let partCourse = tracked.first { $0.id == part.courseID }
                             HStack(spacing: 8) {

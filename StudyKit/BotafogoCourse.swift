@@ -338,7 +338,7 @@ struct BotafogoCourseView: View {
             if !parts.isEmpty {
                 let isOpen = openWeeks.contains(index)
                 let sections = readings[weekContent ?? ""] ?? []
-                disclosure(title: week.name ?? "Semaine \(index + 1)", isOpen: isOpen, accessory: weekAccessory(week, index: index, current: current, sections: sections)) {
+                disclosure(title: week.name ?? String(localized: "Semaine \(index + 1)"), isOpen: isOpen, accessory: weekAccessory(week, index: index, current: current, sections: sections)) {
                     withAnimation(.snappy(duration: 0.2)) {
                         if isOpen { openWeeks.remove(index) } else { openWeeks.insert(index) }
                     }
@@ -595,7 +595,7 @@ struct BotafogoPageView: View {
             .font(.callout)
             .help("Marqué lu tout seul quand tu arrives en bas de la page")
             if let accessory { accessory }
-            Button { ask("J'ai une question sur « \(location.title) » (Botafogo).") } label: {
+            Button { ask(String(localized: "J'ai une question sur « \(location.title) » (Botafogo).")) } label: {
                 Label("Claude", systemImage: "sparkle")
             }
             .buttonStyle(.paper)

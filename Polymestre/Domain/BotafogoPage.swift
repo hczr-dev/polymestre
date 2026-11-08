@@ -291,11 +291,11 @@ enum BotafogoPage {
                 }
             case "videokaltura":
                 if let id = props["entryId"] as? String {
-                    append(.kaltura(id: id, title: props["title"] as? String ?? "Vidéo"))
+                    append(.kaltura(id: id, title: props["title"] as? String ?? String(localized: "Vidéo")))
                 }
             case "video-player":
                 if let source = props["videoSrc"] as? String {
-                    append(.video(source: source, poster: props["thumbnailSrc"] as? String, title: props["title"] as? String ?? "Vidéo"))
+                    append(.video(source: source, poster: props["thumbnailSrc"] as? String, title: props["title"] as? String ?? String(localized: "Vidéo")))
                 }
             case "animation":
                 if let source = props["src"] as? String {
@@ -314,12 +314,12 @@ enum BotafogoPage {
             case "indication":
                 append(.folded(.hint, title: "Indication", BotafogoPage.blocks(slots: BotafogoPage.slot(node, "default"))))
             case "proof", "preuve":
-                let title = BotafogoPage.title(node) ?? "Preuve"
-                append(.folded(.proof, title: title == "Proof" ? "Preuve" : title, BotafogoPage.blocks(slots: BotafogoPage.slot(node, "default"))))
+                let title = BotafogoPage.title(node) ?? String(localized: "Preuve")
+                append(.folded(.proof, title: title == "Proof" ? String(localized: "Preuve") : title, BotafogoPage.blocks(slots: BotafogoPage.slot(node, "default"))))
             case "reveal":
                 append(.folded(.solution, title: BotafogoPage.title(node) ?? "Solution", BotafogoPage.blocks(slots: BotafogoPage.slot(node, "default"))))
             case "inline-popover":
-                append(.folded(.aside, title: BotafogoPage.title(node) ?? "En savoir plus", BotafogoPage.blocks(slots: BotafogoPage.slot(node, "default"))))
+                append(.folded(.aside, title: BotafogoPage.title(node) ?? String(localized: "En savoir plus"), BotafogoPage.blocks(slots: BotafogoPage.slot(node, "default"))))
             case "info":
                 append(.aside(title: BotafogoPage.title(node) ?? "", BotafogoPage.blocks(slots: BotafogoPage.slot(node, "default"))))
             case "quiz":

@@ -24,10 +24,10 @@ struct WeekTheoryCard: View {
         let videos = links.filter { $0.kind == .video }.count
         let supports = links.count - videos
         switch (videos > 0, supports > 0) {
-        case (true, true): return "Cours · enregistrement et supports"
-        case (true, false): return "Cours · enregistrement"
-        case (false, true): return "Cours · supports"
-        default: return "Cours"
+        case (true, true): return String(localized: "Cours · enregistrement et supports")
+        case (true, false): return String(localized: "Cours · enregistrement")
+        case (false, true): return String(localized: "Cours · supports")
+        default: return String(localized: "Cours")
         }
     }
 
@@ -73,7 +73,7 @@ struct WeekTheoryCard: View {
                     let number = count.map { String(lesson[$0].filter(\.isNumber)) }
                     let name = lesson.replacingOccurrences(of: #"(?i)\s*\(\d+ questions?\)"#, with: "", options: .regularExpression)
                         .replacingOccurrences(of: #"^[\d.]+\s+"#, with: "", options: .regularExpression)
-                    result.append(Row(id: "q:" + folded, title: name.isEmpty ? "Quiz du chapitre" : name, kind: link.kind, links: [link],
+                    result.append(Row(id: "q:" + folded, title: name.isEmpty ? String(localized: "Quiz du chapitre") : name, kind: link.kind, links: [link],
                                       icon: "checklist",
                                       detail: number.map { "Quiz · \($0) questions · Courseware" } ?? "Quiz · Courseware"))
                 } else {
@@ -174,16 +174,16 @@ struct WeekTheoryCard: View {
         if item.title.hasPrefix("MOOC") {
             // « 7 leçons · 16 vidéos · quiz » : ce que le chapitre demande.
             let lessons = rows.filter { $0.kind == .video }.count
-            if lessons > 1 { parts.append("\(lessons) leçons") }
-            if videos > 0 { parts.append(videos == 1 ? "1 vidéo" : "\(videos) vidéos") }
+            if lessons > 1 { parts.append(String(localized: "\(lessons) leçons")) }
+            if videos > 0 { parts.append(videos == 1 ? String(localized: "1 vidéo") : String(localized: "\(videos) vidéos")) }
             if rows.contains(where: { $0.id.hasPrefix("q:") }) { parts.append("quiz") }
         } else {
-            if videos > 0 { parts.append(videos == 1 ? "1 vidéo" : "\(videos) vidéos") }
+            if videos > 0 { parts.append(videos == 1 ? String(localized: "1 vidéo") : String(localized: "\(videos) vidéos")) }
             let supports = Set(links.map(\.kind)).subtracting([.video]).map(\.shortLabel).sorted()
             parts.append(contentsOf: supports)
         }
         if item.durationSeconds > 0 { parts.append(DateUtils.durationLabel(seconds: item.durationSeconds)) }
-        if item.isWatched { parts.append("vu") }
+        if item.isWatched { parts.append(String(localized: "vu")) }
         return parts.isEmpty ? item.kind.label : parts.joined(separator: " · ")
     }
 
@@ -252,9 +252,9 @@ struct WeekTheoryCard: View {
         if !suffix.isEmpty, !generic { return suffix }
         if let range = link.url.range(of: #"(?i)partie_?(\d+)"#, options: .regularExpression),
            let number = link.url[range].split(whereSeparator: { !$0.isNumber }).last {
-            return "Partie \(number)"
+            return String(localized: "Partie \(number)")
         }
-        return "Vidéo \(index + 1)"
+        return String(localized: "Vidéo \(index + 1)")
     }
 
     /// « 2 vidéos · Courseware », « Transparents · proginsc ».
@@ -262,7 +262,7 @@ struct WeekTheoryCard: View {
         if let detail = row.detail { return detail }
         let site = URL(string: row.links.first?.url ?? "")?.host.map(CarnetTheoryLine.siteName) ?? ""
         let what = row.kind == .video
-            ? (row.links.count > 1 ? "\(row.links.count) parties" : "Vidéo")
+            ? (row.links.count > 1 ? "\(row.links.count) parties" : String(localized: "Vidéo"))
             : row.kind.chipLabel
         return [what, site].filter { !$0.isEmpty }.joined(separator: " · ")
     }

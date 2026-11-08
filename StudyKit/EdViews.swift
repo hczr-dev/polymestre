@@ -146,7 +146,7 @@ struct EdThreadReader: View {
         let formatter = ISO8601DateFormatter()
         formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
         let date = formatter.date(from: iso) ?? ISO8601DateFormatter().date(from: iso)
-        return date.map { $0.formatted(.dateTime.day().month(.abbreviated).locale(Locale(identifier: "fr_CH"))) } ?? ""
+        return date.map { $0.formatted(.dateTime.day().month(.abbreviated).locale(DateUtils.appLocale)) } ?? ""
     }
 }
 
@@ -198,7 +198,7 @@ struct EdComposeSheet: View {
                     .background(Carnet.sheet, in: RoundedRectangle(cornerRadius: 8))
                     .overlay(RoundedRectangle(cornerRadius: 8).strokeBorder(Carnet.rule))
                 ScrollView {
-                    RichTextView(text: text.isEmpty ? "*Aperçu*" : text, size: 14)
+                    RichTextView(text: text.isEmpty ? String(localized: "*Aperçu*") : text, size: 14)
                         .frame(maxWidth: .infinity, alignment: .leading)
                 }
                 .frame(minHeight: 180)
@@ -372,7 +372,7 @@ private struct EdQuestionCard: View {
         sending = true
         defer { sending = false }
         let response = EdDiscussion.response(choices: choices, text: text, for: question.kind)
-        result = (try? await desk.ed.answer(question: question.id, response: response)) ?? (nil, "L'envoi a échoué.")
+        result = (try? await desk.ed.answer(question: question.id, response: response)) ?? (nil, String(localized: "L'envoi a échoué."))
     }
 }
 
@@ -482,7 +482,7 @@ struct EdPollCard: View {
             error = nil
             await load()
         } catch {
-            self.error = "Le vote n'est pas passé."
+            self.error = String(localized: "Le vote n'est pas passé.")
         }
     }
 }

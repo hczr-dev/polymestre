@@ -9,7 +9,7 @@ enum AnkiRating: Int, CaseIterable, Identifiable {
 
     var label: String {
         switch self {
-        case .again: return "À revoir"
+        case .again: return String(localized: "À revoir")
         case .hard: return "Difficile"
         case .good: return "Bien"
         case .easy: return "Facile"

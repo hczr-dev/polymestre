@@ -170,7 +170,7 @@ struct CourseExamsView: View {
     }
 
     private var examsCard: some View {
-        Card(title: "Évaluations", icon: "graduationcap.fill",
+        Card(title: String(localized: "Évaluations"), icon: "graduationcap.fill",
              trailing: course.exams.isEmpty ? nil : "\(course.exams.count)") {
             VStack(alignment: .leading, spacing: 12) {
             if course.sortedExams.isEmpty {

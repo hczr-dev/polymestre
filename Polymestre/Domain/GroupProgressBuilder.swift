@@ -75,8 +75,8 @@ enum GroupProgressBuilder {
             guard let leader, let me, !leader.isMe else { return nil }
             let gap = leader.doneTotal - me.doneTotal
             guard gap > 0 else { return nil }
-            let unit = gap == 1 ? "élément" : "éléments"
-            return "\(leader.displayName) a \(gap) \(unit) d'avance"
+            let unit = gap == 1 ? String(localized: "élément") : String(localized: "éléments")
+            return String(localized: "\(leader.displayName) a \(gap) \(unit) d'avance")
         }
     }
 

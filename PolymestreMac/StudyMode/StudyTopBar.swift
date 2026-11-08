@@ -112,7 +112,7 @@ struct StudyTopBar: View {
                     .contentShape(Circle())
             }
             .buttonStyle(.plain)
-            .help(timer.phase == .running ? "Mettre la session en pause" : (timer.phase == .onBreak ? "Écourter la pause" : "Reprendre la session"))
+            .help(timer.phase == .running ? "Mettre la session en pause" : (timer.phase == .onBreak ? String(localized: "Écourter la pause") : String(localized: "Reprendre la session")))
         }
         .padding(.leading, 12)
         .padding(.trailing, 6)
@@ -127,7 +127,7 @@ struct StudyTopBar: View {
         if StudyMode.isOpenEnded(timer.state) {
             return "depuis \(DateUtils.time.string(from: timer.state?.studySince ?? Date()))"
         }
-        return "jusqu'à \(DateUtils.time.string(from: timer.state?.studyUntil ?? Date()))"
+        return String(localized: "jusqu'à \(DateUtils.time.string(from: timer.state?.studyUntil ?? Date()))")
     }
 
     /// Les outils (qui se replient quand la place manque) puis la sortie (qui ne se

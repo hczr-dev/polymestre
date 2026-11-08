@@ -16,13 +16,13 @@ enum SupabaseError: LocalizedError {
 
     var errorDescription: String? {
         switch self {
-        case .notConfigured: return "Supabase n'est pas configuré (URL ou clé manquante)."
-        case .notSignedIn: return "Session expirée ou absente : reconnecte-toi dans Réglages › Compte et groupes."
-        case .invalidURL: return "URL Supabase invalide."
-        case .invalidResponse: return "Réponse invalide du serveur."
-        case .server(let status, let message): return "Erreur serveur (\(status)) : \(message)"
-        case .decoding(let detail): return "Décodage impossible : \(detail)"
-        case .groupKeyPending: return "La clé de chiffrement du groupe n'est pas encore arrivée sur ce téléphone. Elle arrive dès qu'un membre du groupe ouvre l'app ; réessaie dans un instant."
+        case .notConfigured: return String(localized: "Supabase n'est pas configuré (URL ou clé manquante).")
+        case .notSignedIn: return String(localized: "Session expirée ou absente : reconnecte-toi dans Réglages › Compte et groupes.")
+        case .invalidURL: return String(localized: "URL Supabase invalide.")
+        case .invalidResponse: return String(localized: "Réponse invalide du serveur.")
+        case .server(let status, let message): return String(localized: "Erreur serveur (\(status)) : \(message)")
+        case .decoding(let detail): return String(localized: "Décodage impossible : \(detail)")
+        case .groupKeyPending: return String(localized: "La clé de chiffrement du groupe n'est pas encore arrivée sur ce téléphone. Elle arrive dès qu'un membre du groupe ouvre l'app ; réessaie dans un instant.")
         }
     }
 }

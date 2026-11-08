@@ -288,9 +288,9 @@ struct TodayView: View {
     private func content(_ state: TodayState) -> some View {
         if state.tracked.isEmpty {
             CarnetEmpty(icon: "books.vertical",
-                        title: "Aucun cours suivi",
-                        message: "Séries, vidéos et échéances, lues sur Moodle.",
-                        actionTitle: "Importer mes cours") {
+                        title: String(localized: "Aucun cours suivi"),
+                        message: String(localized: "Séries, vidéos et échéances, lues sur Moodle."),
+                        actionTitle: String(localized: "Importer mes cours")) {
                 app.router.openContentImport()
             }
         } else {
@@ -358,7 +358,7 @@ struct TodayView: View {
     private func deadlines(_ state: TodayState) -> some View {
         if !state.deadlines.isEmpty {
             VStack(alignment: .leading, spacing: 10) {
-                CarnetSectionTitle("Échéances")
+                CarnetSectionTitle(String(localized: "Échéances"))
                 CarnetSheet {
                     ForEach(Array(state.deadlines.enumerated()), id: \.element.id) { index, item in
                         Button {
@@ -415,7 +415,7 @@ struct TodayView: View {
     private func tasks(_ state: TodayState) -> some View {
         if !state.tasks.isEmpty {
             VStack(alignment: .leading, spacing: 10) {
-                CarnetSectionTitle("Tâches") {
+                CarnetSectionTitle(String(localized: "Tâches")) {
                     Button {
                         sheet = .tasks
                     } label: {
@@ -439,7 +439,7 @@ struct TodayView: View {
         HStack(spacing: 8) {
             CheckCircleButton(isOn: task.isDone,
                               tint: task.course.map { Carnet.tint($0.colorHex) } ?? Carnet.ink,
-                              label: "Marquer « \(task.title) » faite") {
+                              label: String(localized: "Marquer « \(task.title) » faite")) {
                 Task { await TaskSync.setDone(task, !task.isDone, context: context, settings: app.settings) }
             }
             .padding(.leading, 4)
@@ -531,7 +531,7 @@ struct TodayView: View {
                 sheet = .seriesImport(nil, nil)
             case .startTimer:
                 app.router.startFocus(courseID: nil, courseCode: "",
-                                      taskType: .theory, label: "Session libre")
+                                      taskType: .theory, label: String(localized: "Session libre"))
             }
             app.router.shortcut = nil
         }
@@ -606,7 +606,7 @@ struct TodayView: View {
         let now = Date()
         let items = state.todayItems
         return VStack(alignment: .leading, spacing: 10) {
-            CarnetSectionTitle("Horaire") {
+            CarnetSectionTitle(String(localized: "Horaire")) {
                 Button {
                     app.router.openAgenda(day: now)
                 } label: {
@@ -627,7 +627,7 @@ struct TodayView: View {
             } label: {
                 CarnetSheet {
                     if items.isEmpty {
-                        CarnetRow(icon: "sun.max", tint: Carnet.review, title: "Rien à l'horaire")
+                        CarnetRow(icon: "sun.max", tint: Carnet.review, title: String(localized: "Rien à l'horaire"))
                     } else {
                         ForEach(Array(items.prefix(6).enumerated()), id: \.element.id) { index, item in
                             scheduleRow(item, now: now)
@@ -716,7 +716,7 @@ struct TodayView: View {
             if let event = item.event, event.isCheckable(now: now) {
                 let on = event.isChecked(now: now)
                 CheckCircleButton(isOn: on, tint: item.color,
-                                  label: on ? "Marquer \(event.title) manqué" : "J'étais à \(event.title)") {
+                                  label: on ? String(localized: "Marquer \(event.title) manqué") : String(localized: "J'étais à \(event.title)")) {
                     event.toggleChecked(now: now)
                     try? context.save()
                 }

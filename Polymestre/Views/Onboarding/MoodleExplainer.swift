@@ -23,14 +23,14 @@ struct MoodleExplainer: View {
     }
 
     private static let items = [
-        Item(icon: "doc", name: "Série 3.pdf", badge: "PDF",
-             chipIcon: "doc.text.fill", chipTitle: "Série 3", chipDetail: "Série · 6 exercices"),
-        Item(icon: "link", name: "Vidéos du cours", badge: "Vidéo",
-             chipIcon: "play.rectangle.fill", chipTitle: "Limites et continuité", chipDetail: "Vidéo · 3 vidéos"),
-        Item(icon: "folder", name: "Corrigés", badge: "Dossier · 3 PDF",
-             chipIcon: "checkmark.seal.fill", chipTitle: "Corrigé de la série 2", chipDetail: "Corrigé"),
-        Item(icon: "tray.and.arrow.up", name: "Mini-projet 1", badge: "Devoir",
-             chipIcon: "flag.fill", chipTitle: "Rendu du mini-projet", chipDetail: "Échéance · 14 oct.", isDeadline: true),
+        Item(icon: "doc", name: String(localized: "Série 3.pdf"), badge: "PDF",
+             chipIcon: "doc.text.fill", chipTitle: String(localized: "Série 3"), chipDetail: String(localized: "Série · 6 exercices")),
+        Item(icon: "link", name: String(localized: "Vidéos du cours"), badge: String(localized: "Vidéo"),
+             chipIcon: "play.rectangle.fill", chipTitle: String(localized: "Limites et continuité"), chipDetail: String(localized: "Vidéo · 3 vidéos")),
+        Item(icon: "folder", name: String(localized: "Corrigés"), badge: "Dossier · 3 PDF",
+             chipIcon: "checkmark.seal.fill", chipTitle: String(localized: "Corrigé de la série 2"), chipDetail: String(localized: "Corrigé")),
+        Item(icon: "tray.and.arrow.up", name: String(localized: "Mini-projet 1"), badge: "Devoir",
+             chipIcon: "flag.fill", chipTitle: String(localized: "Rendu du mini-projet"), chipDetail: String(localized: "Échéance · 14 oct."), isDeadline: true),
     ]
 
     var body: some View {
@@ -222,7 +222,7 @@ struct MoodleExplainer: View {
 
     private func steps(t: Double) -> some View {
         let active = t < 1.8 ? 0 : (t < 4.0 ? 1 : 2)
-        let labels = ["Lire le cours", "Ouvrir les fichiers", "Ranger"]
+        let labels = [String(localized: "Lire le cours"), String(localized: "Ouvrir les fichiers"), "Ranger"]
         return HStack(spacing: 6) {
             ForEach(labels.indices, id: \.self) { index in
                 HStack(spacing: 5) {

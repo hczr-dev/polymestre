@@ -141,7 +141,7 @@ struct ClaudeButtonsEditor: View {
         let data = try? Data(contentsOf: url)
         if let data, !data.isEmpty {
             guard let file = ClaudeProject.File.decode(data) else {
-                error = "polymestre.json est illisible : corrige-le avant d'éditer ici."
+                error = String(localized: "polymestre.json est illisible : corrige-le avant d'éditer ici.")
                 return
             }
             commands = file.commands
@@ -159,7 +159,7 @@ struct ClaudeButtonsEditor: View {
             return copy
         }
         guard let data = ClaudeProject.updating(try? Data(contentsOf: url), commands: cleaned, models: models) else {
-            error = "polymestre.json n'a pas pu être réécrit."
+            error = String(localized: "polymestre.json n'a pas pu être réécrit.")
             return
         }
         do {
@@ -172,7 +172,7 @@ struct ClaudeButtonsEditor: View {
     }
 
     private func add(_ scope: Command.Scope) {
-        let label = scope == .series ? "Nouveau bouton" : "Nouvelle commande"
+        let label = scope == .series ? String(localized: "Nouveau bouton") : String(localized: "Nouvelle commande")
         let command = Command(id: ClaudeProject.commandID(for: label, taken: commands.map(\.id)),
                               label: label, prompt: "", scope: scope)
         commands.append(command)

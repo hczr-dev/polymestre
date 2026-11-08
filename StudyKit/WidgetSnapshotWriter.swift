@@ -60,9 +60,9 @@ enum WidgetSnapshotWriter {
         let theory = week.videoCount - week.watchedCount
         let exercises = week.exerciseCount - week.doneCount
         var parts: [String] = []
-        if theory > 0 { parts.append("\(theory) théorie") }
+        if theory > 0 { parts.append(String(localized: "\(theory) théorie")) }
         if exercises > 0 { parts.append(Plural.count(exercises, "\(exercises) exo", "\(exercises) exos")) }
-        let summary = total == 0 ? "rien de prévu" : (parts.isEmpty ? "à jour" : "reste " + parts.joined(separator: " · "))
+        let summary = total == 0 ? String(localized: "rien de prévu") : (parts.isEmpty ? String(localized: "à jour") : "reste " + parts.joined(separator: " · "))
         return WidgetCourse(id: course.id.uuidString, code: course.displayCode, colorHex: course.colorHex,
                             done: done, total: total, summary: summary,
                             name: course.name,
@@ -145,7 +145,7 @@ enum WidgetSnapshotWriter {
         guard let state, state.isRunning || state.isRestorable() else { return nil }
         let course = courses.first { $0.id == state.courseID }
         let label = state.contextLabel.isEmpty
-            ? [course?.displayCode ?? "Session libre", state.taskType.label].joined(separator: " · ")
+            ? [course?.displayCode ?? String(localized: "Session libre"), state.taskType.label].joined(separator: " · ")
             : state.contextLabel
         let elapsed = state.elapsed()
         return WidgetTimer(label: label, colorHex: course?.colorHex ?? "#5247E6",

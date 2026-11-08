@@ -170,14 +170,14 @@ enum MacTargets {
             return exercise.displayNumber
         }
         if let item = course.theoryItems.first(where: { $0.id == targetID }) {
-            return item.title.isEmpty ? (item.number.isEmpty ? item.kind.label : "Théorie \(item.number)") : item.title
+            return item.title.isEmpty ? (item.number.isEmpty ? item.kind.label : String(localized: "Théorie \(item.number)")) : item.title
         }
         return nil
     }
 
     /// Ce qu'on travaille, en une ligne : la cible, sinon le travail.
     static func headline(course: Course?, taskType: TaskType, targetID: UUID?) -> String {
-        label(targetID, in: course) ?? (course == nil ? "Session libre" : taskType.label)
+        label(targetID, in: course) ?? (course == nil ? String(localized: "Session libre") : taskType.label)
     }
 
     static func tint(_ course: Course?) -> Color {

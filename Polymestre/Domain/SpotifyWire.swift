@@ -244,7 +244,7 @@ enum SpotifyWire {
                 let caps = d["capabilities"] as? [String: Any] ?? [:]
                 if caps["hidden"] as? Bool == true { return nil }
                 let volume = number(d["volume"]).map { $0 / 65535 }
-                return Device(id: d["device_id"] as? String ?? id, name: d["name"] as? String ?? "Appareil",
+                return Device(id: d["device_id"] as? String ?? id, name: d["name"] as? String ?? String(localized: "Appareil"),
                               type: d["device_type"] as? String ?? "computer", volume: volume,
                               canPlay: d["can_play"] as? Bool ?? true)
             }.sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }

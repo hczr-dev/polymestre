@@ -205,8 +205,8 @@ struct MacCourseView: View {
             CourseSitesRow(course: course) { url, _ in NSWorkspace.shared.open(url) }
             HStack(alignment: .center, spacing: 22) {
                 Text([course.credits > 0 ? "\(course.credits.formatted()) ECTS" : nil,
-                      course.currentWeek > 0 ? "semaine \(course.currentWeek)" : nil,
-                      late > 0 ? nil : "à jour"].compactMap { $0 }.joined(separator: " · "))
+                      course.currentWeek > 0 ? String(localized: "semaine \(course.currentWeek)") : nil,
+                      late > 0 ? nil : String(localized: "à jour")].compactMap { $0 }.joined(separator: " · "))
                     .foregroundStyle(Carnet.inkSecondary)
                     .lineLimit(1)
                 if late > 0 {
@@ -228,8 +228,8 @@ struct MacCourseView: View {
                 .fixedSize()
                 .help("Semaine")
                 Spacer(minLength: 12)
-                stat("Théorie", progress.watchedCount, progress.videoCount)
-                stat("Exercices", progress.doneCount, progress.exerciseCount)
+                stat(String(localized: "Théorie"), progress.watchedCount, progress.videoCount)
+                stat(String(localized: "Exercices"), progress.doneCount, progress.exerciseCount)
                 ZStack {
                     TimerRing(progress: progress.completion, tint: tint, lineWidth: 4)
                     Text("\(Int((progress.completion * 100).rounded()))").font(Carnet.serif(.callout, weight: .semibold)).monospacedDigit()

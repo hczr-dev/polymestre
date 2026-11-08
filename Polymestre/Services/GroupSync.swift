@@ -35,10 +35,10 @@ enum GroupSync {
                         social: SocialService,
                         settings: SettingsStore) async -> String {
         guard social.isConfigured else {
-            return "Groupes indisponibles dans cette version."
+            return String(localized: "Groupes indisponibles dans cette version.")
         }
         guard social.isSignedIn, social.userID != nil else {
-            return "Connecte-toi (Réglages › Compte et groupes) pour synchroniser tes groupes."
+            return String(localized: "Connecte-toi (Réglages › Compte et groupes) pour synchroniser tes groupes.")
         }
 
         var summary: [String] = []
@@ -93,21 +93,21 @@ enum GroupSync {
             AppLog.record(.error, AppLog.Category.sync,
                           "Synchronisation des groupes impossible",
                           detail: explained)
-            return "Erreur de synchronisation : \(explained)"
+            return String(localized: "Erreur de synchronisation : \(explained)")
         }
 
         repairedMemberships = await repairOwnedMemberships(context: context, social: social)
 
         if repairedMemberships > 0 {
-            summary.append("adhésion rétablie dans \(Plural.count(repairedMemberships, "\(repairedMemberships) groupe", "\(repairedMemberships) groupes"))")
+            summary.append(String(localized: "adhésion rétablie dans \(Plural.count(repairedMemberships, "\(repairedMemberships) groupe", "\(repairedMemberships) groupes"))"))
         }
 
         let pushed = await pushMyProgress(context: context, social: social, settings: settings)
-        if pushed.logs > 0 { summary.append("\(pushed.logs) entrée(s) de temps envoyée(s)") }
-        if pushed.completions > 0 { summary.append("\(pushed.completions) série(s) partagée(s)") }
+        if pushed.logs > 0 { summary.append(String(localized: "\(pushed.logs) entrée(s) de temps envoyée(s)")) }
+        if pushed.completions > 0 { summary.append(String(localized: "\(pushed.completions) série(s) partagée(s)")) }
 
         try? context.save()
-        return "Synchronisé : " + summary.joined(separator: " · ")
+        return String(localized: "Synchronisé : ") + summary.joined(separator: " · ")
     }
 
     /// Tout ce qu'un groupe demande au serveur, ramené en **un seul aller-retour**.
@@ -230,7 +230,7 @@ enum GroupSync {
             }
             let entry = GroupMember(group: group,
                                     userID: member.userId,
-                                    displayName: member.profile?.displayName ?? "Membre",
+                                    displayName: member.profile?.displayName ?? String(localized: "Membre"),
                                     isMe: isMe,
                                     isAnonymous: isMe ? settings.anonymousInLeaderboards : false,
                                     role: role)
@@ -304,7 +304,7 @@ enum GroupSync {
             let member = group.members.first { $0.userID == row.userId }
             let entry = GroupSeriesCompletion(group: group,
                                               userID: row.userId,
-                                              displayName: member?.displayName ?? "Membre",
+                                              displayName: member?.displayName ?? String(localized: "Membre"),
                                               courseCode: row.courseCode,
                                               seriesNumber: row.seriesNumber)
             context.insert(entry)

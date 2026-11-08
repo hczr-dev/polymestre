@@ -32,23 +32,25 @@ struct ClaudeMeasurePhoneCard: View {
         let projets = week.reduce(0) { $0 + $1.projets }
         let passes = week.reduce(0) { $0 + $1.passes }
         return HStack(alignment: .firstTextBaseline, spacing: 24) {
-            figure(ClaudeMeasure.duration(today?.projets ?? 0), "projets aujourd'hui")
-            figure(ClaudeMeasure.duration(projets), "projets en 7 jours")
+            figure(ClaudeMeasure.duration(today?.projets ?? 0), String(localized: "projets aujourd'hui"))
+            figure(ClaudeMeasure.duration(projets), String(localized: "projets en 7 jours"))
             figure("\(passes)", passes > 1 ? "passes" : "pass")
         }
         .accessibilityElement(children: .combine)
     }
 
     private var chart: some View {
-        Chart {
+        // La légende est le texte des séries : le même, traduit, des deux côtés.
+        let projects = String(localized: "projets"), study = String(localized: "étude")
+        return Chart {
             ForEach(week) { day in
                 BarMark(x: .value("Jour", date(day.day), unit: .day), y: .value("Heures", day.projets / 3600))
-                    .foregroundStyle(by: .value("Claude", "projets"))
+                    .foregroundStyle(by: .value("Claude", projects))
                 BarMark(x: .value("Jour", date(day.day), unit: .day), y: .value("Heures", day.etude / 3600))
-                    .foregroundStyle(by: .value("Claude", "étude"))
+                    .foregroundStyle(by: .value("Claude", study))
             }
         }
-        .chartForegroundStyleScale(["projets": Carnet.wrong, "étude": Carnet.correct])
+        .chartForegroundStyleScale([projects: Carnet.wrong, study: Carnet.correct])
         .chartXAxis {
             AxisMarks(values: .stride(by: .day)) { _ in
                 AxisValueLabel(format: .dateTime.weekday(.narrow)).font(.caption2)

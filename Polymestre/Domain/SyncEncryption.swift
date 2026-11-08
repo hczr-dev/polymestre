@@ -26,7 +26,7 @@ struct SyncForeignKeyError: LocalizedError {
 }
 
 enum SyncMessages {
-    static let foreignKey = "Clé différente : des données de ce compte sont chiffrées avec une autre clé et restent ignorées. Ajoute cet appareil depuis un appareil connecté, ou utilise la clé de secours."
+    static let foreignKey = String(localized: "Clé différente : des données de ce compte sont chiffrées avec une autre clé et restent ignorées. Ajoute cet appareil depuis un appareil connecté, ou utilise la clé de secours.")
 }
 
 final class EncryptingSyncTransport: SyncTransport {

@@ -89,7 +89,7 @@ struct EPFLLifeView: View {
                             .font(.subheadline)
                             .foregroundStyle(.secondary)
                     }
-                    LabeledProgress(title: "Avancement du semestre",
+                    LabeledProgress(title: String(localized: "Avancement du semestre"),
                                     progress: term.timeProgress,
                                     color: Theme.accent)
                 } else {
@@ -123,7 +123,7 @@ struct EPFLLifeView: View {
     // MARK: Délais
 
     private var deadlinesCard: some View {
-        Card(title: "Délais à ne pas manquer", icon: "exclamationmark.circle.fill",
+        Card(title: String(localized: "Délais à ne pas manquer"), icon: "exclamationmark.circle.fill",
              trailing: "\(deadlines.count)") {
             VStack(spacing: 0) {
                 ForEach(deadlines) { milestone in
@@ -137,7 +137,7 @@ struct EPFLLifeView: View {
     }
 
     private var restfulCard: some View {
-        Card(title: "Vacances et jours fériés", icon: "sun.max.fill",
+        Card(title: String(localized: "Vacances et jours fériés"), icon: "sun.max.fill",
              trailing: "\(restful.count)") {
             VStack(spacing: 0) {
                 ForEach(restful) { milestone in
@@ -153,7 +153,7 @@ struct EPFLLifeView: View {
     // MARK: Déroulé
 
     private var timelineCard: some View {
-        Card(title: "Le semestre", icon: "calendar") {
+        Card(title: String(localized: "Le semestre"), icon: "calendar") {
             VStack(alignment: .leading, spacing: Layout.block) {
                 let shown = showingEverything ? upcoming : Array(upcoming.prefix(6))
                 if shown.isEmpty {
@@ -235,7 +235,7 @@ struct EPFLLifeView: View {
     private func subtitle(_ milestone: AcademicMilestone, showsCountdown: Bool) -> String {
         var parts: [String] = []
         if milestone.isApproximate {
-            parts.append("vers le \(DateUtils.shortDay.string(from: milestone.date))")
+            parts.append(String(localized: "vers le \(DateUtils.shortDay.string(from: milestone.date))"))
         } else {
             parts.append(DateUtils.fullDay.string(from: milestone.date))
         }
@@ -297,7 +297,7 @@ struct EPFLLifeView: View {
             message = result.message
             Haptics.success()
         } catch {
-            message = "Actualisation impossible — \(error.localizedDescription) L'instantané embarqué reste utilisé."
+            message = String(localized: "Actualisation impossible — \(error.localizedDescription) L'instantané embarqué reste utilisé.")
             Haptics.error()
         }
         isRefreshing = false

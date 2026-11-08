@@ -53,7 +53,7 @@ final class ClaudeChat: Identifiable {
         static var isolated: Config {
             let folder = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask)[0]
                 .appendingPathComponent("Polymestre/claude", isDirectory: true)
-            return Config(folder: folder, permissions: "aucun outil")
+            return Config(folder: folder, permissions: String(localized: "aucun outil"))
         }
     }
 
@@ -297,7 +297,7 @@ final class ClaudeChat: Identifiable {
     enum Failure: LocalizedError {
         case notInstalled
         var errorDescription: String? {
-            "Claude Code n'est pas installé. Installe-le (claude.com/code), puis tape `claude` une fois dans le Terminal."
+            String(localized: "Claude Code n'est pas installé. Installe-le (claude.com/code), puis tape `claude` une fois dans le Terminal.")
         }
     }
 
@@ -392,12 +392,12 @@ final class ClaudeChat: Identifiable {
         messages[index].isStreaming = false
         // Claude répond pendant qu'on lit autre chose : on le dit.
         if error == nil, !StudyModeController.shared.desk.claudeVisible {
-            DeskNotifications.shared.post(.claude, "Claude a répondu", icon: "sparkle")
+            DeskNotifications.shared.post(.claude, String(localized: "Claude a répondu"), icon: "sparkle")
             StudyModeController.shared.desk.claudeUnread = true
         }
         if let error {
             messages[index].error = error.lowercased().contains("login") || error.lowercased().contains("auth")
-                ? "Claude Code n'est pas connecté. Tape `claude` dans le Terminal pour te connecter."
+                ? String(localized: "Claude Code n'est pas connecté. Tape `claude` dans le Terminal pour te connecter.")
                 : error
         }
     }
@@ -422,7 +422,7 @@ final class ClaudeChat: Identifiable {
         }
         if isAnswering {
             let detail = stderrText.trimmingCharacters(in: .whitespacesAndNewlines)
-            finishStreaming(error: status == 0 ? nil : (detail.isEmpty ? "Claude s'est arrêté (code \(status))." : detail))
+            finishStreaming(error: status == 0 ? nil : (detail.isEmpty ? String(localized: "Claude s'est arrêté (code \(status)).") : detail))
         }
     }
 }

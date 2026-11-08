@@ -216,9 +216,9 @@ enum SiteHTML {
                 flush()
                 switch route {
                 case .mediaspace, .youtube, .video:
-                    blocks.append(.video(title: attributes["title"] ?? "Vidéo", url: source))
+                    blocks.append(.video(title: attributes["title"] ?? String(localized: "Vidéo"), url: source))
                 default:
-                    blocks.append(.link(title: attributes["title"] ?? "Contenu intégré", url: source))
+                    blocks.append(.link(title: attributes["title"] ?? String(localized: "Contenu intégré"), url: source))
                 }
             case "pre":
                 if closing {
@@ -265,7 +265,7 @@ enum SiteHTML {
             case .pdf, .file:
                 pendingLinks.append(.file(title: title.isEmpty ? "Document" : title, url: url))
             case .mediaspace, .youtube, .video:
-                pendingLinks.append(.video(title: title.isEmpty ? "Vidéo" : title, url: url))
+                pendingLinks.append(.video(title: title.isEmpty ? String(localized: "Vidéo") : title, url: url))
             case .web where title.isEmpty:
                 break
             default:
@@ -679,9 +679,9 @@ enum EdDiscussion {
             if let id = user["id"] as? Int { names[id] = user["name"] as? String ?? "" }
         }
         func post(_ raw: [String: Any], answer: Bool) -> Post {
-            let author = (raw["user_id"] as? Int).flatMap { names[$0] } ?? ((raw["is_anonymous"] as? Bool) == true ? "Anonyme" : "")
+            let author = (raw["user_id"] as? Int).flatMap { names[$0] } ?? ((raw["is_anonymous"] as? Bool) == true ? String(localized: "Anonyme") : "")
             let replies = (raw["comments"] as? [[String: Any]] ?? []).map { post($0, answer: false) }
-            return Post(id: raw["id"] as? Int ?? 0, author: author.isEmpty ? "Anonyme" : author, date: raw["created_at"] as? String ?? "",
+            return Post(id: raw["id"] as? Int ?? 0, author: author.isEmpty ? String(localized: "Anonyme") : author, date: raw["created_at"] as? String ?? "",
                         content: raw["content"] as? String ?? "", isAnswer: answer,
                         isEndorsed: (raw["is_endorsed"] as? Bool) == true, replies: replies)
         }
@@ -896,7 +896,7 @@ enum EdDiscussion {
         }
         return (object["lessons"] as? [[String: Any]] ?? []).compactMap { raw in
             guard let id = raw["id"] as? Int else { return nil }
-            return Lesson(id: id, title: raw["title"] as? String ?? "Leçon",
+            return Lesson(id: id, title: raw["title"] as? String ?? String(localized: "Leçon"),
                           module: (raw["module_id"] as? Int).flatMap { modules[$0] }, status: raw["status"] as? String)
         }
     }
@@ -1005,7 +1005,7 @@ struct MoodleCoursePage: Codable, Equatable {
             case "assign": return "Devoir"
             case "forum": return "Forum"
             case "quiz": return "Quiz"
-            case "lti": return "Outil externe"
+            case "lti": return String(localized: "Outil externe")
             case "label": return ""
             default: return module.capitalized
             }

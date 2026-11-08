@@ -162,7 +162,7 @@ struct CoursesView: View {
     private var deleteMessage: String {
         guard let course = courseToDelete else { return "" }
         let hours = DateUtils.hoursLabel(seconds: WorkloadEngine.studySeconds(for: course))
-        return "Théorie, séries, évaluations et \(hours) de sessions enregistrées seront effacées. Archiver garde tout, hors de la vue."
+        return String(localized: "Théorie, séries, évaluations et \(hours) de sessions enregistrées seront effacées. Archiver garde tout, hors de la vue.")
     }
 
     private func delete(_ course: Course) {
@@ -270,9 +270,9 @@ struct CoursesView: View {
             CarnetScroll {
                 if courses.isEmpty {
                     CarnetEmpty(icon: "books.vertical",
-                                title: "Aucun cours",
-                                message: "Depuis Moodle ou ton horaire IS-Academia.",
-                                actionTitle: "Importer depuis Moodle") {
+                                title: String(localized: "Aucun cours"),
+                                message: String(localized: "Depuis Moodle ou ton horaire IS-Academia."),
+                                actionTitle: String(localized: "Importer depuis Moodle")) {
                         app.router.openContentImport()
                     }
                     HStack(spacing: 10) {
@@ -302,8 +302,8 @@ struct CoursesView: View {
 
     private var subtitle: String {
         let credits = tracked.reduce(0) { $0 + Int($1.credits) }
-        var parts = [term?.displayName ?? "Semestre", "\(tracked.count) cours", "\(credits) ECTS"]
-        if let term, !term.hasEnded, !term.hasNotStarted { parts.insert("semaine \(term.currentWeek)", at: 1) }
+        var parts = [term?.displayName ?? String(localized: "Semestre"), String(localized: "\(tracked.count) cours"), "\(credits) ECTS"]
+        if let term, !term.hasEnded, !term.hasNotStarted { parts.insert(String(localized: "semaine \(term.currentWeek)"), at: 1) }
         return parts.joined(separator: " · ")
     }
 
@@ -366,7 +366,7 @@ struct CoursesView: View {
         // semaine. Archiver et supprimer ensuite.
         Button {
             app.router.startFocus(courseID: course.id, courseCode: course.code,
-                                  taskType: .exercise, label: "\(course.displayCode) · Séries")
+                                  taskType: .exercise, label: String(localized: "\(course.displayCode) · Séries"))
         } label: {
             Label("Démarrer un chrono", systemImage: "play.fill")
         }
@@ -430,7 +430,7 @@ struct CoursesView: View {
 
     private var archivedSection: some View {
         VStack(alignment: .leading, spacing: 10) {
-            CarnetSectionTitle("Archivés") { Text("\(archived.count)") }
+            CarnetSectionTitle(String(localized: "Archivés")) { Text("\(archived.count)") }
             CarnetSheet {
                 ForEach(Array(archived.enumerated()), id: \.element.id) { index, course in
                     CarnetRow(title: course.name, subtitle: course.displayCode) {
@@ -598,8 +598,8 @@ struct CourseCardRow: View {
                         .foregroundStyle(.secondary)
                 } else if weekProgress.hasItems {
                     HStack(alignment: .top, spacing: Layout.gutter) {
-                        compactAxis("Théorie", weekProgress.watchedCount, weekProgress.videoCount, TaskType.theory.tint)
-                        compactAxis(weekProgress.seriesNumbers.count == 1 ? "Série \(weekProgress.seriesNumbers[0])" : "Séries",
+                        compactAxis(String(localized: "Théorie"), weekProgress.watchedCount, weekProgress.videoCount, TaskType.theory.tint)
+                        compactAxis(weekProgress.seriesNumbers.count == 1 ? String(localized: "Série \(weekProgress.seriesNumbers[0])") : String(localized: "Séries"),
                                     weekProgress.doneCount, weekProgress.exerciseCount, TaskType.exercise.tint)
                     }
                     if redo > 0 {

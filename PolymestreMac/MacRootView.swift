@@ -366,17 +366,17 @@ struct SyncFooter: View {
     }
 
     static func describe(_ state: MacStore.SyncState, synced: Bool, now: Date) -> String {
-        guard synced else { return "iCloud coupé" }
+        guard synced else { return String(localized: "iCloud coupé") }
         switch state {
         case .idle: return "iCloud"
         case .working(let kind): return "iCloud : \(kind)…"
         case .failed(let message): return "iCloud : \(message)"
         case .synced(let date):
             let ago = now.timeIntervalSince(date)
-            if ago < 60 { return "Synchronisé à l'instant" }
+            if ago < 60 { return String(localized: "Synchronisé à l'instant") }
             let formatter = RelativeDateTimeFormatter()
-            formatter.locale = Locale(identifier: "fr_CH")
-            return "Synchronisé " + formatter.localizedString(for: date, relativeTo: now)
+            formatter.locale = DateUtils.appLocale
+            return String(localized: "Synchronisé \(formatter.localizedString(for: date, relativeTo: now))")
         }
     }
 }

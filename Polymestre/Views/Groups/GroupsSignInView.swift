@@ -44,11 +44,11 @@ struct GroupsSignInView: View {
             .padding(.top, 12)
 
             CarnetSheet {
-                benefit("dot.radiowaves.left.and.right", "Qui travaille en ce moment")
+                benefit("dot.radiowaves.left.and.right", String(localized: "Qui travaille en ce moment"))
                 CarnetRule()
-                benefit("square.grid.3x3.fill", "Qui en est où, série par série")
+                benefit("square.grid.3x3.fill", String(localized: "Qui en est où, série par série"))
                 CarnetRule()
-                benefit("questionmark.bubble", "Entraide sur un exercice")
+                benefit("questionmark.bubble", String(localized: "Entraide sur un exercice"))
                 CarnetRule()
                 benefit("calendar", "Sessions ensemble")
             }
@@ -156,8 +156,8 @@ struct GroupsSignInView: View {
                 }
             } else {
                 CarnetEmpty(icon: "icloud.slash",
-                            title: "Groupes indisponibles",
-                            message: "Pas de serveur de groupes dans cette version.")
+                            title: String(localized: "Groupes indisponibles"),
+                            message: String(localized: "Pas de serveur de groupes dans cette version."))
             }
         }
         .navigationTitle("Groupes")
@@ -191,16 +191,16 @@ struct GroupsSignInView: View {
     private func explain(_ raw: String?) -> String {
         let text = (raw ?? "").lowercased()
         if text.contains("already") || text.contains("registered") {
-            return "Un compte existe déjà avec cette adresse : choisis « J'ai un compte »."
+            return String(localized: "Un compte existe déjà avec cette adresse : choisis « J'ai un compte ».")
         }
         if text.contains("invalid") && text.contains("credential") {
             return "Adresse ou mot de passe incorrect."
         }
         if text.contains("confirm") {
-            return "Confirme ton adresse avec le lien reçu par e-mail, puis connecte-toi."
+            return String(localized: "Confirme ton adresse avec le lien reçu par e-mail, puis connecte-toi.")
         }
         if text.contains("network") || text.contains("offline") || text.contains("internet") {
-            return "Pas de connexion : réessaie une fois en ligne."
+            return String(localized: "Pas de connexion : réessaie une fois en ligne.")
         }
         return raw.map { "Connexion impossible : \($0)" } ?? "Connexion impossible."
     }
@@ -211,7 +211,7 @@ struct GroupsSignInView: View {
             guard let credential = authorization.credential as? ASAuthorizationAppleIDCredential,
                   let tokenData = credential.identityToken,
                   let idToken = String(data: tokenData, encoding: .utf8) else {
-                message = "Jeton Apple illisible."
+                message = String(localized: "Jeton Apple illisible.")
                 return
             }
             if let given = credential.fullName?.givenName, app.settings.displayName.isEmpty {

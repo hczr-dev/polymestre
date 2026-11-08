@@ -59,7 +59,7 @@ struct ProviderGuideView: View {
     }
 
     private var steps: some View {
-        Card(title: "Comment le brancher", icon: "list.number") {
+        Card(title: String(localized: "Comment le brancher"), icon: "list.number") {
             VStack(alignment: .leading, spacing: Layout.cardGap) {
                 ForEach(Array(provider.setupSteps.enumerated()), id: \.offset) { index, step in
                     HStack(alignment: .top, spacing: Layout.block) {

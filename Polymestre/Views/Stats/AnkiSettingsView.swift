@@ -153,14 +153,14 @@ struct AnkiSettingsView: View {
                 }
             }
         } header: {
-            CarnetFormHeader("Un paquet par cours")
+            CarnetFormHeader(String(localized: "Un paquet par cours"))
         }
     }
 
     private func statsLine(_ stats: AnkiCollection.DeckStats) -> String {
-        var parts = ["\(stats.due) à revoir", "\(stats.new) nouvelles"]
-        if stats.reviewedToday > 0 { parts.append("\(stats.reviewedToday) révisées aujourd'hui") }
-        if let retention = stats.retention { parts.append("rétention \(Int((retention * 100).rounded())) %") }
+        var parts = [String(localized: "\(stats.due) à revoir"), "\(stats.new) nouvelles"]
+        if stats.reviewedToday > 0 { parts.append(String(localized: "\(stats.reviewedToday) révisées aujourd'hui")) }
+        if let retention = stats.retention { parts.append(String(localized: "rétention \(Int((retention * 100).rounded())) %")) }
         return parts.joined(separator: " · ")
     }
 
@@ -217,7 +217,7 @@ struct AnkiSettingsView: View {
                 }
                 .disabled(sync.isWorking)
             } header: {
-                CarnetFormHeader("En attente d'envoi")
+                CarnetFormHeader(String(localized: "En attente d'envoi"))
             }
         }
     }
@@ -334,7 +334,7 @@ struct AnkiCardComposer: View {
         guard let collection else { return }
         let type = isCloze ? collection.notetypes.first(where: \.isCloze) : sync.basicNotetype(in: collection)
         guard let type else {
-            error = "Aucun type de note adapté dans ta collection."
+            error = String(localized: "Aucun type de note adapté dans ta collection.")
             return
         }
         let html = { (text: String) in text.replacingOccurrences(of: "\n", with: "<br>") }
@@ -346,7 +346,7 @@ struct AnkiCardComposer: View {
         sending = false
         if let failure = sync.lastError {
             // La carte reste en file : elle partira au prochain passage.
-            error = "\(failure) La carte est gardée et sera renvoyée."
+            error = String(localized: "\(failure) La carte est gardée et sera renvoyée.")
         } else {
             Haptics.success()
             dismiss()

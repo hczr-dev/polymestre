@@ -22,7 +22,7 @@ actor SyncEngine {
         var deleted = 0
         var orphans = 0
         var summary: String {
-            "\(pushed) envoyé\(pushed > 1 ? "s" : ""), \(pulled) lu\(pulled > 1 ? "s" : "")"
+            Plural.count(pushed, "\(pushed) envoyé", "\(pushed) envoyés") + ", " + Plural.count(pulled, "\(pulled) lu", "\(pulled) lus")
         }
     }
 
@@ -32,9 +32,9 @@ actor SyncEngine {
         var errorDescription: String? {
             switch self {
             case .massDeletion(let n):
-                return "\(n) éléments ont disparu de cet appareil d'un coup : rien n'est supprimé ailleurs tant que tu ne l'as pas confirmé."
+                return String(localized: "\(n) éléments ont disparu de cet appareil d'un coup : rien n'est supprimé ailleurs tant que tu ne l'as pas confirmé.")
             case .missingRow(let table, let id):
-                return "\(table) : le serveur n'a pas renvoyé \(id)."
+                return String(localized: "\(table) : le serveur n'a pas renvoyé \(id).")
             }
         }
     }

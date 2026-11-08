@@ -55,9 +55,9 @@ struct AssistantSettingsView: View {
             }
 
             Section {
-                capability("Lire", "avancement, séries, évaluations, temps — et, si tu l'actives, fichiers et notes")
-                capability("Noter", "exercices faits, corrections, questions")
-                capability("Ajouter", "séries, évaluations, sessions, résumés")
+                capability("Lire", String(localized: "avancement, séries, évaluations, temps — et, si tu l'actives, fichiers et notes"))
+                capability("Noter", String(localized: "exercices faits, corrections, questions"))
+                capability(String(localized: "Ajouter"), String(localized: "séries, évaluations, sessions, résumés"))
             } header: {
                 Text("Ce que l'assistant peut faire")
             }
@@ -149,9 +149,9 @@ struct AssistantSettingsView: View {
 
         Section("Brancher ton assistant") {
             instruction("Claude (app, web, Desktop)",
-                        "Réglages › Connecteurs › Ajouter un connecteur personnalisé. Nom : Polymestre. Colle l'adresse.")
+                        String(localized: "Réglages › Connecteurs › Ajouter un connecteur personnalisé. Nom : Polymestre. Colle l'adresse."))
             instruction("ChatGPT",
-                        "Réglages › Applications et connecteurs › Avancé : active le mode développeur, puis Créer. Colle l'adresse, sans authentification.")
+                        String(localized: "Réglages › Applications et connecteurs › Avancé : active le mode développeur, puis Créer. Colle l'adresse, sans authentification."))
             VStack(alignment: .leading, spacing: Layout.tight) {
                 Text("Claude Code").font(.subheadline.weight(.semibold))
                 let command = "claude mcp add --transport http polymestre \(url.absoluteString)"
@@ -175,9 +175,9 @@ struct AssistantSettingsView: View {
     }
 
     private var syncLine: String {
-        if let error = AssistantSync.lastError { return "Échec : \(error)" }
-        guard let last = app.settings.assistantLastSync else { return "Jamais synchronisé" }
-        return "Synchronisé \(DateUtils.relativeLabel(last).lowercased()) à \(DateUtils.time.string(from: last))"
+        if let error = AssistantSync.lastError { return String(localized: "Échec : \(error)") }
+        guard let last = app.settings.assistantLastSync else { return String(localized: "Jamais synchronisé") }
+        return String(localized: "Synchronisé \(DateUtils.relativeLabel(last).lowercased()) à \(DateUtils.time.string(from: last))")
     }
 
     private func capability(_ title: String, _ detail: String) -> some View {

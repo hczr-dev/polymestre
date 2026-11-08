@@ -44,11 +44,11 @@ struct SeriesBoard: Identifiable, Equatable {
 
     /// « 3 membres sur 5 ont terminé », « personne n'a commencé ».
     var summary: String {
-        if rows.isEmpty { return "Aucun membre" }
-        if completedCount == rows.count { return "Tout le monde a terminé" }
-        if startedCount == 0 { return "Personne n'a commencé" }
-        let unit = completedCount == 1 ? "a terminé" : "ont terminé"
-        return "\(completedCount) sur \(rows.count) \(unit)"
+        if rows.isEmpty { return String(localized: "Aucun membre") }
+        if completedCount == rows.count { return String(localized: "Tout le monde a terminé") }
+        if startedCount == 0 { return String(localized: "Personne n'a commencé") }
+        let unit = completedCount == 1 ? String(localized: "a terminé") : String(localized: "ont terminé")
+        return String(localized: "\(completedCount) sur \(rows.count) \(unit)")
     }
 }
 

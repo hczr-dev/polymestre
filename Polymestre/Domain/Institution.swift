@@ -107,7 +107,7 @@ struct Institution: Codable, Equatable, Identifiable {
 
     /// Une école sans rien de connu : le mode étude, le chrono, les notes, Claude
     /// marchent ; les sites se règlent dans les Réglages.
-    static let generic = Institution(id: "generic", name: "Mon école", emailDomains: [])
+    static let generic = Institution(id: "generic", name: String(localized: "Mon école"), emailDomains: [])
 
     static let builtIn: [Institution] = [.epfl]
 

@@ -400,7 +400,7 @@ struct MenuBarTimerView: View {
                 }
                 .help("Note rapide (⇧⌘N)")
                 HubAction(title: "Agenda", icon: "calendar") { go("agenda") }
-                HubAction(title: "Bilan", icon: "chart.bar.xaxis") { go("stats") }
+                HubAction(title: String(localized: "Bilan"), icon: "chart.bar.xaxis") { go("stats") }
                 if let course {
                     HubAction(title: course.displayCode, icon: "book.closed") { go("code:" + course.displayCode) }
                         .help("Ouvrir \(course.name)")
@@ -418,9 +418,9 @@ struct MenuBarTimerView: View {
         if let live = DeskSchedule.current(in: DeskSchedule.classes(from: schedule), at: now) {
             FollowClassButton(klass: live, compact: true)
         } else if let current = schedule.first(where: { $0.startsAt <= now && now < $0.endsAt }) {
-            scheduleLine(current, prefix: "Maintenant", until: true)
+            scheduleLine(current, prefix: String(localized: "Maintenant"), until: true)
         } else if let next = schedule.first(where: { $0.startsAt > now }) {
-            scheduleLine(next, prefix: "À \(DateUtils.time.string(from: next.startsAt))", until: false)
+            scheduleLine(next, prefix: String(localized: "À \(DateUtils.time.string(from: next.startsAt))"), until: false)
         }
     }
 

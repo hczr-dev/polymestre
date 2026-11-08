@@ -135,8 +135,8 @@ final class MacTimer: TimerEngineHost {
     func statusLabel(at now: Date = Date()) -> String? {
         guard let state else { return nil }
         if let pause = state.currentBreak { return pause.kind.label }
-        if case .readyForBlock(let block) = focusPhase(at: now) { return "Bloc \(block) prêt" }
-        if !state.isRunning { return "En pause" }
+        if case .readyForBlock(let block) = focusPhase(at: now) { return String(localized: "Bloc \(block) prêt") }
+        if !state.isRunning { return String(localized: "En pause") }
         if state.pomodoro {
             let block = Int(state.cycleElapsed(at: now) / cycle.blockDuration) + 1
             return "Bloc \(block)"
@@ -255,16 +255,16 @@ final class MacTimer: TimerEngineHost {
         let center = UNUserNotificationCenter.current()
         if let until = state.studyUntil, !StudyMode.isOpenEnded(state), until.timeIntervalSinceNow > 1 {
             let content = UNMutableNotificationContent()
-            content.title = "Mode étude terminé"
-            content.body = "Termine ta session, ou prolonge."
+            content.title = String(localized: "Mode étude terminé")
+            content.body = String(localized: "Termine ta session, ou prolonge.")
             content.sound = .default
             center.add(UNNotificationRequest(identifier: "mac.study", content: content,
                                              trigger: UNTimeIntervalNotificationTrigger(timeInterval: until.timeIntervalSinceNow, repeats: false)))
         }
         if let pause = state.currentBreak {
             let content = UNMutableNotificationContent()
-            content.title = "Fin de la pause"
-            content.body = "On s'y remet ?"
+            content.title = String(localized: "Fin de la pause")
+            content.body = String(localized: "On s'y remet ?")
             content.sound = .default
             let interval = pause.endsAt.timeIntervalSinceNow
             if interval > 1 {
@@ -275,7 +275,7 @@ final class MacTimer: TimerEngineHost {
             let completed = Int((state.cycleAccumulated / cycle.blockDuration).rounded(.down)) + 1
             let kind = cycle.breakKind(afterBlock: completed)
             let content = UNMutableNotificationContent()
-            content.title = "Bloc terminé"
+            content.title = String(localized: "Bloc terminé")
             content.body = "\(cycle.focusMinutes) min de travail. \(kind.label) de \(Int(cycle.breakDuration(kind) / 60)) min."
             content.sound = .default
             let interval = end.timeIntervalSinceNow

@@ -213,8 +213,8 @@ enum WidgetFormat {
         let days = calendar.dateComponents([.day],
                                            from: calendar.startOfDay(for: reference),
                                            to: calendar.startOfDay(for: date)).day ?? 0
-        if days <= 0 { return "Aujourd'hui" }
-        if days == 1 { return "Demain" }
+        if days <= 0 { return String(localized: "Aujourd'hui") }
+        if days == 1 { return String(localized: "Demain") }
         return "J-\(days)"
     }
 }

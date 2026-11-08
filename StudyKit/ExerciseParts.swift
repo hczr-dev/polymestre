@@ -316,11 +316,11 @@ struct RedoPanel: View {
         let outcome = SeriesReview.recordRedo(result, on: exercise, ladder: ladder, examDate: exercise.series?.course?.nextExam?.date)
         showsFirstMove = false
         if outcome.pass == nil {
-            note = "Sorti de la file. Bien joué."
+            note = String(localized: "Sorti de la file. Bien joué.")
         } else if outcome.gap {
-            note = "Deuxième échec de suite : c'est une lacune de cours, pas un manque d'entraînement. Relis la notion avant de le refaire."
+            note = String(localized: "Deuxième échec de suite : c'est une lacune de cours, pas un manque d'entraînement. Relis la notion avant de le refaire.")
         } else if let due = outcome.due {
-            note = "Prochaine reprise le \(due.formatted(.dateTime.day().month(.wide)))."
+            note = String(localized: "Prochaine reprise le \(due.formatted(.dateTime.day().month(.wide))).")
         }
     }
 }

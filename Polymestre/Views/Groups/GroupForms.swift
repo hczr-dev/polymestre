@@ -30,7 +30,7 @@ struct CreateGroupView: View {
             result.append((code, course.name))
         }
         for code in selected where seen.insert(code).inserted {
-            result.append((code, "Hors de tes cours"))
+            result.append((code, String(localized: "Hors de tes cours")))
         }
         return result.sorted { $0.code.localizedStandardCompare($1.code) == .orderedAscending }
     }
@@ -173,7 +173,7 @@ struct CreateGroupView: View {
             } catch {
                 await MainActor.run {
                     isWorking = false
-                    message = "Groupe créé sur cet appareil, mais l'envoi au serveur a échoué — \(GroupSync.explain(error))"
+                    message = String(localized: "Groupe créé sur cet appareil, mais l'envoi au serveur a échoué — \(GroupSync.explain(error))")
                 }
             }
         }
@@ -261,7 +261,7 @@ struct JoinGroupView: View {
         }
 
         guard app.social.isSignedIn else {
-            message = "Aucun groupe sur cet appareil avec ce code. Connecte-toi pour chercher un groupe distant."
+            message = String(localized: "Aucun groupe sur cet appareil avec ce code. Connecte-toi pour chercher un groupe distant.")
             return
         }
 
@@ -292,7 +292,7 @@ struct JoinGroupView: View {
             } catch {
                 await MainActor.run {
                     isWorking = false
-                    message = "Impossible de rejoindre ce groupe — \(GroupSync.explain(error))"
+                    message = String(localized: "Impossible de rejoindre ce groupe — \(GroupSync.explain(error))")
                 }
             }
         }
@@ -391,7 +391,7 @@ struct PlanSessionView: View {
                 _ = await app.calendar.requestAccess()
             }
             let spec = CalendarEventSpec(
-                title: title.isEmpty ? "Session d'étude" : title,
+                title: title.isEmpty ? String(localized: "Session d'étude") : title,
                 startsAt: startsAt,
                 endsAt: startsAt.addingTimeInterval(TimeInterval(durationMinutes * 60)),
                 location: location,
@@ -400,14 +400,14 @@ struct PlanSessionView: View {
             if let identifier = app.calendar.createEvent(spec) {
                 calendarEventID = identifier
             } else {
-                message = "Ajout au calendrier impossible (accès refusé)."
+                message = String(localized: "Ajout au calendrier impossible (accès refusé).")
             }
         }
 
         let session = PlannedSession(course: course,
                                      groupRemoteID: (group != nil && shareWithGroup) ? (group?.remoteID ?? group?.inviteCode) : nil,
                                      groupName: (group != nil && shareWithGroup) ? (group?.name ?? "") : "",
-                                     title: title.isEmpty ? "Session d'étude" : title,
+                                     title: title.isEmpty ? String(localized: "Session d'étude") : title,
                                      startsAt: startsAt,
                                      durationMinutes: durationMinutes,
                                      location: location,

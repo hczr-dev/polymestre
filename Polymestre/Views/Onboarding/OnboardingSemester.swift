@@ -245,11 +245,11 @@ struct SemesterScreen: View {
 
     private var summary: String {
         let t = setup.feed.totals
-        var parts = ["\(setup.feed.courses.count) cours"]
-        if t.series > 0 { parts.append("\(t.series) séries") }
+        var parts = [String(localized: "\(setup.feed.courses.count) cours")]
+        if t.series > 0 { parts.append(String(localized: "\(t.series) séries")) }
         if t.videos + t.theory > 0 { parts.append("\(t.videos + t.theory) chapitres") }
         if t.deadlines > 0 { parts.append(Plural.count(t.deadlines, "\(t.deadlines) échéance", "\(t.deadlines) échéances")) }
-        return parts.joined(separator: " · ") + ", sur \(setup.weeks) semaines."
+        return parts.joined(separator: " · ") + String(localized: ", sur \(setup.weeks) semaines.")
     }
 }
 

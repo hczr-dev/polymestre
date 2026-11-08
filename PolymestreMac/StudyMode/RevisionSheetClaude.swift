@@ -66,7 +66,7 @@ enum RevisionSheetClaude {
         errorReader.sync {}
         guard let object = try? JSONSerialization.jsonObject(with: output) as? [String: Any] else {
             let detail = String(decoding: errorText.isEmpty ? output.prefix(300) : errorText.prefix(300), as: UTF8.self)
-            throw Failure(message: "Claude n'a pas répondu (\(process.terminationStatus)) : \(detail)")
+            throw Failure(message: String(localized: "Claude n'a pas répondu (\(process.terminationStatus)) : \(detail)"))
         }
         if object["is_error"] as? Bool == true {
             throw Failure(message: "Claude : \(object["result"] as? String ?? "erreur")")

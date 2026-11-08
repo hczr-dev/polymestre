@@ -40,8 +40,8 @@ struct GroupSeriesProgressView: View {
             VStack(alignment: .leading, spacing: Layout.cardSpacing) {
                 if subjects.isEmpty {
                     EmptyCard(icon: "books.vertical",
-                              title: "Aucune matière",
-                              message: "Ajoute les matières du groupe.")
+                              title: String(localized: "Aucune matière"),
+                              message: String(localized: "Ajoute les matières du groupe."))
                 } else {
                     subjectPicker
                     let all = boards
@@ -55,8 +55,8 @@ struct GroupSeriesProgressView: View {
                         }
                     } else if all.isEmpty {
                         EmptyCard(icon: "list.bullet.rectangle",
-                                  title: "Aucune série dans \(subject)",
-                                  message: "Les séries de tes cours apparaissent ici.")
+                                  title: String(localized: "Aucune série dans \(subject)"),
+                                  message: String(localized: "Les séries de tes cours apparaissent ici."))
                     } else {
                         headline(all)
                         ForEach(visible(all)) { board in
@@ -139,10 +139,10 @@ struct GroupSeriesProgressView: View {
                 HStack(spacing: Layout.block) {
                     StatCard(icon: "list.bullet.rectangle",
                              value: "\(boards.count)",
-                             title: "séries connues", onCard: true)
+                             title: String(localized: "séries connues"), onCard: true)
                     StatCard(icon: "checkmark.circle.fill",
                              value: "\(completedByMe)",
-                             title: "terminées par toi", onCard: true)
+                             title: String(localized: "terminées par toi"), onCard: true)
                     StatCard(icon: "person.3.fill",
                              value: "\(group.members.count)",
                              title: "membres", onCard: true)
@@ -170,7 +170,7 @@ struct GroupSeriesProgressView: View {
                     trailing: "S\(board.plannedWeek) · \(Plural.count(board.total, "\(board.total) exo", "\(board.total) exos"))") {
             VStack(alignment: .leading, spacing: Layout.block) {
                 HStack(spacing: Layout.snug) {
-                    if isCurrent { Pill(text: "cette semaine", color: Theme.accent) }
+                    if isCurrent { Pill(text: String(localized: "cette semaine"), color: Theme.accent) }
                     if !board.bonusNumbers.isEmpty {
                         Pill(text: "\(board.bonusNumbers.count) bonus", color: .orange, icon: "star.fill")
                     }

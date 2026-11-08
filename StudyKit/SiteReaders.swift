@@ -270,9 +270,9 @@ struct NativeVideo: View {
     private func resolve() async {
         switch SiteRouter.route(address) {
         case .mediaspace(let entry):
-            if let url = await desk.mediaspace.playbackURL(entryID: entry) { play(url) } else { failed = "Vidéo réservée." }
+            if let url = await desk.mediaspace.playbackURL(entryID: entry) { play(url) } else { failed = String(localized: "Vidéo réservée.") }
         default:
-            if let url = URL(string: address) { play(url) } else { failed = "Adresse illisible." }
+            if let url = URL(string: address) { play(url) } else { failed = String(localized: "Adresse illisible.") }
         }
     }
 
@@ -615,7 +615,7 @@ struct MoodleActivityReader: View {
         case "folder": return "Dossier"
         case "assign": return "Devoir"
         case "url": return "Lien"
-        case "forum": return "Annonces"
+        case "forum": return String(localized: "Annonces")
         case "quiz": return "Quiz"
         default: return "Moodle"
         }

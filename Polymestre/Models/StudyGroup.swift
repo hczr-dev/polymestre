@@ -87,9 +87,9 @@ final class StudyGroup {
     /// Le code seul oblige à un aller-retour (« et je le mets où ? ») ; le lien seul
     /// ne fonctionne pas partout. Les deux ensemble marchent dans tous les cas.
     var inviteMessage: String {
-        var text = "Rejoins « \(name) » sur Polymestre avec le code \(inviteCode)."
+        var text = String(localized: "Rejoins « \(name) » sur Polymestre avec le code \(inviteCode).")
         if !subjectCodes.isEmpty {
-            text += "\nMatières : \(subjectCodes.joined(separator: ", "))."
+            text += "\n" + String(localized: "Matières : \(subjectCodes.joined(separator: ", ")).")
         }
         text += "\n\(inviteLink)"
         return text
@@ -220,7 +220,7 @@ final class GroupMember {
         return isMe && (group?.isAdmin ?? false)
     }
 
-    var shownName: String { isAnonymous ? "Anonyme" : displayName }
+    var shownName: String { isAnonymous ? String(localized: "Anonyme") : displayName }
     var weeklyLabel: String { DateUtils.hoursLabel(seconds: weeklySeconds) }
     var totalLabel: String { DateUtils.hoursLabel(seconds: totalSeconds) }
     var initials: String {
@@ -243,7 +243,7 @@ enum GroupRole: String, CaseIterable, Codable {
     var label: String {
         switch self {
         case .admin: return "Admin"
-        case .member: return "Membre"
+        case .member: return String(localized: "Membre")
         }
     }
 

@@ -732,6 +732,9 @@ print("== Deux séries par semaine, exercices sans numéro ==")
 for (ok, label) in seriesIdentityResults(context: context) { check(ok, label) }
 print("== À rattraper ==")
 for (ok, label) in lateWorkResults(context: context) { check(ok, label) }
+print("== Nouveau dans tes cours ==")
+for (ok, label) in newsLinesResults() { check(ok, label) }
+for (ok, label) in hoursLabelResults() { check(ok, label) }
 check(LocalFileCatalog.pageIndices("1-5,8", total: 10) == [0, 1, 2, 3, 4, 7], "pages : « 1-5,8 »")
 check(LocalFileCatalog.pageIndices("3", total: 10) == [2] && LocalFileCatalog.pageIndices("8-", total: 10) == [7, 8, 9], "pages : une page, une plage ouverte")
 check(LocalFileCatalog.pageIndices("9-20", total: 10) == [8, 9], "pages : bornées au document")

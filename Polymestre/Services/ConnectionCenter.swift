@@ -26,7 +26,7 @@ final class ConnectionCenter {
         var label: String {
             switch self {
             case .moodle: return "Moodle"
-            case .groups: return "Compte Polymestre"
+            case .groups: return String(localized: "Compte Polymestre")
             case .ankiweb: return "AnkiWeb"
             }
         }
@@ -34,9 +34,9 @@ final class ConnectionCenter {
         /// Ce qui ne marche plus tant que le compte est déconnecté.
         var consequence: String {
             switch self {
-            case .moodle: return "nouvelles séries et énoncés en pause"
-            case .groups: return "groupes et entraide en pause"
-            case .ankiweb: return "cartes et statistiques Anki en pause"
+            case .moodle: return String(localized: "nouvelles séries et énoncés en pause")
+            case .groups: return String(localized: "groupes et entraide en pause")
+            case .ankiweb: return String(localized: "cartes et statistiques Anki en pause")
             }
         }
 

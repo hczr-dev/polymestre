@@ -18,7 +18,7 @@ struct ContentImportResult: Equatable {
 
     var message: String {
         var parts: [String] = []
-        if theoryAdded > 0 { parts.append("\(Plural.count(theoryAdded, "\(theoryAdded) élément", "\(theoryAdded) éléments")) de théorie") }
+        if theoryAdded > 0 { parts.append(String(localized: "\(Plural.count(theoryAdded, "\(theoryAdded) élément", "\(theoryAdded) éléments")) de théorie")) }
         if seriesAdded > 0 { parts.append(Plural.count(seriesAdded, "\(seriesAdded) série", "\(seriesAdded) séries")) }
         if exercisesAdded > 0 { parts.append(Plural.count(exercisesAdded, "\(exercisesAdded) exercice", "\(exercisesAdded) exercices")) }
         if deadlinesAdded > 0 { parts.append(Plural.count(deadlinesAdded, "\(deadlinesAdded) échéance", "\(deadlinesAdded) échéances")) }
@@ -26,9 +26,9 @@ struct ContentImportResult: Equatable {
         if documentsAdded > 0 { parts.append(Plural.count(documentsAdded, "\(documentsAdded) document", "\(documentsAdded) documents")) }
         let updated = theoryUpdated + seriesUpdated
         if parts.isEmpty {
-            return updated > 0 ? "Déjà à jour · \(Plural.count(updated, "\(updated) élément rafraîchi", "\(updated) éléments rafraîchis"))." : "Rien de nouveau."
+            return updated > 0 ? String(localized: "Déjà à jour · \(Plural.count(updated, "\(updated) élément rafraîchi", "\(updated) éléments rafraîchis")).") : String(localized: "Rien de nouveau.")
         }
-        return "Ajouté : " + parts.joined(separator: " et ") + (updated > 0 ? " · \(updated) mis à jour." : ".")
+        return String(localized: "Ajouté : ") + parts.joined(separator: " et ") + (updated > 0 ? String(localized: " · \(updated) mis à jour.") : ".")
     }
 }
 

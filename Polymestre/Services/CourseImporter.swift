@@ -116,14 +116,14 @@ struct ImportSummary: Equatable {
 
     var message: String {
         var parts: [String] = []
-        if coursesCreated > 0 { parts.append("\(coursesCreated) cours créé(s)") }
-        if coursesUpdated > 0 { parts.append("\(coursesUpdated) cours mis à jour") }
-        if videos > 0 { parts.append("\(videos) éléments de théorie") }
-        if series > 0 { parts.append("\(series) séries") }
-        if exercises > 0 { parts.append("\(exercises) exercices") }
-        if exams > 0 { parts.append("\(exams) évaluations") }
+        if coursesCreated > 0 { parts.append(String(localized: "\(coursesCreated) cours créé(s)")) }
+        if coursesUpdated > 0 { parts.append(String(localized: "\(coursesUpdated) cours mis à jour")) }
+        if videos > 0 { parts.append(String(localized: "\(videos) éléments de théorie")) }
+        if series > 0 { parts.append(String(localized: "\(series) séries")) }
+        if exercises > 0 { parts.append(String(localized: "\(exercises) exercices")) }
+        if exams > 0 { parts.append(String(localized: "\(exams) évaluations")) }
         if sessions > 0 { parts.append("\(sessions) sessions") }
-        return parts.isEmpty ? "Aucune donnée importée." : parts.joined(separator: " · ")
+        return parts.isEmpty ? String(localized: "Aucune donnée importée.") : parts.joined(separator: " · ")
     }
 }
 
@@ -142,9 +142,9 @@ enum CourseImporter {
 
         var errorDescription: String? {
             switch self {
-            case .invalidJSON(let detail): return "JSON invalide : \(detail)"
-            case .emptyCourses: return "Le fichier ne contient aucun cours."
-            case .invalidCSV(let detail): return "CSV invalide : \(detail)"
+            case .invalidJSON(let detail): return String(localized: "JSON invalide : \(detail)")
+            case .emptyCourses: return String(localized: "Le fichier ne contient aucun cours.")
+            case .invalidCSV(let detail): return String(localized: "CSV invalide : \(detail)")
             }
         }
     }
@@ -155,7 +155,7 @@ enum CourseImporter {
     static func importJSON(_ text: String, into context: ModelContext,
                            sectionCode: String = "") throws -> ImportSummary {
         guard let data = text.data(using: .utf8) else {
-            throw ImportError.invalidJSON("encodage UTF-8 impossible")
+            throw ImportError.invalidJSON(String(localized: "encodage UTF-8 impossible"))
         }
         let payload: CourseImportPayload
         do {
@@ -187,16 +187,16 @@ enum CourseImporter {
     static func importCSV(_ text: String, into context: ModelContext,
                           sectionCode: String = "") throws -> ImportSummary {
         let rows = try parseCSV(text)
-        guard let header = rows.first else { throw ImportError.invalidCSV("fichier vide") }
+        guard let header = rows.first else { throw ImportError.invalidCSV(String(localized: "fichier vide")) }
 
         let columns = header.map { $0.trimmingCharacters(in: .whitespaces).lowercased() }
         func index(_ name: String) -> Int? { columns.firstIndex(of: name) }
 
         guard let codeIndex = index("course_code") else {
-            throw ImportError.invalidCSV("colonne « course_code » manquante")
+            throw ImportError.invalidCSV(String(localized: "colonne « course_code » manquante"))
         }
         guard let kindIndex = index("kind") else {
-            throw ImportError.invalidCSV("colonne « kind » manquante")
+            throw ImportError.invalidCSV(String(localized: "colonne « kind » manquante"))
         }
 
         let nameIndex = index("course_name")
@@ -265,7 +265,7 @@ enum CourseImporter {
                 let seriesNumber = Int(number.split(separator: ".").first ?? "1") ?? 1
                 var series = accumulators[code]?.series[seriesNumber]
                     ?? SeriesSpec(number: seriesNumber,
-                                  title: "Série \(seriesNumber)",
+                                  title: String(localized: "Série \(seriesNumber)"),
                                   week: Int(value(weekIndex)) ?? seriesNumber,
                                   url: nil,
                                   exercises: [])
@@ -553,7 +553,7 @@ enum CourseImporter {
             } else {
                 series = ExerciseSeries(course: course,
                                         seriesNumber: spec.number,
-                                        title: spec.title ?? "Série \(spec.number)",
+                                        title: spec.title ?? String(localized: "Série \(spec.number)"),
                                         plannedWeek: spec.week ?? 0,  // sans semaine : 0, pas la semaine 1 (en retard dès la 2)
                                         urlString: spec.url ?? "")
                 context.insert(series)

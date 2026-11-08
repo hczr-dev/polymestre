@@ -28,9 +28,9 @@ struct GroupSubjectProgressView: View {
         var label: String {
             switch self {
             case .overall: return "Global"
-            case .series: return "Séries"
-            case .exercises: return "Exercices"
-            case .theory: return "Théorie"
+            case .series: return String(localized: "Séries")
+            case .exercises: return String(localized: "Exercices")
+            case .theory: return String(localized: "Théorie")
             }
         }
     }
@@ -65,7 +65,7 @@ struct GroupSubjectProgressView: View {
     // MARK: Résumé
 
     private var summaryCard: some View {
-        Card(title: course?.name ?? "Matière hors programme", icon: "chart.bar.fill") {
+        Card(title: course?.name ?? String(localized: "Matière hors programme"), icon: "chart.bar.fill") {
             summaryContent
         }
     }
@@ -91,10 +91,10 @@ struct GroupSubjectProgressView: View {
                          title: "membres", onCard: true)
                 StatCard(icon: "checkmark.circle.fill",
                          value: "\(comparison.rows.filter { $0.isPresent && $0.doneTotal > 0 }.count)",
-                         title: "ont commencé", onCard: true)
+                         title: String(localized: "ont commencé"), onCard: true)
                 StatCard(icon: "hourglass",
                          value: "\(comparison.notStarted)",
-                         title: "rien fait", onCard: true)
+                         title: String(localized: "rien fait"), onCard: true)
             }
 
             if comparison.reference.isEmpty {
@@ -120,7 +120,7 @@ struct GroupSubjectProgressView: View {
     // MARK: Où en est chacun
 
     private var membersCard: some View {
-        Card(title: "Où en est chacun", icon: "list.number") {
+        Card(title: String(localized: "Où en est chacun"), icon: "list.number") {
             membersContent
         }
     }
@@ -154,13 +154,13 @@ struct GroupSubjectProgressView: View {
                 if row.isMe {
                     Pill(text: "toi", color: Theme.accent)
                 } else if !row.isPresent {
-                    Pill(text: "hors groupe", color: .secondary)
+                    Pill(text: String(localized: "hors groupe"), color: .secondary)
                 }
                 Spacer(minLength: Layout.inline)
                 if let gap = row.gapLabel {
                     Text(gap)
                         .font(.caption2.weight(.medium))
-                        .foregroundStyle(gap == "au même point" ? Color.secondary : Color.orange.accessibleInk)
+                        .foregroundStyle(gap == String(localized: "au même point") ? Color.secondary : Color.orange.accessibleInk)
                         .lineLimit(1)
                 }
             }
@@ -170,9 +170,9 @@ struct GroupSubjectProgressView: View {
             // Les trois compteurs, toujours : le sélecteur ne fait que choisir
             // lequel est mis en avant.
             HStack(spacing: Layout.block) {
-                counter("Séries", done: row.seriesDone, total: row.seriesTotal, active: axis == .series)
-                counter("Exercices", done: row.exercisesDone, total: row.exerciseTotal, active: axis == .exercises)
-                counter("Théorie", done: row.theoryDone, total: row.theoryTotal, active: axis == .theory)
+                counter(String(localized: "Séries"), done: row.seriesDone, total: row.seriesTotal, active: axis == .series)
+                counter(String(localized: "Exercices"), done: row.exercisesDone, total: row.exerciseTotal, active: axis == .exercises)
+                counter(String(localized: "Théorie"), done: row.theoryDone, total: row.theoryTotal, active: axis == .theory)
                 Spacer(minLength: 0)
             }
         }
@@ -197,9 +197,9 @@ struct GroupSubjectProgressView: View {
 
     private func accessibilityLabel(_ row: SubjectMemberProgress) -> String {
         var parts = [row.isMe ? "Toi" : row.displayName]
-        if row.seriesTotal > 0 { parts.append("\(row.seriesDone) séries sur \(row.seriesTotal)") }
-        if row.exerciseTotal > 0 { parts.append("\(row.exercisesDone) exercices sur \(row.exerciseTotal)") }
-        if row.theoryTotal > 0 { parts.append("\(row.theoryDone) théorie sur \(row.theoryTotal)") }
+        if row.seriesTotal > 0 { parts.append(String(localized: "\(row.seriesDone) séries sur \(row.seriesTotal)")) }
+        if row.exerciseTotal > 0 { parts.append(String(localized: "\(row.exercisesDone) exercices sur \(row.exerciseTotal)")) }
+        if row.theoryTotal > 0 { parts.append(String(localized: "\(row.theoryDone) théorie sur \(row.theoryTotal)")) }
         if let gap = row.gapLabel { parts.append(gap) }
         return parts.joined(separator: ", ")
     }
@@ -221,13 +221,13 @@ private extension GroupSubjectProgressView.Axis {
     func countLabel(of row: SubjectMemberProgress) -> String? {
         switch self {
         case .overall:
-            return row.itemTotal > 0 ? "\(row.doneTotal)/\(row.itemTotal) éléments" : nil
+            return row.itemTotal > 0 ? String(localized: "\(row.doneTotal)/\(row.itemTotal) éléments") : nil
         case .series:
-            return row.seriesTotal > 0 ? "\(row.seriesDone)/\(row.seriesTotal) séries" : nil
+            return row.seriesTotal > 0 ? String(localized: "\(row.seriesDone)/\(row.seriesTotal) séries") : nil
         case .exercises:
-            return row.exerciseTotal > 0 ? "\(row.exercisesDone)/\(row.exerciseTotal) exercices" : nil
+            return row.exerciseTotal > 0 ? String(localized: "\(row.exercisesDone)/\(row.exerciseTotal) exercices") : nil
         case .theory:
-            return row.theoryTotal > 0 ? "\(row.theoryDone)/\(row.theoryTotal) théorie" : nil
+            return row.theoryTotal > 0 ? String(localized: "\(row.theoryDone)/\(row.theoryTotal) théorie") : nil
         }
     }
 }

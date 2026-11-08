@@ -17,10 +17,10 @@ struct MoodleCourseList: View {
         var id: String { rawValue }
         var label: String {
             switch self {
-            case .all: return "Tout"
-            case .series: return "Séries"
+            case .all: return String(localized: "Tout")
+            case .series: return String(localized: "Séries")
             case .documents: return "Documents"
-            case .videos: return "Vidéos"
+            case .videos: return String(localized: "Vidéos")
             case .tasks: return "Devoirs"
             }
         }
@@ -159,7 +159,7 @@ struct MoodleCourseList: View {
         if let date = activity.dates.last { return date }
         let lower = activity.name.lowercased()
         let solution = lower.contains("corrig") || lower.contains("solution") || lower.hasSuffix(" sol") || lower.contains(" sol ")
-        let label = activity.isVideo ? "Vidéo" : (activity.isSeries ? (solution ? "Corrigé" : "Série") : activity.kindLabel)
+        let label = activity.isVideo ? String(localized: "Vidéo") : (activity.isSeries ? (solution ? String(localized: "Corrigé") : String(localized: "Série")) : activity.kindLabel)
         return label.isEmpty ? nil : label
     }
 }

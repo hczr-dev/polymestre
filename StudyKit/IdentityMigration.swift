@@ -151,7 +151,7 @@ enum IdentityMigration {
         log.notice("trousseau de StudyTrack : \(copied) repris, \(failed) non repris")
         if copied + failed > 0 {
             AppLog.record(failed == 0 ? .info : .warning, AppLog.Category.storage, "Trousseau de StudyTrack",
-                          detail: "\(copied) éléments repris" + (failed > 0 ? ", \(failed) non repris (reconnecte-toi au besoin)" : ""))
+                          detail: "\(copied) éléments repris" + (failed > 0 ? String(localized: ", \(failed) non repris (reconnecte-toi au besoin)") : ""))
         }
         // Une seule fois, même en cas de refus : redemander à chaque lancement serait pire.
         defaults.set(true, forKey: Key.keychain)
@@ -333,7 +333,7 @@ enum IdentityMigration {
             }
             switch outcome {
             case nil:
-                state.waiting = "iCloud ne répond pas : la reprise se fera au prochain lancement"
+                state.waiting = String(localized: "iCloud ne répond pas : la reprise se fera au prochain lancement")
             case .failure(let error)?:
                 state.waiting = "iCloud : \(error.localizedDescription)"
                 log.error("verrou iCloud : \(String(describing: error), privacy: .public)")
@@ -363,7 +363,7 @@ enum IdentityMigration {
                         AppLog.record(.info, AppLog.Category.storage, "Données de StudyTrack reprises",
                                       detail: "\(report.copied) objets copiés en \(elapsed) s · \(report.mergedDuplicates) doublons fondus · \(report.conflicts.count) conflits · vérifié : rien ne manque")
                     } else {
-                        state.waiting = "\(lacking.count) objets pas encore repris : nouvel essai au prochain lancement"
+                        state.waiting = String(localized: "\(lacking.count) objets pas encore repris : nouvel essai au prochain lancement")
                         AppLog.record(.error, AppLog.Category.storage, "Reprise des données de StudyTrack incomplète",
                                       detail: "\(lacking.count) objets manquent après la copie (\(report.summary))")
                     }
@@ -371,7 +371,7 @@ enum IdentityMigration {
                 }
             }
         } catch {
-            state.waiting = "reprise interrompue : \(error.localizedDescription)"
+            state.waiting = String(localized: "reprise interrompue : \(error.localizedDescription)")
             log.error("reprise : \(String(describing: error), privacy: .public)")
             AppLog.record(.error, AppLog.Category.storage, "Reprise des données de StudyTrack", detail: String(describing: error))
         }
@@ -402,7 +402,7 @@ enum IdentityMigration {
             // Rien ne se synchronise : aucun doublon possible entre appareils.
             return Negotiation(decision: .copyAll, publish: { _ in })
         default:
-            return Negotiation(decision: .wait("compte iCloud pas encore disponible"), publish: { _ in })
+            return Negotiation(decision: .wait(String(localized: "compte iCloud pas encore disponible")), publish: { _ in })
         }
         let lock = CloudLock(database: container.privateCloudDatabase)
         let now = Date()
@@ -413,7 +413,7 @@ enum IdentityMigration {
                 current.owner = me
                 current.startedAt = now
                 guard try await lock.save(current, over: record) != nil else {
-                    return Negotiation(decision: .wait("un autre appareil vient de reprendre la copie"), publish: { _ in })
+                    return Negotiation(decision: .wait(String(localized: "un autre appareil vient de reprendre la copie")), publish: { _ in })
                 }
                 return Negotiation(decision: .copyAll, publish: { ids in try await lock.complete(adding: ids, me: me) })
             }
@@ -427,7 +427,7 @@ enum IdentityMigration {
         let mine = IdentityMigrationPlan.Lock(owner: me, startedAt: now, completedAt: nil, ids: [])
         guard try await lock.save(mine, over: nil) != nil else {
             // Un autre appareil l'a pris entre la lecture et l'écriture : on attend sa copie.
-            return Negotiation(decision: .wait("un autre appareil recopie les données"), publish: { _ in })
+            return Negotiation(decision: .wait(String(localized: "un autre appareil recopie les données")), publish: { _ in })
         }
         return Negotiation(decision: .copyAll, publish: { ids in try await lock.complete(adding: ids, me: me) })
     }

@@ -26,7 +26,7 @@ struct TaskIntegrationsView: View {
                         row(provider)
                     }
                 } header: {
-                    CarnetFormHeader("Tes tâches")
+                    CarnetFormHeader(String(localized: "Tes tâches"))
                 }
 
                 if !notionDatabases.isEmpty {
@@ -35,14 +35,14 @@ struct TaskIntegrationsView: View {
                             Button {
                                 app.settings.notionDatabaseID = database.id
                                 notionDatabases = []
-                                message = "Notion : base « \(database.title) » choisie."
+                                message = String(localized: "Notion : base « \(database.title) » choisie.")
                                 Haptics.success()
                             } label: {
                                 Label(database.title, systemImage: "tablecells")
                             }
                         }
                     } header: {
-                        CarnetFormHeader("Quelle base Notion ?")
+                        CarnetFormHeader(String(localized: "Quelle base Notion ?"))
                     }
                 }
 
@@ -112,9 +112,9 @@ struct TaskIntegrationsView: View {
     }
 
     private func status(_ provider: TaskProvider, connected: Bool) -> String {
-        if !connected { return provider.supportsReading ? "non relié" : "non relié · écriture seule" }
-        if provider == .notion, app.settings.notionDatabaseID.isEmpty { return "choisis une base" }
-        return provider.supportsReading ? "connecté" : "connecté · écriture seule"
+        if !connected { return provider.supportsReading ? String(localized: "non relié") : String(localized: "non relié · écriture seule") }
+        if provider == .notion, app.settings.notionDatabaseID.isEmpty { return String(localized: "choisis une base") }
+        return provider.supportsReading ? String(localized: "connecté") : String(localized: "connecté · écriture seule")
     }
 
     @ViewBuilder
@@ -171,7 +171,7 @@ struct TaskIntegrationsView: View {
         let settings = app.settings
         switch provider {
         case .reminders:
-            message = "Pour retirer l'accès aux Rappels : Réglages › Confidentialité › Rappels."
+            message = String(localized: "Pour retirer l'accès aux Rappels : Réglages › Confidentialité › Rappels.")
             return
         case .todoist: settings.todoistToken = ""
         case .things: settings.thingsEnabled = false
@@ -203,7 +203,7 @@ struct NotionDatabase: Identifiable {
         return results.compactMap { item in
             guard let id = item["id"] as? String else { return nil }
             let title = ((item["title"] as? [[String: Any]])?.compactMap { $0["plain_text"] as? String }.joined())
-            return NotionDatabase(id: id, title: (title?.isEmpty ?? true) ? "Sans titre" : title!)
+            return NotionDatabase(id: id, title: (title?.isEmpty ?? true) ? String(localized: "Sans titre") : title!)
         }
     }
 }
@@ -308,7 +308,7 @@ enum TaskConnector {
             default: break
             }
             Haptics.success()
-            outcome.message = "\(provider.label) connecté."
+            outcome.message = String(localized: "\(provider.label) connecté.")
             return outcome
         } catch OAuthError.cancelled {
             return Outcome()
@@ -321,6 +321,6 @@ enum TaskConnector {
         let service = TaskServiceFactory.shared.service(for: .reminders, settings: settings)
         let granted = await service?.requestAccess() ?? false
         if granted { Haptics.success() }
-        return granted ? "Rappels autorisé." : "Accès refusé : autorise Polymestre dans Réglages › Rappels."
+        return granted ? String(localized: "Rappels autorisé.") : String(localized: "Accès refusé : autorise Polymestre dans Réglages › Rappels.")
     }
 }

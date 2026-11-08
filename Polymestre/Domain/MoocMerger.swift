@@ -141,7 +141,7 @@ enum MoocMerger {
             var item = ContentDraftItem(kind: .resource, number: "", title: "MOOC · \(mooc.title)", url: mooc.url,
                                         videoCount: 0, seriesNumber: nil, theoryKind: .reading)
             item.links = [ContentLink(title: mooc.title, url: mooc.url, kind: .page)]
-            item.group = "Cours en ligne"
+            item.group = String(localized: "Cours en ligne")
             if let index = result.sections.firstIndex(where: { $0.title.hasPrefix("Documents") }) {
                 if !result.sections[index].items.contains(where: { $0.url == mooc.url }) { result.sections[index].items.append(item) }
             } else {

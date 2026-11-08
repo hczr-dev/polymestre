@@ -25,7 +25,7 @@ enum CourseEvidence {
     nonisolated static func destination(of address: String) -> String? {
         if MoocReference.courseKey(in: address) != nil { return "mooc" }
         switch linkKind(address) {
-        case .video: return "vidéo"
+        case .video: return String(localized: "vidéo")
         case .pdf: return URL(string: address)?.pathExtension.lowercased() == "pdf" ? "pdf" : nil
         default: return nil
         }

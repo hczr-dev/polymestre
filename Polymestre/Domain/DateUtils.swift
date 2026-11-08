@@ -247,7 +247,10 @@ enum DateUtils {
 
     static func hoursLabel(seconds: Int) -> String {
         let hours = Double(seconds) / 3600
-        let formatted = String(format: "%.1f", hours).replacingOccurrences(of: ".", with: usesDecimalComma ? "," : ".")
+        // « 2 h » plutôt que « 2.0 h » : la décimale seulement quand elle dit quelque chose.
+        var raw = String(format: "%.1f", hours)
+        if raw.hasSuffix(".0") { raw.removeLast(2) }
+        let formatted = raw.replacingOccurrences(of: ".", with: usesDecimalComma ? "," : ".")
         return "\(formatted) h"
     }
 

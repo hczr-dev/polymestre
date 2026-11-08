@@ -89,8 +89,8 @@ enum OAuthPKCE {
 
     // MARK: Messages
 
-    static let notEnabledMessage = "La connexion Google n'est pas encore activée sur le serveur."
-    static let linkDisabledMessage = "Lier un compte Google n'est pas encore activé sur le serveur."
+    static let notEnabledMessage = String(localized: "La connexion Google n'est pas encore activée sur le serveur.")
+    static let linkDisabledMessage = String(localized: "Lier un compte Google n'est pas encore activé sur le serveur.")
 
     /// Une réponse d'erreur de GoTrue, en français.
     static func message(status: Int, body: String, link: Bool = false) -> String {
@@ -102,10 +102,10 @@ enum OAuthPKCE {
             return link ? linkDisabledMessage : notEnabledMessage
         }
         if raw.contains("identity_already_exists") || (raw.contains("already") && raw.contains("linked")) {
-            return "Ce compte Google est déjà lié à un autre compte Polymestre."
+            return String(localized: "Ce compte Google est déjà lié à un autre compte Polymestre.")
         }
-        if status >= 500 { return "Le serveur a un problème (\(status)) : réessaie dans un instant." }
-        return "Le serveur a refusé la connexion Google (\(status))."
+        if status >= 500 { return String(localized: "Le serveur a un problème (\(status)) : réessaie dans un instant.") }
+        return String(localized: "Le serveur a refusé la connexion Google (\(status)).")
     }
 
     /// Une erreur du retour (dans l'adresse de rappel), en français.

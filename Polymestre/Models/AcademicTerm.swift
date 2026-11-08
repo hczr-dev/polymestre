@@ -65,9 +65,9 @@ final class AcademicTerm {
 
     /// État lisible pour l'interface.
     var statusLabel: String {
-        if hasEnded { return "Terminé" }
-        if hasNotStarted { return "À venir" }
-        return "Semaine \(currentWeek) / \(totalWeeks)"
+        if hasEnded { return String(localized: "Terminé") }
+        if hasNotStarted { return String(localized: "À venir") }
+        return String(localized: "Semaine \(currentWeek) / \(totalWeeks)")
     }
 
     // MARK: Résolution

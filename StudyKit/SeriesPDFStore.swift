@@ -22,8 +22,8 @@ final class SeriesPDFStore {
         case notFound
         var errorDescription: String? {
             switch self {
-            case .noDocument: return "Cette série n'a pas de PDF associé."
-            case .notFound: return "L'exercice n'a pas été retrouvé dans le PDF."
+            case .noDocument: return String(localized: "Cette série n'a pas de PDF associé.")
+            case .notFound: return String(localized: "L'exercice n'a pas été retrouvé dans le PDF.")
             }
         }
     }

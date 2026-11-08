@@ -79,11 +79,11 @@ struct CommandPalette: View {
             .frame(height: 360)
             Divider()
             HStack(spacing: 14) {
-                hint("↩", "ouvrir")
-                hint("⌘↩", "chronométrer")
+                hint("↩", String(localized: "ouvrir"))
+                hint("⌘↩", String(localized: "chronométrer"))
                 hint("↑↓", "choisir")
                 Spacer()
-                hint("Échap", "fermer")
+                hint(String(localized: "Échap"), String(localized: "fermer"))
             }
             .padding(.horizontal, 18)
             .padding(.vertical, 8)
@@ -151,31 +151,31 @@ struct CommandPalette: View {
         var items: [Item] = []
         switch timer.phase {
         case .idle:
-            items.append(Item(id: "a.start", title: "Démarrer le chrono", icon: "play.fill", section: "Chrono", shortcut: "⌘T") { timer.start() })
+            items.append(Item(id: "a.start", title: String(localized: "Démarrer le chrono"), icon: "play.fill", section: "Chrono", shortcut: "⌘T") { timer.start() })
         case .running:
-            items.append(Item(id: "a.pause", title: "Mettre en pause", icon: "pause.fill", section: "Chrono", shortcut: "⌘T") { timer.pause() })
+            items.append(Item(id: "a.pause", title: String(localized: "Mettre en pause"), icon: "pause.fill", section: "Chrono", shortcut: "⌘T") { timer.pause() })
         case .paused:
-            items.append(Item(id: "a.resume", title: "Reprendre", icon: "play.fill", section: "Chrono", shortcut: "⌘T") { timer.resume() })
+            items.append(Item(id: "a.resume", title: String(localized: "Reprendre"), icon: "play.fill", section: "Chrono", shortcut: "⌘T") { timer.resume() })
         case .onBreak:
-            items.append(Item(id: "a.skip", title: "Écourter la pause", icon: "forward.fill", section: "Chrono") { timer.skipBreak() })
+            items.append(Item(id: "a.skip", title: String(localized: "Écourter la pause"), icon: "forward.fill", section: "Chrono") { timer.skipBreak() })
         }
         if timer.phase != .idle, !timer.isLocked {
-            items.append(Item(id: "a.finish", title: "Terminer et enregistrer", icon: "checkmark", section: "Chrono", shortcut: "⇧⌘T") { timer.finish() })
+            items.append(Item(id: "a.finish", title: String(localized: "Terminer et enregistrer"), icon: "checkmark", section: "Chrono", shortcut: "⇧⌘T") { timer.finish() })
         }
-        items.append(Item(id: "a.float", title: settings.floatingTimer ? "Masquer le chrono flottant" : "Afficher le chrono flottant",
+        items.append(Item(id: "a.float", title: settings.floatingTimer ? String(localized: "Masquer le chrono flottant") : String(localized: "Afficher le chrono flottant"),
                           icon: "pip", section: "Chrono") {
             settings.floatingTimer.toggle()
             MiniTimerPanel.shared.update()
         })
-        items.append(Item(id: "p.today", title: "Aujourd'hui", icon: "sun.max", section: "Aller à", shortcut: "⌘1") { navigate(.page(.today)) })
-        items.append(Item(id: "p.focus", title: "Chrono", icon: "timer", section: "Aller à", shortcut: "⌘2") { navigate(.page(.focus)) })
-        items.append(Item(id: "p.agenda", title: "Agenda", icon: "calendar", section: "Aller à", shortcut: "⌘3") { navigate(.page(.agenda)) })
-        items.append(Item(id: "p.stats", title: "Bilan", icon: "chart.bar.xaxis", section: "Aller à", shortcut: "⌘4") { navigate(.page(.stats)) })
-        items.append(Item(id: "a.study", title: "Mode étude…", subtitle: "Plein écran",
+        items.append(Item(id: "p.today", title: String(localized: "Aujourd'hui"), icon: "sun.max", section: "Aller à", shortcut: "⌘1") { navigate(.page(.today)) })
+        items.append(Item(id: "p.focus", title: String(localized: "Chrono"), icon: "timer", section: "Aller à", shortcut: "⌘2") { navigate(.page(.focus)) })
+        items.append(Item(id: "p.agenda", title: String(localized: "Agenda"), icon: "calendar", section: "Aller à", shortcut: "⌘3") { navigate(.page(.agenda)) })
+        items.append(Item(id: "p.stats", title: String(localized: "Bilan"), icon: "chart.bar.xaxis", section: "Aller à", shortcut: "⌘4") { navigate(.page(.stats)) })
+        items.append(Item(id: "a.study", title: String(localized: "Mode étude…"), subtitle: String(localized: "Plein écran"),
                           icon: "moon.stars", section: "Actions", shortcut: "⇧⌘E") {
             StudyModeController.shared.presentSetup(courseID: timer.courseID)
         })
-        items.append(Item(id: "a.settings", title: "Réglages…", icon: "gearshape", section: "Aller à", shortcut: "⌘,") { openSettings() })
+        items.append(Item(id: "a.settings", title: String(localized: "Réglages…"), icon: "gearshape", section: "Aller à", shortcut: "⌘,") { openSettings() })
         return items
     }
 

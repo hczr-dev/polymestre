@@ -75,7 +75,7 @@ enum ExamActivityController {
         }
 
         guard ActivityAuthorizationInfo().areActivitiesEnabled else {
-            lastError = "Les Live Activities sont désactivées pour Polymestre."
+            lastError = String(localized: "Les Live Activities sont désactivées pour Polymestre.")
             return
         }
 
@@ -93,7 +93,7 @@ enum ExamActivityController {
             lastError = nil
             examTrace.notice("activité d'examen créée \(created.id, privacy: .public) — \(exam.title, privacy: .public)")
         } catch {
-            lastError = "Activité d'examen impossible : \(error.localizedDescription)"
+            lastError = String(localized: "Activité d'examen impossible : \(error.localizedDescription)")
             AppLog.record(.error, "îlot", "Live Activity d'examen refusée",
                           detail: error.localizedDescription)
         }
@@ -116,12 +116,12 @@ enum ExamActivityController {
     /// moyen de la voir à la demande.
     static func startTest(now: Date = Date()) {
         let attributes = ExamActivityAttributes(courseCode: "TEST-100",
-                                               courseName: "Essai",
-                                               title: "Examen d'essai",
+                                               courseName: String(localized: "Essai"),
+                                               title: String(localized: "Examen d'essai"),
                                                examDate: now.addingTimeInterval(2 * 3600),
                                                room: "CO 1")
         guard ActivityAuthorizationInfo().areActivitiesEnabled else {
-            lastError = "Les Live Activities sont désactivées pour Polymestre."
+            lastError = String(localized: "Les Live Activities sont désactivées pour Polymestre.")
             examTrace.error("activité d'examen d'essai : activités désactivées")
             return
         }
@@ -134,7 +134,7 @@ enum ExamActivityController {
             lastError = nil
             examTrace.notice("activité d'examen d'essai créée \(created.id, privacy: .public)")
         } catch {
-            lastError = "Activité d'examen impossible : \(error.localizedDescription)"
+            lastError = String(localized: "Activité d'examen impossible : \(error.localizedDescription)")
             examTrace.error("activité d'examen refusée : \(error.localizedDescription, privacy: .public)")
         }
     }

@@ -13,11 +13,11 @@ enum FocusTimerCommand: String, Codable, Sendable {
 
     var label: String {
         switch self {
-        case .pause: return "Mettre en pause"
-        case .resume: return "Reprendre"
-        case .finish: return "Enregistrer la session"
-        case .nextQuestion: return "Question suivante"
-        case .skipBreak: return "Reprendre le travail"
+        case .pause: return String(localized: "Mettre en pause")
+        case .resume: return String(localized: "Reprendre")
+        case .finish: return String(localized: "Enregistrer la session")
+        case .nextQuestion: return String(localized: "Question suivante")
+        case .skipBreak: return String(localized: "Reprendre le travail")
         }
     }
 }
