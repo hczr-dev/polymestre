@@ -50,7 +50,7 @@ struct PolymestreProvider: TimelineProvider {
         // Une entrée à chaque instant où le widget change de lui-même (fin d'un
         // cours, échéance, fin de pause, minuit) ; l'app recharge le reste.
         let plan = (snapshot ?? WidgetSnapshot(updatedAt: .distantPast)).timelineDates(from: Date())
-        let entries = plan.dates.map { PolymestreEntry(date: $0, snapshot: snapshot) }
+        let entries = plan.dates.map { PolymestreEntry(date: $0, snapshot: snapshot?.resolved(at: $0)) }
         completion(Timeline(entries: entries, policy: .after(plan.reloadAfter)))
     }
 }

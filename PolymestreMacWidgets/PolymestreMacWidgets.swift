@@ -34,7 +34,7 @@ struct SnapshotProvider: TimelineProvider {
         // ils changent d'eux-mêmes (fin d'un cours, échéance, minuit).
         let snapshot = WidgetBridge.read() ?? WidgetSnapshot(updatedAt: .distantPast)
         let plan = snapshot.timelineDates(from: Date())
-        completion(Timeline(entries: plan.dates.map { SnapshotEntry(date: $0, snapshot: snapshot) },
+        completion(Timeline(entries: plan.dates.map { SnapshotEntry(date: $0, snapshot: snapshot.resolved(at: $0)) },
                             policy: .after(plan.reloadAfter)))
     }
 }

@@ -67,7 +67,7 @@ final class ExerciseSeries {
     var bonusExercises: [Exercise] { exercises.filter(\.isBonus) }
 
     var doneCount: Int { requiredExercises.filter { $0.doneAt != nil }.count }
-    var correctedCount: Int { requiredExercises.filter { $0.correctedAt != nil }.count }
+    var correctedCount: Int { requiredExercises.filter { $0.doneAt != nil && $0.correctedAt != nil }.count }
 
     var isComplete: Bool {
         !requiredExercises.isEmpty && doneCount == requiredExercises.count
@@ -247,7 +247,14 @@ final class Exercise {
         if leafSubQuestions.allSatisfy(\.isDone) {
             doneAt = doneAt ?? Date()
         } else {
+            // Comme `setDone(false)` : un exercice qui n'est plus fait n'a plus
+            // de correction. Sans quoi décocher une question (ou une relecture
+            // qui en ajoute une) laissait un exercice « à faire » marqué juste,
+            // et plus de corrigés que de faits. « À refaire » reste.
             doneAt = nil
+            correctness = nil
+            correctedAt = nil
+            confidence = nil
         }
     }
 

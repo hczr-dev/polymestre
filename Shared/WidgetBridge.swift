@@ -36,12 +36,25 @@ extension WidgetSnapshot {
             if let end = event.end { dates.append(end) }
         }
         dates += (deadlines ?? []).map(\.date)
+        dates += (courses ?? []).flatMap { ($0.lateChanges ?? []).map(\.from) }
         if let breakEnd = timer?.breakEndsAt { dates.append(breakEnd) }
         if timer?.isRunning == true {
             dates += (1...8).map { now.addingTimeInterval(Double($0) * 900) }
         }
         let upcoming = Set(dates.filter { $0 > now && $0 <= midnight }).sorted()
         return ([now] + upcoming, midnight)
+    }
+
+    /// L'instantané tel qu'il se lit à `date` : le retard de chaque cours est
+    /// celui de ce moment-là (`WidgetCourse.lateChanges`).
+    func resolved(at date: Date) -> WidgetSnapshot {
+        var copy = self
+        copy.courses = courses?.map { course in
+            var course = course
+            course.late = course.late(at: date)
+            return course
+        }
+        return copy
     }
 }
 
@@ -60,6 +73,22 @@ struct WidgetCourse: Codable, Equatable, Identifiable {
     var exercisesTotal: Int? = nil
     /// Éléments des semaines passées pas faits.
     var late: Int? = nil
+    /// Ce que devient `late` aux prochains instants où il change de lui-même
+    /// (un lundi, une échéance, un corrigé publié, une reprise due) : le widget
+    /// passe au bon chiffre sans attendre que l'app tourne. Facultatif : un
+    /// instantané d'une version précédente se relit.
+    var lateChanges: [WidgetCount]? = nil
+
+    /// Le retard à `date`.
+    func late(at date: Date) -> Int? {
+        (lateChanges ?? []).last { $0.from <= date }?.value ?? late
+    }
+}
+
+/// Une valeur à partir d'un instant.
+struct WidgetCount: Codable, Equatable {
+    var from: Date
+    var value: Int
 }
 
 struct WidgetWeek: Codable, Equatable {

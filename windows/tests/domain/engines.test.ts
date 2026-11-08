@@ -136,9 +136,9 @@ describe("Rythme d'un cours", () => {
   const waiting = new Exercise({ series: lockedSeries, exerciseNumber: "2.1", sortOrder: 1 });
   waiting.doneAt = new Date();
   for (const exercise of [doneUncorrected, redo, waiting]) store.insert(exercise);
-  const gradedDue = ProgressEngine.correctionsDue(graded);
-  check(gradedDue.toCorrect === 1 && gradedDue.toRedo === 1,
-    "1 à corriger (corrigé publié), 1 à refaire ; le corrigé pas encore publié n'est pas dû");
+  const gradedDue = ProgressEngine.correctionsDue(graded, 3);
+  check(gradedDue.toCorrect === 0,
+    "hors retard : la correction de la série 1 (échue) est déjà dans le retard, celle de la série 2 attend son corrigé");
   check(ProgressEngine.lateCount(graded, 3) === 2,
     `en retard : la correction d'une semaine passée et l'exercice à refaire (${ProgressEngine.lateCount(graded, 3)})`);
 });

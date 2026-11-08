@@ -383,11 +383,10 @@ private struct WeekCourseCard: View {
                 if week.doneCount > 0 { meter("Corrigés", week.correctedCount, week.doneCount, tint) }
             }
             if !summary.corrections.isEmpty {
-                Text([summary.corrections.toCorrect > 0 ? "\(summary.corrections.toCorrect) à corriger" : nil,
-                      summary.corrections.toRedo > 0 ? "\(summary.corrections.toRedo) à refaire" : nil]
-                    .compactMap { $0 }.joined(separator: " · "))
+                // Hors retard : celles des séries échues sont dans « N en retard ».
+                Text("\(summary.corrections.toCorrect) à corriger cette semaine")
                     .font(.caption)
-                    .foregroundStyle(summary.corrections.toRedo > 0 ? Carnet.wrong : Carnet.inkSecondary)
+                    .foregroundStyle(Carnet.inkSecondary)
             }
         }
         .paperSheet(padding: 16, highlighted: hovering ? tint.opacity(0.6) : nil)

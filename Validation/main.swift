@@ -1415,8 +1415,8 @@ do {
     let waiting = Exercise(series: lockedSeries, exerciseNumber: "2.1", sortOrder: 1)
     waiting.setDone(true)
     [doneUncorrected, redo, waiting].forEach(context.insert)
-    let gradedDue = ProgressEngine.correctionsDue(for: graded)
-    check(gradedDue.toCorrect == 1 && gradedDue.toRedo == 1, "1 à corriger (corrigé publié), 1 à refaire ; le corrigé pas encore publié n'est pas dû")
+    let gradedDue = ProgressEngine.correctionsDue(for: graded, currentWeek: 3)
+    check(gradedDue.toCorrect == 0, "hors retard : la correction de la série 1 (échue) est déjà dans le retard, celle de la série 2 attend son corrigé")
     check(ProgressEngine.lateCount(for: graded, currentWeek: 3) == 2,
           "en retard : la correction d'une semaine passée et l'exercice à refaire (\(ProgressEngine.lateCount(for: graded, currentWeek: 3)))")
     ContentDraftWriter.apply(dalg, to: written, context: context, updateWeeks: false)

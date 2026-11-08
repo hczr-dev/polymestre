@@ -34,11 +34,6 @@ export class CourseProgress {
   /** Corrections : exos corrigés / exos faits. */
   get correctionPercent(): number { return CourseProgress.ratio(this.correctedCount, this.doneCount); }
 
-  /** Moyenne des trois axes principaux (récapitulatif). */
-  get overallPercent(): number {
-    return (this.theoryPercent + this.exercisePercent + this.correctionPercent) / 3;
-  }
-
   /** Le chiffre d'un cours, en un nombre : la part faite de ce qui est à faire. */
   get completion(): number {
     return CourseProgress.ratio(this.watchedCount + this.doneCount, this.videoCount + this.exerciseCount);
@@ -70,9 +65,6 @@ export class WeeklyProgress {
   get theoryPercent(): number { return CourseProgress.ratio(this.watchedCount, this.videoCount); }
   get exercisePercent(): number { return CourseProgress.ratio(this.doneCount, this.exerciseCount); }
   get correctionPercent(): number { return CourseProgress.ratio(this.correctedCount, this.doneCount); }
-  get overallPercent(): number {
-    return (this.theoryPercent + this.exercisePercent + this.correctionPercent) / 3;
-  }
   get hasItems(): boolean { return this.videoCount > 0 || this.exerciseCount > 0; }
 
   /** Ce qui reste, tous axes confondus (théorie non vue + exercices non faits). */
@@ -82,13 +74,16 @@ export class WeeklyProgress {
   get isComplete(): boolean { return this.hasItems && this.remainingCount === 0; }
 }
 
-/** Les corrections en attente d'un cours : à corriger et à refaire. */
+/**
+ * Les corrections à faire **hors du retard** : exercices faits, corrigé publié, d'une série
+ * pas encore échue. Le retard compte déjà les séries échues et tout ce qui est à refaire ;
+ * la carte affichait les deux côte à côte, et le même exercice y comptait deux fois.
+ */
 export class CorrectionsDue {
   constructor(init: Partial<CorrectionsDue> = {}) { Object.assign(this, init); }
 
   toCorrect = 0;
-  toRedo = 0;
-  get isEmpty(): boolean { return this.toCorrect === 0 && this.toRedo === 0; }
+  get isEmpty(): boolean { return this.toCorrect === 0; }
 }
 
 // MARK: - Moteur
@@ -105,8 +100,9 @@ function progress(course: Course): CourseProgress {
   p.bonusCount = all.filter((e) => e.isBonus).length;
   p.bonusDoneCount = all.filter((e) => e.isBonus && e.isDone).length;
   p.exerciseCount = required.length;
-  p.doneCount = required.filter((e) => e.isDone).length;
-  p.correctedCount = required.filter((e) => e.isCorrected).length;
+  // Au sens de `ExerciseStage` : à refaire n'est pas fait ; corrigés ⩽ faits.
+  p.doneCount = required.filter((e) => e.countsAsDone).length;
+  p.correctedCount = required.filter((e) => e.countsAsDone && e.isCorrected).length;
   p.wrongOrRedoCount = all.filter((e) => e.redoRequired || e.correctness === "wrong").length;
   return p;
 }
@@ -117,15 +113,16 @@ function lateCount(course: Course, currentWeek?: number | null, now: Date = new 
   return lateWork(course, currentWeek, now).total;
 }
 
-/** Les corrections en attente d'un cours. */
-function correctionsDue(course: Course, now: Date = new Date()): CorrectionsDue {
+/** Les corrections à faire hors du retard (séries pas encore échues). */
+function correctionsDue(course: Course, currentWeek?: number | null, now: Date = new Date()): CorrectionsDue {
+  const week = currentWeek ?? course.dueWeek(now);
   const due = new CorrectionsDue();
   for (const series of course.series) {
-    const published = series.solutionsAt ? series.solutionsAt <= now : true;
+    if (series.isDue(week, now)) continue;
+    if (series.solutionsAt && series.solutionsAt > now) continue;
     for (const exercise of series.exercises) {
       if (exercise.isBonus && !exercise.isDone) continue;
-      if (exercise.redoRequired) due.toRedo += 1;
-      else if (published && exercise.isDone && !exercise.isCorrected) due.toCorrect += 1;
+      if (!exercise.redoRequired && exercise.isDone && !exercise.isCorrected) due.toCorrect += 1;
     }
   }
   return due;
@@ -138,7 +135,7 @@ function aheadCount(course: Course, currentWeek?: number | null): number {
   const exercises = course.series
     .filter((s) => s.plannedWeek > week)
     .flatMap((s) => s.exercises)
-    .filter((e) => !e.isBonus && e.isDone)
+    .filter((e) => !e.isBonus && e.countsAsDone)
     .length;
   return theory + exercises;
 }
@@ -164,8 +161,8 @@ function weekProgress(course: Course, week: number): WeeklyProgress {
     .flatMap((s) => s.exercises)
     .filter((e) => !e.isBonus);
   w.exerciseCount = exercises.length;
-  w.doneCount = exercises.filter((e) => e.isDone).length;
-  w.correctedCount = exercises.filter((e) => e.isCorrected).length;
+  w.doneCount = exercises.filter((e) => e.countsAsDone).length;
+  w.correctedCount = exercises.filter((e) => e.countsAsDone && e.isCorrected).length;
   w.seriesNumbers = course.series.filter((s) => s.plannedWeek === week).map((s) => s.seriesNumber).sort((a, b) => a - b);
   return w;
 }
@@ -195,7 +192,7 @@ function remainingExercises(course: Course, week: number): Exercise[] {
   return course.sortedSeries
     .filter((s) => s.plannedWeek === week)
     .flatMap((s) => s.sortedExercises)
-    .filter((e) => !e.isDone);
+    .filter((e) => !e.countsAsDone);
 }
 
 export const ProgressEngine = {
@@ -227,6 +224,6 @@ export class WeekCourseSummary {
     this.week = weekProgress(course, course.currentWeek);
     this.late = lateCount(course, null, now);
     this.ahead = aheadCount(course);
-    this.corrections = correctionsDue(course, now);
+    this.corrections = correctionsDue(course, null, now);
   }
 }

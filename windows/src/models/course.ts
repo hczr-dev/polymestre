@@ -324,6 +324,17 @@ export class Course {
     return DateUtils.clampedWeek(new Date(), term);
   }
 
+  /**
+   * La semaine qui décide de ce qui est **dû**, non bornée. `currentWeek` s'arrête à la
+   * dernière semaine pour l'affichage ; pour le retard, cette borne gardait la dernière
+   * semaine « en cours » toute la session d'examens.
+   */
+  dueWeek(date: Date = new Date()): number {
+    const term = this.term;
+    if (!term) return this.currentWeek;
+    return Math.max(1, DateUtils.weekNumberForTerm(date, term));
+  }
+
   /** Le semestre de ce cours est-il en cours ? */
   get isTermRunning(): boolean {
     return this.term ? this.term.isRunning : true;

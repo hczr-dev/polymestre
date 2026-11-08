@@ -17,8 +17,9 @@ import Foundation
 ///   3. **à faire** — les exercices des semaines passées, série par série ;
 ///   4. **à voir** — la théorie des semaines passées, semaine par semaine.
 ///
-/// La semaine en cours n'y entre pas : elle n'est pas finie. Les bonus non
-/// plus : facultatifs, ils ne sont pas dus.
+/// La semaine en cours n'y entre pas : elle n'est pas finie. Une série qui a
+/// une échéance compte à son échéance, pas à sa semaine. Les bonus non plus :
+/// facultatifs, ils ne sont pas dus.
 struct LateWork {
     struct SeriesGroup: Identifiable {
         let series: ExerciseSeries
@@ -58,18 +59,26 @@ struct LateWork {
         return parts.dropLast().joined(separator: ", ") + " et " + parts.last!
     }
 
+    /// - Parameters:
+    ///   - currentWeek: la semaine de référence (tests) ; par défaut la semaine
+    ///     **non bornée** du semestre (`Course.dueWeek`) : passé la dernière
+    ///     semaine, pendant la session, la dernière semaine aussi est échue.
+    ///   - now: l'instant où l'on regarde — une échéance, un corrigé ou une
+    ///     reprise ne deviennent dus qu'à leur heure.
     static func of(_ course: Course, currentWeek: Int? = nil, now: Date = Date()) -> LateWork {
-        let week = currentWeek ?? course.currentWeek
-        var work = LateWork(currentWeek: week)
+        let week = currentWeek ?? course.dueWeek(at: now)
+        var work = LateWork(currentWeek: currentWeek ?? course.currentWeek)
         let ordered = course.sortedSeries
 
         // À refaire : toutes les semaines — une correction fausse ne vieillit pas.
-        work.redo = ordered.flatMap(\.sortedExercises).filter { $0.redoRequired && (!$0.isBonus || $0.isDone) }
-        guard week > 1 else { return work }
+        // Une reprise **espacée** n'est due qu'à sa date : dans la file, elle
+        // n'est pas en retard tant que son palier n'est pas arrivé. Elle reste
+        // hors des autres groupes (elle n'est ni « à faire » ni « à corriger »).
+        let flagged = ordered.flatMap(\.sortedExercises).filter { $0.redoRequired && (!$0.isBonus || $0.isDone) }
+        work.redo = flagged.filter { $0.isRedoDue(at: now) }
+        let redo = Set(flagged.map(\.id))
 
-        let past = ordered.filter { $0.plannedWeek > 0 && $0.plannedWeek < week }
-        let redo = Set(work.redo.map(\.id))
-        for series in past {
+        for series in ordered where series.isDue(beforeWeek: week, at: now) {
             let published = series.solutionsAt.map { $0 <= now } ?? true
             let required = series.sortedExercises.filter { !$0.isBonus && !redo.contains($0.id) }
             if published {
@@ -85,4 +94,45 @@ struct LateWork {
             .sorted { $0.week < $1.week }
         return work
     }
+
+    /// Les instants, d'ici `horizon`, où le retard peut changer **sans que rien
+    /// ne soit touché** : le lundi suivant, une échéance de série, un corrigé
+    /// publié, une reprise qui arrive à son palier. Le widget s'en sert pour
+    /// passer au bon chiffre sans attendre l'app.
+    static func changeDates(of course: Course, from now: Date = Date(), horizon: TimeInterval = 8 * 86_400) -> [Date] {
+        let end = now.addingTimeInterval(horizon)
+        var dates: [Date] = []
+        var monday = DateUtils.addDays(7, to: DateUtils.startOfWeek(now))
+        while monday <= end { dates.append(monday); monday = DateUtils.addDays(7, to: monday) }
+        for series in course.series {
+            if let due = series.dueDate { dates.append(due) }
+            if let solutions = series.solutionsAt { dates.append(solutions) }
+        }
+        dates += course.allExercises.compactMap { $0.redoRequired ? $0.redoDueAt : nil }
+        return Set(dates.filter { $0 > now && $0 <= end }).sorted()
+    }
+}
+
+extension ExerciseSeries {
+    /// La série est-elle échue ? Son échéance quand elle en a une (« à rendre
+    /// jeudi » : pas en retard le lundi), sinon la fin de sa semaine prévue.
+    func isDue(beforeWeek week: Int, at now: Date = Date()) -> Bool {
+        if let dueDate { return dueDate <= now }
+        return plannedWeek > 0 && plannedWeek < week
+    }
+}
+
+extension Exercise {
+    /// À refaire **maintenant** : marqué à refaire hors de la file de reprise,
+    /// ou dans la file et arrivé à son palier. Le palier « pré-examen » sans
+    /// date d'examen n'est pas dû.
+    func isRedoDue(at now: Date = Date()) -> Bool {
+        guard redoRequired else { return false }
+        guard isQueuedForRedo else { return true }
+        return redoDueAt.map { $0 <= now } ?? false
+    }
+
+    /// Fait **au sens de la progression** — comme `ExerciseStage.isDone` : un
+    /// exercice à refaire n'est pas fait.
+    var countsAsDone: Bool { isDone && !redoRequired }
 }

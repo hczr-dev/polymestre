@@ -85,7 +85,16 @@ export class ExerciseSeries {
   get bonusExercises(): Exercise[] { return this.exercises.filter((e) => e.isBonus); }
 
   get doneCount(): number { return this.requiredExercises.filter((e) => e.doneAt !== null).length; }
-  get correctedCount(): number { return this.requiredExercises.filter((e) => e.correctedAt !== null).length; }
+  get correctedCount(): number { return this.requiredExercises.filter((e) => e.doneAt !== null && e.correctedAt !== null).length; }
+
+  /**
+   * La série est-elle échue ? Son échéance quand elle en a une (« à rendre jeudi » :
+   * pas en retard le lundi), sinon la fin de sa semaine prévue.
+   */
+  isDue(beforeWeek: number, now: Date = new Date()): boolean {
+    if (this.dueDate) return this.dueDate <= now;
+    return this.plannedWeek > 0 && this.plannedWeek < beforeWeek;
+  }
 
   get isComplete(): boolean {
     const required = this.requiredExercises;
@@ -227,6 +236,8 @@ export class Exercise {
   }
   get isDone(): boolean { return this.doneAt !== null; }
   get isCorrected(): boolean { return this.correctedAt !== null; }
+  /** Fait **au sens de la progression** — comme `ExerciseStage.isDone` : un exercice à refaire n'est pas fait. */
+  get countsAsDone(): boolean { return this.isDone && !this.redoRequired; }
 
   // MARK: Sous-questions
 
@@ -284,7 +295,12 @@ export class Exercise {
     if (this.leafSubQuestions.every((q) => q.isDone)) {
       this.doneAt = this.doneAt ?? new Date();
     } else {
+      // Comme `setDone(false)` : un exercice qui n'est plus fait n'a plus de correction
+      // (jamais « à faire » et juste, ni plus de corrigés que de faits). « À refaire » reste.
       this.doneAt = null;
+      this.correctnessRaw = null;
+      this.correctedAt = null;
+      this.confidenceRaw = null;
     }
   }
 
@@ -361,6 +377,16 @@ export class Exercise {
 
   /** Dans la file de reprise ? */
   get isQueuedForRedo(): boolean { return this.redoPass !== null; }
+
+  /**
+   * À refaire **maintenant** : marqué à refaire hors de la file de reprise, ou dans la
+   * file et arrivé à son palier. Le palier « pré-examen » sans date d'examen n'est pas dû.
+   */
+  isRedoDue(now: Date = new Date()): boolean {
+    if (!this.redoRequired) return false;
+    if (!this.isQueuedForRedo) return true;
+    return this.redoDueAt !== null && this.redoDueAt <= now;
+  }
 
   /** Les indices reçus, du plus ancien au plus récent. */
   get hints(): HintEntry[] {

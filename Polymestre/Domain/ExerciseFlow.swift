@@ -22,7 +22,7 @@ enum ExerciseStage: Equatable {
     init(_ exercise: Exercise) {
         if exercise.redoRequired {
             self = .redo
-        } else if let correctness = exercise.correctness, exercise.isCorrected {
+        } else if let correctness = exercise.correctness, exercise.isCorrected, exercise.isDone {
             self = .corrected(correctness)
         } else if exercise.isDone {
             self = .toCorrect

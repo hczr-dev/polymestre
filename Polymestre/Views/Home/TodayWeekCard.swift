@@ -172,7 +172,7 @@ struct WeekCourseRow: View {
                 if !summary.corrections.isEmpty {
                     Label(correctionsLine, systemImage: "checkmark.seal")
                         .font(.caption.weight(.medium))
-                        .foregroundStyle(summary.corrections.toRedo > 0 ? Carnet.wrong : Carnet.inkSecondary)
+                        .foregroundStyle(Carnet.inkSecondary)
                 }
                 if let exam = course.nextExam, DateUtils.daysBetween(Date(), exam.date) <= 14 {
                     Label("\(exam.kind.label) \(DateUtils.countdownLabel(to: exam.date).lowercased())",
@@ -189,11 +189,8 @@ struct WeekCourseRow: View {
     }
 
     private var correctionsLine: String {
-        var parts: [String] = []
-        let due = summary.corrections
-        if due.toCorrect > 0 { parts.append(String(localized: "\(due.toCorrect) à corriger")) }
-        if due.toRedo > 0 { parts.append(String(localized: "\(due.toRedo) à refaire")) }
-        return parts.joined(separator: " · ")
+        // Hors retard : celles des séries échues sont déjà dans « N en retard ».
+        String(localized: "\(summary.corrections.toCorrect) à corriger cette semaine")
     }
 
     private func axis(_ title: String, done: Int, total: Int, tint: Color) -> some View {

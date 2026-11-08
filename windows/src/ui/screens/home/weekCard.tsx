@@ -149,7 +149,7 @@ export function WeekCourseRow({ summary, onOpen, onOpenLate }:
         <span className="t-sub">{summary.late > 0 ? "Rien de nouveau cette semaine : le moment de rattraper" : "Rien de prévu cette semaine"}</span>
       )}
       {!summary.corrections.isEmpty && (
-        <span className={cx("t-sub-xs", summary.corrections.toRedo > 0 && "urgent")}>{correctionsLine(summary)}</span>
+        <span className="t-sub-xs">{correctionsLine(summary)}</span>
       )}
       {examSoon && nextExam && (
         <span className={cx("t-sub-xs", examDays !== null && examDays <= 3 && "urgent")} style={{ fontWeight: 500 }}>
@@ -177,8 +177,6 @@ function StandingLabel({ late, ahead, complete, onLate }: { late: number; ahead:
 }
 
 function correctionsLine(summary: WeekCourseSummary): string {
-  const parts: string[] = [];
-  if (summary.corrections.toCorrect > 0) parts.push(`${summary.corrections.toCorrect} à corriger`);
-  if (summary.corrections.toRedo > 0) parts.push(`${summary.corrections.toRedo} à refaire`);
-  return parts.join(" · ");
+  // Hors retard : celles des séries échues sont déjà dans « N en retard ».
+  return `${summary.corrections.toCorrect} à corriger cette semaine`;
 }

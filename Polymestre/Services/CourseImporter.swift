@@ -527,7 +527,7 @@ enum CourseImporter {
                                     title: spec.title ?? "",
                                     kind: kind ?? .video,
                                     durationSeconds: spec.durationSeconds ?? 0,
-                                    plannedWeek: spec.week ?? 1,
+                                    plannedWeek: spec.week ?? 0,  // sans semaine : 0, pas la semaine 1 (en retard dès la 2)
                                     sortOrder: order,
                                     urlString: spec.url ?? "")
             context.insert(video)
@@ -554,7 +554,7 @@ enum CourseImporter {
                 series = ExerciseSeries(course: course,
                                         seriesNumber: spec.number,
                                         title: spec.title ?? "Série \(spec.number)",
-                                        plannedWeek: spec.week ?? 1,
+                                        plannedWeek: spec.week ?? 0,  // sans semaine : 0, pas la semaine 1 (en retard dès la 2)
                                         urlString: spec.url ?? "")
                 context.insert(series)
                 seriesCount += 1

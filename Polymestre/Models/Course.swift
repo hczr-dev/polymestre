@@ -301,6 +301,16 @@ final class Course {
         return DateUtils.clampedWeek(for: Date(), term: term)
     }
 
+    /// La semaine qui décide de ce qui est **dû**, non bornée.
+    ///
+    /// `currentWeek` s'arrête à la dernière semaine pour l'affichage ; pour le
+    /// retard, cette borne gardait la dernière semaine « en cours » toute la
+    /// session d'examens, et rien de ce qu'elle prévoyait ne devenait dû.
+    func dueWeek(at date: Date = Date()) -> Int {
+        guard let term else { return currentWeek }
+        return max(1, DateUtils.weekNumber(for: date, term: term))
+    }
+
     /// Le semestre de ce cours est-il en cours ?
     var isTermRunning: Bool {
         guard let term else { return true }

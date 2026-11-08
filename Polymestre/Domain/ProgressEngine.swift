@@ -23,15 +23,10 @@ struct CourseProgress: Equatable {
     /// Corrections : exos corrigés / exos faits.
     var correctionPercent: Double { Self.ratio(correctedCount, doneCount) }
 
-    /// Moyenne des trois axes principaux (récapitulatif).
-    var overallPercent: Double {
-        (theoryPercent + exercisePercent + correctionPercent) / 3
-    }
-
     /// Le chiffre d'un cours, en un nombre : la part faite de ce qui est à
     /// faire — théorie vue et exercices faits, pondérés par leur nombre. Les
     /// corrections n'y entrent pas : elles disent si c'est juste, pas si
-    /// c'est fait.
+    /// c'est fait. Un exercice à refaire n'est pas fait (`countsAsDone`).
     var completion: Double {
         Self.ratio(watchedCount + doneCount, videoCount + exerciseCount)
     }
@@ -55,9 +50,6 @@ struct WeeklyProgress: Identifiable, Equatable {
     var theoryPercent: Double { CourseProgress.ratio(watchedCount, videoCount) }
     var exercisePercent: Double { CourseProgress.ratio(doneCount, exerciseCount) }
     var correctionPercent: Double { CourseProgress.ratio(correctedCount, doneCount) }
-    var overallPercent: Double {
-        (theoryPercent + exercisePercent + correctionPercent) / 3
-    }
     var hasItems: Bool { videoCount > 0 || exerciseCount > 0 }
 
     /// Numéros des séries planifiées cette semaine (« Série 3 »).
@@ -85,8 +77,11 @@ enum ProgressEngine {
         p.bonusCount = all.filter(\.isBonus).count
         p.bonusDoneCount = all.filter { $0.isBonus && $0.isDone }.count
         p.exerciseCount = required.count
-        p.doneCount = required.filter(\.isDone).count
-        p.correctedCount = required.filter(\.isCorrected).count
+        // Fait et corrigé au sens de `ExerciseStage` : un exercice à refaire
+        // n'est pas fait, et une correction ne compte que sur un exercice fait
+        // (corrigés ⩽ faits, jamais plus de 100 %).
+        p.doneCount = required.filter(\.countsAsDone).count
+        p.correctedCount = required.filter { $0.countsAsDone && $0.isCorrected }.count
         p.wrongOrRedoCount = all.filter {
             $0.redoRequired || $0.correctness == .wrong
         }.count
@@ -104,22 +99,25 @@ enum ProgressEngine {
         LateWork.of(course, currentWeek: currentWeek, now: now).total
     }
 
-    /// Les corrections en attente d'un cours : exercices faits à corriger (le
-    /// corrigé est publié) et exercices à refaire.
+    /// Les corrections à faire **hors du retard** : exercices faits, corrigé
+    /// publié, d'une série pas encore échue — en pratique, la semaine en cours.
+    ///
+    /// Le retard (`LateWork`) compte déjà les corrections des séries échues et
+    /// tout ce qui est à refaire ; la carte affichait les deux côte à côte, et
+    /// le même exercice y comptait deux fois.
     struct CorrectionsDue: Equatable {
         var toCorrect = 0
-        var toRedo = 0
-        var isEmpty: Bool { toCorrect == 0 && toRedo == 0 }
+        var isEmpty: Bool { toCorrect == 0 }
     }
 
-    static func correctionsDue(for course: Course, now: Date = Date()) -> CorrectionsDue {
+    static func correctionsDue(for course: Course, currentWeek: Int? = nil, now: Date = Date()) -> CorrectionsDue {
+        let week = currentWeek ?? course.dueWeek(at: now)
         var due = CorrectionsDue()
-        for series in course.series {
-            let published = series.solutionsAt.map { $0 <= now } ?? true
-            for exercise in series.exercises where !exercise.isBonus || exercise.isDone {
-                if exercise.redoRequired { due.toRedo += 1 }
-                else if published, exercise.isDone, !exercise.isCorrected { due.toCorrect += 1 }
-            }
+        for series in course.series where !series.isDue(beforeWeek: week, at: now) {
+            guard series.solutionsAt.map({ $0 <= now }) ?? true else { continue }
+            due.toCorrect += series.exercises.filter {
+                (!$0.isBonus || $0.isDone) && !$0.redoRequired && $0.isDone && !$0.isCorrected
+            }.count
         }
         return due
     }
@@ -131,7 +129,7 @@ enum ProgressEngine {
         let exercises = course.series
             .filter { $0.plannedWeek > week }
             .flatMap(\.exercises)
-            .filter { !$0.isBonus && $0.isDone }
+            .filter { !$0.isBonus && $0.countsAsDone }
             .count
         return theory + exercises
     }
@@ -159,8 +157,8 @@ enum ProgressEngine {
             .flatMap(\.exercises)
             .filter { !$0.isBonus }
         w.exerciseCount = exercises.count
-        w.doneCount = exercises.filter(\.isDone).count
-        w.correctedCount = exercises.filter(\.isCorrected).count
+        w.doneCount = exercises.filter(\.countsAsDone).count
+        w.correctedCount = exercises.filter { $0.countsAsDone && $0.isCorrected }.count
         w.seriesNumbers = course.series.filter { $0.plannedWeek == week }.map(\.seriesNumber).sorted()
         return w
     }
@@ -194,7 +192,7 @@ enum ProgressEngine {
         course.sortedSeries
             .filter { $0.plannedWeek == week }
             .flatMap(\.sortedExercises)
-            .filter { !$0.isDone }
+            .filter { !$0.countsAsDone }
     }
 }
 

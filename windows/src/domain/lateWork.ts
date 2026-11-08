@@ -5,7 +5,8 @@
 // Quatre groupes disjoints, dans l'ordre où les reprendre : à refaire (toutes
 // semaines), à corriger (fait, corrigé publié), exercices à faire (série par
 // série), théorie à voir (semaine par semaine). La semaine en cours n'y entre
-// pas, les bonus non plus.
+// pas, les bonus non plus. Une série qui a une échéance compte à son échéance ; une
+// reprise espacée, à son palier ; la semaine de référence n'est pas bornée au semestre.
 
 import type { Course } from "../models/course.ts";
 import type { Exercise, ExerciseSeries } from "../models/exercise.ts";
@@ -27,14 +28,15 @@ export interface LateWork {
 }
 
 export function lateWork(course: Course, currentWeek?: number | null, now: Date = new Date()): LateWork {
-  const week = currentWeek ?? course.currentWeek;
+  const week = currentWeek ?? course.dueWeek(now);
   const ordered = course.sortedSeries;
-  const redo = ordered.flatMap((s) => s.sortedExercises).filter((e) => e.redoRequired && (!e.isBonus || e.isDone));
-  const work: LateWork = { currentWeek: week, redo, toCorrect: [], series: [], theory: [], exerciseCount: 0, theoryCount: 0, total: redo.length };
-  if (!(week > 1)) return work;
+  const flagged = ordered.flatMap((s) => s.sortedExercises).filter((e) => e.redoRequired && (!e.isBonus || e.isDone));
+  const redo = flagged.filter((e) => e.isRedoDue(now));
+  const work: LateWork = { currentWeek: currentWeek ?? course.currentWeek, redo, toCorrect: [], series: [], theory: [], exerciseCount: 0, theoryCount: 0, total: redo.length };
 
-  const redoIDs = new Set(redo.map((e) => e.id));
-  for (const series of ordered.filter((s) => s.plannedWeek > 0 && s.plannedWeek < week)) {
+  // Une reprise pas encore due reste hors des autres groupes : ni à faire ni à corriger.
+  const redoIDs = new Set(flagged.map((e) => e.id));
+  for (const series of ordered.filter((s) => s.isDue(week, now))) {
     const published = series.solutionsAt ? series.solutionsAt <= now : true;
     const required = series.sortedExercises.filter((e) => !e.isBonus && !redoIDs.has(e.id));
     if (published) work.toCorrect.push(...required.filter((e) => e.isDone && !e.isCorrected));

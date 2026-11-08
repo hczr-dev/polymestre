@@ -68,7 +68,21 @@ enum WidgetSnapshotWriter {
                             name: course.name,
                             theoryDone: week.watchedCount, theoryTotal: week.videoCount,
                             exercisesDone: week.doneCount, exercisesTotal: week.exerciseCount,
-                            late: ProgressEngine.lateCount(for: course))
+                            late: ProgressEngine.lateCount(for: course),
+                            lateChanges: lateChanges(of: course))
+    }
+
+    /// Le retard aux instants où il changera de lui-même, sur huit jours —
+    /// seulement là où il change.
+    private static func lateChanges(of course: Course, now: Date = Date()) -> [WidgetCount]? {
+        var last = ProgressEngine.lateCount(for: course, now: now)
+        var changes: [WidgetCount] = []
+        for date in LateWork.changeDates(of: course, from: now) {
+            let value = ProgressEngine.lateCount(for: course, now: date)
+            if value != last { changes.append(WidgetCount(from: date, value: value)) }
+            last = value
+        }
+        return changes.isEmpty ? nil : changes
     }
 
     private static func widgetWeek(tracked: [Course], context: ModelContext,

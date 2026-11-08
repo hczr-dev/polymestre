@@ -32,7 +32,7 @@ interface ExerciseStageCallable {
 function stageOf(exercise: Exercise): ExerciseStage {
   if (exercise.redoRequired) return { kind: "redo" };
   const correctness = exercise.correctness;
-  if (correctness !== null && exercise.isCorrected) return { kind: "corrected", correctness };
+  if (correctness !== null && exercise.isCorrected && exercise.isDone) return { kind: "corrected", correctness };
   if (exercise.isDone) return { kind: "toCorrect" };
   if (exercise.hasSubQuestions && exercise.subQuestionDoneCount > 0) {
     return { kind: "inProgress", done: exercise.subQuestionDoneCount, total: exercise.leafSubQuestions.length };
