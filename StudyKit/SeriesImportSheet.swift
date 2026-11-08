@@ -76,7 +76,7 @@ struct SeriesImportSheet: View {
     private var selectedCourse: Course? { courses.first { $0.id == selectedCourseID } }
     private var exerciseCount: Int { drafts.reduce(0) { $0 + $1.exercises.count } }
     private var hasEdited: Bool { drafts != lastApplied }
-    private var problems: [String] { drafts.flatMap { $0.problems(takenNumbers: []) } }
+    private var problems: [String] { drafts.flatMap { $0.problems(taken: []) } }
 
     var body: some View {
         NavigationStack {
@@ -274,7 +274,7 @@ struct SeriesImportSheet: View {
             ForEach($drafts) { $draft in
                 SeriesDraftForm(draft: $draft,
                                 maxWeek: selectedCourse?.term?.totalWeeks ?? 14,
-                                mergesInto: selectedCourse?.series.first { $0.seriesNumber == draft.number },
+                                mergesInto: selectedCourse?.series(number: draft.number, label: draft.label),
                                 showSource: pageImages.isEmpty ? nil : { exercise in preview(exercise, in: draft) })
             }
 
@@ -639,6 +639,7 @@ struct SeriesImportSheet: View {
     private func apply(_ series: [DetectedSeries]) {
         drafts = series.map { detected in
             SeriesDraft(number: detected.number,
+                        label: detected.label,
                         title: SeriesDocumentInference.seriesTitle(detected.title,
                                                                    courseName: selectedCourse?.name ?? "",
                                                                    courseCode: selectedCourse?.code ?? ""),

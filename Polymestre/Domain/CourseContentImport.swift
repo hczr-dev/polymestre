@@ -134,6 +134,9 @@ struct ContentDraftItem: Identifiable, Equatable {
     var videoCount: Int
     var seriesNumber: Int?
     var theoryKind: TheoryKind
+    /// L'étiquette d'une série (« b », « mardi ») quand deux séries partagent
+    /// un numéro — souvent celui de la semaine, pour une série sans numéro.
+    var seriesLabel: String = ""
     /// La semaine **de l'élément**, quand elle diffère de celle de sa section :
     /// un chapitre de quatorze sections s'étale sur plusieurs semaines, et un
     /// enregistrement de cours tombe la semaine de sa date. `nil` = celle de la

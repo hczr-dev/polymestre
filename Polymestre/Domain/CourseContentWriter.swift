@@ -58,7 +58,7 @@ enum ContentDraftWriter {
     private static func writeDetails(of item: ContentDraftItem, into series: ExerciseSeries,
                                      course: Course, context: ModelContext, complete: Bool = false) -> Int {
         let topic = item.title.trimmingCharacters(in: .whitespaces)
-        if !topic.isEmpty, topic != "Série \(series.seriesNumber)",
+        if !topic.isEmpty, topic != "Série \(series.seriesNumber)", topic != series.displayName,
            ContentDraftBuilder.seriesNumber(in: topic) == nil || topic.count > 12 {
             series.topic = topic
         }
@@ -66,7 +66,7 @@ enum ContentDraftWriter {
         if !item.solutionURL.isEmpty { series.solutionURLString = item.solutionURL }
         guard !item.exercises.isEmpty else { return 0 }
         let before = series.exercises.count
-        let draft = SeriesDraft(existingID: series.id, number: series.seriesNumber, title: "",
+        let draft = SeriesDraft(existingID: series.id, number: series.seriesNumber, label: series.label, title: "",
                                 plannedWeek: series.plannedWeek,
                                 exercises: item.exercises.map { spec in
                                     var exercise = ExerciseDraft(minor: spec.number.split(separator: ".").last.map(String.init) ?? spec.number,
@@ -226,7 +226,20 @@ enum ContentDraftWriter {
                 case .series:
                     guard let number = item.seriesNumber ?? Int(item.number) else { continue }
                     let series: ExerciseSeries
-                    if let existing = course.series.first(where: { $0.seriesNumber == number }) {
+                    let siblings = draft.sections.flatMap(\.items)
+                        .filter { $0.kind == .series && ($0.seriesNumber ?? Int($0.number)) == number }
+                    // Seule à ce numéro, ou la première de ses sœurs (« 5a » avant
+                    // « 5b ») : elle reprend la série enregistrée sans étiquette,
+                    // et son avancement, au lieu d'en créer une à côté.
+                    let firstLabel = siblings.map { SeriesIdentity.normalized($0.seriesLabel) }
+                        .sorted(by: SeriesIdentity.labelPrecedes).first
+                    let soleOfNumber = siblings.count <= 1 || SeriesIdentity.normalized(item.seriesLabel) == firstLabel
+                    if let existing = course.series(number: number, label: item.seriesLabel, soleOfNumber: soleOfNumber) {
+                        // Une étiquette apparue (« mardi ») se pose sur la série d'avant.
+                        if existing.label.isEmpty, !item.seriesLabel.isEmpty {
+                            if existing.title == existing.displayName { existing.title = SeriesIdentity.displayName(number: number, label: item.seriesLabel) }
+                            existing.label = SeriesIdentity.normalized(item.seriesLabel)
+                        }
                         // Un corrigé seul (sans énoncé) ne déplace jamais sa série :
                         // la semaine est celle de l'énoncé, pas celle du corrigé.
                         let carriesStatement = !item.url.isEmpty || !item.pdfURL.isEmpty
@@ -263,6 +276,7 @@ enum ContentDraftWriter {
                     } else {
                         series = ExerciseSeries(course: course,
                                                 seriesNumber: number,
+                                                label: item.seriesLabel,
                                                 plannedWeek: item.plannedWeek(in: section),
                                                 urlString: item.pdfURL.isEmpty ? item.url : item.pdfURL)
                         context.insert(series)

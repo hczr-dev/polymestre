@@ -690,7 +690,7 @@ struct CoursePane: View {
     /// Une série : où tu en es exercice par exercice (un clic ouvre l'exercice dans l'onglet Série), son
     /// énoncé, et ta copie.
     private func seriesCard(_ series: ExerciseSeries, course: Course, tint: Color) -> some View {
-        let name = series.title.isEmpty ? "Série \(series.seriesNumber)" : series.title
+        let name = series.title.isEmpty ? series.displayName : series.title
         let exercises = series.sortedExercises
         let firstOpen = exercises.first { !$0.isDone }
         let copy = hasNotesTool ? NotesStore.shared.copy(for: series, course: course, among: allCourses) : nil

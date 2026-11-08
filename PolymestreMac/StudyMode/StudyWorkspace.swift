@@ -499,7 +499,7 @@ struct StudyWorkspace: View {
         let series = currentSeries
         var work: [SidePicker.Entry] = []
         if let series {
-            let name = series.title.isEmpty ? "Série \(series.seriesNumber)" : series.title
+            let name = series.title.isEmpty ? series.displayName : series.title
             work.append(.init(item: .init(kind: .series, title: name, icon: "doc.text", courseID: id), detail: String(localized: "L'énoncé, les exercices, j'ai fini")))
             if let copy = NotesStore.shared.copy(for: series, course: course, among: courses) {
                 work.append(.init(item: .init(kind: .notebook(path: copy.path), title: String(localized: "Ma copie"), icon: "pencil.and.scribble", courseID: id),

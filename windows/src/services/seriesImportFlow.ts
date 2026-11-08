@@ -72,6 +72,7 @@ export function defaultWeek(number: number, course: WeekContext | null): number 
 export function draftsFrom(series: DetectedSeries[], course: (WeekContext & { name: string; code: string }) | null): SeriesDraft[] {
   return series.map((detected) => new SeriesDraft({
     number: detected.number,
+    label: detected.label ?? "",
     title: SeriesDocumentInference.seriesTitle(detected.title, course?.name ?? "", course?.code ?? ""),
     plannedWeek: defaultWeek(detected.number, course),
     exercises: detected.exercises.map((exercise, index) => {

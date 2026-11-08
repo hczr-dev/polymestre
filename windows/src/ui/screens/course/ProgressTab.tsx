@@ -1,8 +1,8 @@
 // Progression d'un cours (ProgressTabView.swift).
 //
-// L'ordre des questions qu'on se pose : **où j'en suis**, **qu'est-ce qui
-// traîne** (et le rattraper d'ici), puis le semestre semaine par semaine, et le
-// temps passé cette semaine. Le retard est une liste cochable, pas un nombre.
+// **Où j'en suis**, le semestre semaine par semaine, et le temps passé cette
+// semaine. Ce qui traîne a son propre volet, « À rattraper » (LateTab) : la liste
+// que cette page tenait comptait autrement que le badge « N en retard ».
 
 import { useEffect, useState } from "react";
 import type { Course } from "../../../models/course.ts";
@@ -13,14 +13,11 @@ import { DateUtils } from "../../../domain/dateUtils.ts";
 import { Plural } from "../../../domain/plural.ts";
 import { ExerciseStage } from "../../../domain/exerciseFlow.ts";
 import { ProgressEngine, type WeeklyProgress } from "../../../domain/progressEngine.ts";
+import { lateSummary, lateWork } from "../../../domain/lateWork.ts";
 import { WorkloadEngine } from "../../../domain/workloadEngine.ts";
-import { Button, Card, EmptyState, Icon, ProgressBar, Section, cx } from "../../kit.tsx";
+import { Card, EmptyState, Icon, ProgressBar, Section, cx } from "../../kit.tsx";
 import { CheckCircle, HOURS_PER_CREDIT, theoryDetail } from "./common.tsx";
 import "./course.css";
-import {
-  changeSummary, isEmptyChange, markWeeks, undoWeeks,
-  type WeekChange, type WeekScope,
-} from "./weekCompletion.ts";
 
 interface ProgressTabProps {
   course: Course;
@@ -30,7 +27,6 @@ interface ProgressTabProps {
 export function ProgressTab({ course, saveAll }: ProgressTabProps) {
   const current = course.isTermRunning ? course.currentWeek : 0;
   const [expanded, setExpanded] = useState<Set<number>>(() => new Set(current > 0 ? [current] : []));
-  const [undo, setUndo] = useState<WeekChange | null>(null);
 
   useEffect(() => {
     if (current <= 0) return;
@@ -39,16 +35,7 @@ export function ProgressTab({ course, saveAll }: ProgressTabProps) {
 
   const progress = ProgressEngine.progress(course);
   const weeks = ProgressEngine.semesterWeeks(course);
-  const lateTheory = course.sortedTheoryItems
-    .filter((item) => item.plannedWeek > 0 && item.plannedWeek < current && !item.isWatched);
-  const lateExercises = course.sortedSeries
-    .filter((series) => series.plannedWeek > 0 && series.plannedWeek < current)
-    .flatMap((series) => series.sortedExercises)
-    .filter((exercise) => !exercise.isBonus && !exercise.isDone);
-  const lateRows: LateRow[] = [
-    ...lateTheory.map((item): LateRow => ({ kind: "theory", item })),
-    ...lateExercises.map((exercise): LateRow => ({ kind: "exercise", exercise })),
-  ];
+  const lateNow = lateWork(course);
   const unplanned = ProgressEngine.unplannedTheory(course).slice(0, 8);
 
   const toggleTheory = async (item: TheoryItem) => {
@@ -61,21 +48,7 @@ export function ProgressTab({ course, saveAll }: ProgressTabProps) {
     await saveAll([exercise, ...exercise.subQuestions]);
   };
 
-  const completeLate = async (scope: WeekScope) => {
-    if (current <= 1) return;
-    const result = markWeeks([1, current - 1], course, scope);
-    await saveAll(result.touched);
-    setUndo(isEmptyChange(result.change) ? null : result.change);
-  };
-
-  const undoLate = async () => {
-    if (!undo) return;
-    const touched = undoWeeks(undo, course);
-    await saveAll(touched);
-    setUndo(null);
-  };
-
-  const late = lateTheory.length + lateExercises.length;
+  const late = lateNow.total;
   const ahead = ProgressEngine.aheadCount(course);
   const sentence = late > 0
     ? Plural.count(late, "1 élément à rattraper", `${late} éléments à rattraper`)
@@ -115,7 +88,7 @@ export function ProgressTab({ course, saveAll }: ProgressTabProps) {
         </div>
         {late > 0 && (
           <p className="muted" style={{ margin: "5px 0 0", fontSize: 13 }}>
-            Des semaines passées : {lateDetail(lateTheory.length, lateExercises.length)}.
+            {lateSummary(lateNow).charAt(0).toUpperCase() + lateSummary(lateNow).slice(1)}.
           </p>
         )}
 
@@ -133,53 +106,6 @@ export function ProgressTab({ course, saveAll }: ProgressTabProps) {
           </div>
         )}
       </Card>
-
-      {/* À rattraper */}
-      {(lateTheory.length > 0 || lateExercises.length > 0) && (
-        <Section
-          title="À rattraper"
-          style={{ marginBottom: 0 }}
-          action={
-            <span className="hstack" style={{ gap: 4 }}>
-              <Button size="sm" onClick={() => void completeLate("all")}>Tout faire</Button>
-              <Button size="sm" onClick={() => void completeLate("allCorrected")}>Fait + corrigé</Button>
-              <Button size="sm" onClick={() => void completeLate("theoryOnly")}>Théorie</Button>
-            </span>
-          }
-        >
-          <Card className="cs-list" flat>
-            {lateRows.slice(0, 12).map((row) => row.kind === "theory" ? (
-              <LateLine
-                key={row.item.id}
-                done={row.item.isWatched}
-                week={row.item.plannedWeek}
-                title={row.item.title === "" ? row.item.number : row.item.title}
-                detail={theoryDetail(row.item)}
-                onToggle={() => void toggleTheory(row.item)}
-              />
-            ) : (
-              <LateLine
-                key={row.exercise.id}
-                done={row.exercise.isDone}
-                week={row.exercise.series?.plannedWeek ?? 0}
-                title={row.exercise.displayNumber + (row.exercise.title === "" ? "" : ` · ${row.exercise.title}`)}
-                detail={row.exercise.series ? `Série ${row.exercise.series.seriesNumber}` : ""}
-                onToggle={() => void toggleExercise(row.exercise)}
-              />
-            ))}
-            {lateRows.length > 12 && (
-              <div className="muted small" style={{ padding: "10px 0" }}>+ {lateRows.length - 12} autres</div>
-            )}
-          </Card>
-          {undo && (
-            <div className="cs-undo">
-              <span>Coché : {changeSummary(undo)}.</span>
-              <span className="spacer" />
-              <Button size="sm" variant="ghost" icon="arrow.counterclockwise" onClick={() => void undoLate()}>Annuler</Button>
-            </div>
-          )}
-        </Section>
-      )}
 
       {/* Semaine par semaine */}
       <Section title="Semaine par semaine" style={{ marginBottom: 0 }}>
@@ -251,17 +177,6 @@ export function ProgressTab({ course, saveAll }: ProgressTabProps) {
       </Section>
     </div>
   );
-}
-
-type LateRow =
-  | { kind: "theory"; item: TheoryItem }
-  | { kind: "exercise"; exercise: Exercise };
-
-function lateDetail(theory: number, exercises: number): string {
-  const parts: string[] = [];
-  if (theory > 0) parts.push(`${theory} de théorie`);
-  if (exercises > 0) parts.push(Plural.count(exercises, `${exercises} exercice`, `${exercises} exercices`));
-  return parts.join(" et ");
 }
 
 function Axis({ title, done, total }: { title: string; done: number; total: number }) {

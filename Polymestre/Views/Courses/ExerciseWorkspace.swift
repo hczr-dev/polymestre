@@ -924,7 +924,7 @@ private struct ExerciseDetailContent: View {
             return
         }
         if let series = exercise.series, let url = ExerciseLinks.web(series.solutionURLString) {
-            onOpenLink(BrowsedLink(title: "Corrigé · Série \(series.seriesNumber)", url: url, icon: "checkmark.seal"))
+            onOpenLink(BrowsedLink(title: "Corrigé · \(series.displayName)", url: url, icon: "checkmark.seal"))
         }
     }
 

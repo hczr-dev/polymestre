@@ -13,6 +13,7 @@ import { characters, isLetter, isNumber, trimWhitespaces } from "./textRepair.ts
 import { trimAll } from "../models/util.ts";
 import { newId } from "../models/relations.ts";
 import { SeriesReconciler } from "./seriesReconciler.ts";
+import { SeriesIdentity, type SeriesKey } from "./seriesIdentity.ts";
 
 // MARK: - Brouillons
 
@@ -20,6 +21,7 @@ export interface SeriesDraftInit {
   id?: string;
   existingID?: string | null;
   number: number;
+  label?: string;
   title: string;
   plannedWeek: number;
   dueDate?: Date | null;
@@ -32,6 +34,8 @@ export class SeriesDraft {
   /** La série enregistrée que ce brouillon modifie, s'il y en a une. */
   existingID: string | null;
   number: number;
+  /** « b », « mardi » : ce qui distingue deux séries de même numéro. */
+  label: string;
   title: string;
   plannedWeek: number;
   dueDate: Date | null;
@@ -41,6 +45,7 @@ export class SeriesDraft {
     this.id = o.id ?? newId();
     this.existingID = o.existingID ?? null;
     this.number = o.number;
+    this.label = SeriesIdentity.normalized(o.label ?? "");
     this.title = o.title;
     this.plannedWeek = o.plannedWeek;
     this.dueDate = o.dueDate ?? null;
@@ -52,9 +57,10 @@ export class SeriesDraft {
     return new SeriesDraft({
       existingID: series.id,
       number: series.seriesNumber,
+      label: series.label,
       // « Série 3 » est le titre par défaut : on le laisse vide pour
       // que changer le numéro ne laisse pas un « Série 3 » périmé.
-      title: series.title === `Série ${series.seriesNumber}` ? "" : series.title,
+      title: series.title === series.displayName || series.title === `Série ${series.seriesNumber}` ? "" : series.title,
       plannedWeek: series.plannedWeek,
       dueDate: series.dueDate,
       exercises: series.sortedExercises.map((exercise) => ExerciseDraft.fromExercise(exercise)),
@@ -81,13 +87,17 @@ export class SeriesDraft {
 
   /// Ce qui empêche d'enregistrer, en phrases.
   ///
-  /// `takenNumbers` : les numéros des **autres** séries du cours. Deux séries 3
-  /// dans un même cours rendaient la progression et les groupes incohérents.
-  problems(takenNumbers: Set<number> | readonly number[]): string[] {
-    const taken = takenNumbers instanceof Set ? takenNumbers : new Set(takenNumbers);
+  get key(): SeriesKey { return SeriesIdentity.key(this.number, this.label); }
+  get displayName(): string { return SeriesIdentity.displayName(this.number, this.label); }
+
+  /// `taken` : numéros et étiquettes des **autres** séries du cours. Deux séries 5
+  /// la même semaine se distinguent par leur étiquette (« a », « b »).
+  problems(taken: readonly SeriesKey[]): string[] {
     const result: string[] = [];
-    if (taken.has(this.number)) {
-      result.push(`La série ${this.number} existe déjà dans ce cours.`);
+    if (taken.some((key) => SeriesIdentity.same(key, this.key))) {
+      result.push(this.label === ""
+        ? `La série ${this.number} existe déjà dans ce cours. Pour une deuxième série la même semaine, donne-lui une étiquette (« b », « jeudi »).`
+        : `La ${this.displayName} existe déjà dans ce cours.`);
     }
     const minors = this.exercises.map((exercise) => trimWhitespaces(exercise.minor));
     if (minors.some((minor) => minor === "")) {
@@ -505,15 +515,14 @@ export const SeriesDraftWriter = {
     let series: ExerciseSeries;
     const existing: ExerciseSeries | undefined = mode === "edit"
       ? course.series.find((item) => item.id === draft.existingID)
-      : mode === "importMerge"
-        ? course.series.find((item) => item.seriesNumber === draft.number)
-        : course.series.find((item) => item.id === draft.existingID)
-          ?? course.series.find((item) => item.seriesNumber === draft.number);
+      : course.series.find((item) => item.id === draft.existingID)
+          ?? course.seriesWith(draft.number, draft.label) ?? undefined;
     if (existing) {
       series = existing;
       series.seriesNumber = draft.number;
+      if (mode === "edit" || draft.label !== "") series.label = SeriesIdentity.normalized(draft.label);
       if (mode === "edit" || title !== "") {
-        series.title = title === "" ? `Série ${draft.number}` : title;
+        series.title = title === "" ? draft.displayName : title;
       }
       if (mode === "edit") {
         series.plannedWeek = draft.plannedWeek;
@@ -525,6 +534,7 @@ export const SeriesDraftWriter = {
       series = new ExerciseSeries({
         course,
         seriesNumber: draft.number,
+        label: draft.label,
         title,
         plannedWeek: draft.plannedWeek,
         dueDate: draft.dueDate,

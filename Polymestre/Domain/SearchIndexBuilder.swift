@@ -78,7 +78,7 @@ enum SearchIndexBuilder {
     private static func seriesDocument(_ series: ExerciseSeries, course: Course) -> SearchDocument {
         SearchDocument(id: "series.\(series.id)",
                        kind: .series,
-                       title: series.title.isEmpty ? "Série \(series.seriesNumber)" : series.title,
+                       title: series.title.isEmpty ? series.displayName : series.title,
                        subtitle: "\(course.displayCode) · semaine \(series.plannedWeek) · \(series.exercises.count) exercices",
                        detail: "serie \(series.seriesNumber) \(series.title) \(series.topic)",
                        courseCode: course.displayCode,
@@ -96,7 +96,7 @@ enum SearchIndexBuilder {
         // même quand on a oublié son numéro.
         if !exercise.statement.isEmpty { detail += " " + String(MathMarkup.plain(exercise.statement).prefix(600)) }
 
-        var parts = ["\(course.displayCode) · Série \(series.seriesNumber)"]
+        var parts = ["\(course.displayCode) · \(series.displayName)"]
         if exercise.isDone {
             parts.append(exercise.isCorrected ? "corrigé" : "fait")
         } else {

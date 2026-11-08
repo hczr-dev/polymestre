@@ -48,7 +48,7 @@ const isPDFAddress = (address: string) => /^https?:/i.test(address) && (/\.pdf($
 async function seriesMaterial(course: Course, progress: (text: string) => void): Promise<Material> {
   const result: Material = [];
   for (const series of course.sortedSeries.filter((s) => s.exercises.length > 0)) {
-    const name = series.title ? `Série ${series.seriesNumber} · ${series.title}` : `Série ${series.seriesNumber}`;
+    const name = series.title ? `${series.displayName} · ${series.title}` : series.displayName;
     const lines: string[] = [];
     for (const exercise of series.sortedExercises) {
       lines.push(`— ${exercise.displayNumber}${exercise.title ? " · " + exercise.title : ""}`);
@@ -78,7 +78,7 @@ async function allMaterial(course: Course, progress: (text: string) => void): Pr
     for (const link of item.links) add(`Semaine ${item.plannedWeek} · ${link.title || item.numberAndTitle}`, link.url);
   }
   for (const document of course.documents) add(document.title, document.url);
-  for (const series of course.sortedSeries) add(`Énoncé · Série ${series.seriesNumber}`, series.urlString);
+  for (const series of course.sortedSeries) add(`Énoncé · ${series.displayName}`, series.urlString);
   for (const [index, document] of documents.entries()) {
     progress(`Lecture des documents… ${index + 1}/${documents.length}`);
     const text = await pdfText(document.url);

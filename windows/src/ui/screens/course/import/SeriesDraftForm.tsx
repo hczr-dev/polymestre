@@ -6,6 +6,7 @@
 // des boutons ; les brouillons sont mutés sur place puis `onChange` relance l'affichage.
 
 import { useState } from "react";
+import type { SeriesKey } from "../../../../domain/seriesIdentity.ts";
 import { Button, Icon, IconButton, Stepper, Switch, cx, useContextMenu } from "../../../kit.tsx";
 import { ExerciseDraft, SeriesDraft, SubQuestionTree } from "../../../../domain/seriesDraft.ts";
 import { DetectedSubQuestion } from "../../../../services/seriesPDFParser.ts";
@@ -19,9 +20,10 @@ function toDateTimeInput(date: Date): string {
 
 const cases = (n: number) => Plural.count(n, `${n} case`, `${n} cases`);
 
-export function SeriesDraftForm({ draft, takenNumbers, maxWeek, mergesInto, onChange, showSource }: {
+export function SeriesDraftForm({ draft, taken, maxWeek, mergesInto, onChange, showSource }: {
   draft: SeriesDraft;
-  takenNumbers?: Set<number>;
+  /** Numéros et étiquettes des autres séries du cours. */
+  taken?: readonly SeriesKey[];
   maxWeek: number;
   /** Série du même numéro déjà présente (import seulement). */
   mergesInto: { seriesNumber: number; exerciseCount: number } | null;
@@ -31,7 +33,7 @@ export function SeriesDraftForm({ draft, takenNumbers, maxWeek, mergesInto, onCh
 }) {
   const [open, setOpen] = useState<string | null>(null);
   const menu = useContextMenu();
-  const problems = draft.problems(takenNumbers ?? new Set());
+  const problems = draft.problems(taken ?? []);
   const mutate = (change: () => void) => { change(); onChange(); };
   const add = (count: number) => mutate(() => { for (let i = 0; i < count; i++) draft.addExercise(); });
 
@@ -66,6 +68,11 @@ export function SeriesDraftForm({ draft, takenNumbers, maxWeek, mergesInto, onCh
         <label className="imp-field"><span>Semaine prévue</span>
           <Stepper label="la semaine prévue" value={draft.plannedWeek} min={1} max={Math.max(maxWeek, draft.plannedWeek)}
             onChange={(value) => mutate(() => { draft.plannedWeek = value; })} />
+        </label>
+        <label className="imp-field"><span>Étiquette (facultatif)</span>
+          {/* Deux séries la même semaine : « a » et « b », « mardi » et « jeudi ». */}
+          <input className="field" value={draft.label} placeholder="b, jeudi…"
+            onChange={(e) => mutate(() => { draft.label = e.target.value; })} />
         </label>
         <label className="imp-field imp-wide"><span>Titre (facultatif)</span>
           <input className="field" value={draft.title} onChange={(e) => mutate(() => { draft.title = e.target.value; })} />

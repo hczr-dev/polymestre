@@ -4,6 +4,7 @@
 //
 // Rien ici ne touche au réseau ni au modèle : tout est testable sur des chaînes.
 
+import { SeriesIdentity } from "./seriesIdentity.ts";
 import { DetectedSeries, DetectedSubQuestion, SeriesPDFParser } from "../services/seriesPDFParser.ts";
 import type { DetectedExercise } from "../services/seriesPDFParser.ts";
 import { characters, isNumber } from "./textRepair.ts";
@@ -172,8 +173,9 @@ Réponds UNIQUEMENT avec un objet JSON de la forme :
 {"series":[{"number":3,"title":"Récurrences","exercises":[{"number":"3.1","title":"Tri fusion","isBonus":false,"questions":[{"label":"1","text":"Montrer la borne"},{"label":"2","text":"Cas d'égalité"}]}]}]}
 Format du texte : « # » en début de ligne marque un titre du PDF ; les espaces de tête reproduisent le retrait (une question est décalée sous son exercice) ; « --- page N --- » sépare les pages ; « [Indice : … série N] » donne le numéro de série à utiliser.
 Langue : écris « title » et le texte des questions dans la langue du PDF — « [Langue du document : …] » la donne quand elle est connue. Ne traduis JAMAIS : un PDF anglais donne des titres anglais.
+Questions en liste à puces (•, –, ◦) sans étiquette : ce sont des questions, numérote-les « 1 », « 2 », « 3 » dans l'ordre ; des puces sous une question numérotée sont ses points (« a », « b »). Une liste de conditions ou d'hypothèses en puces n'est pas une liste de questions.
 Exercices et questions : « exercises » contient les EXERCICES, pas les questions. Un exercice peut poser plusieurs questions — elles vont dans « questions ». Si le PDF introduit une liste par une phrase suivie de deux points (« Calculer : », « Déterminer : ») puis numérote 1., 2., ce sont les questions d'un même exercice. Si chaque numéro est une consigne autonome, ce sont des exercices distincts.
-Numérotation : « number » de la série est un entier (« Série 02a » donne 2) ; le numéro d'un exercice s'écrit toujours « série.exercice » (« 3.2 »), même si le PDF recommence à 1 dans chaque section ; sans numéro, prends le numéro suivant dans l'ordre. N'invente aucun exercice absent du texte.
+Numérotation : « number » de la série est un entier ; « label » est ce qui distingue deux séries de même numéro, sinon "" (« Série 02a » → number 2, label "a" ; « Série 5 — mardi » → label "mardi" ; « Série 5, partie 2 » → label "partie 2") ; le numéro d'un exercice s'écrit toujours « série.exercice » (« 3.2 »), même si le PDF recommence à 1 dans chaque section ; un exercice sans numéro imprimé (titré « Exercice » seul, ou seulement par son intitulé) prend le numéro suivant dans l'ordre du document. N'invente aucun exercice absent du texte.
 Titre : « title » est TOUJOURS rempli, jamais vide. Reprends l'intitulé court s'il existe ; sinon écris toi-même 2 à 6 mots qui nomment la tâche, en t'appuyant sur le titre de la section ou sur l'objet de l'exercice. Ne recopie jamais l'énoncé complet.
 « isBonus » vaut true si l'exercice est marqué bonus, facultatif, optionnel ou étoilé. S'il n'y a aucune série, renvoie {"series":[]}.`;
 
@@ -248,6 +250,7 @@ interface RawExercise {
 
 interface RawSeries {
   number: number | null;
+  label: string | null;
   title: string | null;
   exercises: RawExercise[];
 }
@@ -310,8 +313,16 @@ function decodeSeries(value: unknown): RawSeries | null {
     // série : on la remplace par une liste vide.
     if (valid) exercises = decoded;
   }
+  // « number » écrit « 5b » malgré la consigne : le numéro et l'étiquette.
+  let label = Flexible.string(value.label);
+  if (typeof value.number === "string" && (label ?? "") === "") {
+    const m = value.number.match(/^\s*0*\d{1,2}(.*)$/);
+    const rest = m ? m[1].replace(/^[\s\-.()]+|[\s\-.()]+$/g, "") : "";
+    if (rest !== "") label = rest;
+  }
   return {
     number: Flexible.int(value.number),
+    label,
     title: Flexible.string(value.title),
     exercises,
   };
@@ -348,11 +359,15 @@ export function parse(raw: string): DetectedSeries[] {
   return normalize(series ?? []);
 }
 
+const byKey = (a: DetectedSeries, b: DetectedSeries) =>
+  SeriesIdentity.compare(SeriesIdentity.key(a.number, a.label ?? ""), SeriesIdentity.key(b.number, b.label ?? ""));
+
 function normalize(payload: RawSeries[]): DetectedSeries[] {
   const result: DetectedSeries[] = [];
   for (const series of payload) {
     const number = series.number;
     if (number === null || !(number >= 1 && number <= 60)) continue;
+    const label = SeriesIdentity.normalized(series.label ?? "");
     const seen = new Set<string>();
     const exercises: DetectedExercise[] = [];
     let nextIndex = 1;
@@ -382,7 +397,7 @@ function normalize(payload: RawSeries[]): DetectedSeries[] {
       });
     }
     exercises.sort((a, b) => localizedStandardCompare(a.number, b.number));
-    const existing = result.findIndex((item) => item.number === number);
+    const existing = result.findIndex((item) => item.number === number && (item.label ?? "") === label);
     if (existing >= 0) {
       const known = new Set(result[existing].exercises.map((exercise) => exercise.number));
       result[existing].exercises = [
@@ -392,12 +407,13 @@ function normalize(payload: RawSeries[]): DetectedSeries[] {
     } else {
       result.push({
         number,
+        label,
         title: trimAll(series.title ?? ""),
         exercises,
       });
     }
   }
-  return result.sort((a, b) => a.number - b.number);
+  return result.sort(byKey);
 }
 
 /// Les sous-questions d'un exercice, étiquetées et dédoublonnées, sur deux
@@ -487,8 +503,10 @@ export function merge(heuristicInput: DetectedSeries[], aiInput: DetectedSeries[
 
   if (heuristic.length <= 1 && ai.length === 1) {
     const target = preferredSeries ?? ai[0].number;
-    ai = ai.map((series) => renumber(series, target));
-    heuristic = heuristic.map((series) => renumber(series, target));
+    // L'étiquette lue d'un côté vaut pour les deux (« Série 5b » en tête).
+    const label = (heuristic[0]?.label ?? "") !== "" ? heuristic[0].label! : (ai[0].label ?? "");
+    ai = ai.map((series) => ({ ...renumber(series, target), label }));
+    heuristic = heuristic.map((series) => ({ ...renumber(series, target), label }));
   } else if (preferredSeries !== null && heuristic.length === 1 && ai.length > 1
     && !ai.some((series) => series.number === heuristic[0].number)) {
     heuristic = heuristic.map((series) => renumber(series, preferredSeries));
@@ -497,14 +515,21 @@ export function merge(heuristicInput: DetectedSeries[], aiInput: DetectedSeries[
   const result = ai;
   const aiSeriesNumbers = new Set(ai.map((series) => series.number));
   for (const series of heuristic) {
-    const index = result.findIndex((item) => item.number === series.number);
+    // La même série : même numéro et même étiquette — ou une étiquette vue
+    // d'un seul côté, quand ce numéro n'en désigne qu'une.
+    const own = series.label ?? "";
+    const sameNumber = result.map((item, i) => ({ item, i })).filter(({ item }) => item.number === series.number);
+    const exact = sameNumber.find(({ item }) => (item.label ?? "") === own);
+    const found = exact ?? (sameNumber.length === 1 && (own === "" || (sameNumber[0].item.label ?? "") === "") ? sameNumber[0] : undefined);
+    if (found && (found.item.label ?? "") === "") found.item.label = own;
+    const index = found?.i ?? -1;
     if (index < 0) {
       // Série que le modèle n'a pas vue : on la garde si elle repose sur
       // des repères sûrs.
       const kept = series.exercises.filter((exercise) => exercise.isConfident);
       if (kept.length > 0
         || (series.exercises.length === 0 && !aiSeriesNumbers.has(series.number) && series.title !== "")) {
-        result.push({ number: series.number, title: series.title, exercises: kept });
+        result.push({ number: series.number, label: own, title: series.title, exercises: kept });
       }
       continue;
     }
@@ -585,7 +610,7 @@ export function merge(heuristicInput: DetectedSeries[], aiInput: DetectedSeries[
     }
     result[index].exercises.sort((a, b) => localizedStandardCompare(a.number, b.number));
   }
-  return DetectedSeries.withoutBlanketBonus(result.sort((a, b) => a.number - b.number));
+  return DetectedSeries.withoutBlanketBonus(result.sort(byKey));
 }
 
 /// Des exercices numérotés 1…n sans trou, tous sur des repères sûrs.
@@ -638,6 +663,7 @@ export function renumber(series: DetectedSeries, number: number): DetectedSeries
   if (series.number === number) return series;
   return {
     number,
+    label: series.label,
     title: series.title,
     exercises: series.exercises.map((exercise) => {
       const parts = exercise.number.split(".");
@@ -650,6 +676,7 @@ export function renumber(series: DetectedSeries, number: number): DetectedSeries
 function cloneSeries(series: DetectedSeries): DetectedSeries {
   return {
     number: series.number,
+    label: series.label,
     title: series.title,
     exercises: series.exercises.map((exercise) => ({ ...exercise, subQuestions: [...exercise.subQuestions] })),
   };

@@ -169,6 +169,7 @@ export interface ContentDraftItemInit {
   videoCount: number;
   seriesNumber: number | null;
   theoryKind: TheoryKind;
+  seriesLabel?: string;
   week?: number | null;
   exercises?: ContentExerciseDraft[];
   pdfURL?: string;
@@ -189,6 +190,8 @@ export class ContentDraftItem {
   videoCount: number;
   seriesNumber: number | null;
   theoryKind: TheoryKind;
+  /** L'étiquette d'une série (« b », « mardi ») quand deux séries partagent un numéro. */
+  seriesLabel: string;
   /** La semaine **de l'élément**, quand elle diffère de celle de sa section. */
   week: number | null;
   exercises: ContentExerciseDraft[];
@@ -209,6 +212,7 @@ export class ContentDraftItem {
     this.videoCount = o.videoCount;
     this.seriesNumber = o.seriesNumber;
     this.theoryKind = o.theoryKind;
+    this.seriesLabel = o.seriesLabel ?? "";
     this.week = o.week ?? null;
     this.exercises = o.exercises ?? [];
     this.pdfURL = o.pdfURL ?? "";

@@ -454,30 +454,32 @@ export async function pushMyProgress(groupID: string, subjects: string[], course
   const scoped = courses.filter((course) => wanted.size === 0 || wanted.has(course.code.toUpperCase()));
   const items = scoped.flatMap((course) => [
     ...course.allExercises.filter((exercise) => exercise.isDone)
-      .map((exercise) => ({ group_id: groupID, user_id: me, course_code: course.code, item_kind: "exercise", item_number: exercise.exerciseNumber })),
+      .map((exercise) => ({ group_id: groupID, user_id: me, course_code: course.code, item_kind: "exercise", item_number: exercise.groupNumber })),
     ...course.theoryItems.filter((item) => item.isWatched)
       .map((item) => ({ group_id: groupID, user_id: me, course_code: course.code, item_kind: "theory", item_number: item.number })),
   ]);
-  const series = scoped.flatMap((course) => course.sortedSeries.filter((s) => s.isComplete)
+  // « Série 5 terminée » ne dit pas laquelle de 5a et 5b : une série étiquetée ne se
+  // partage qu'exercice par exercice.
+  const series = scoped.flatMap((course) => course.sortedSeries.filter((s) => s.isComplete && s.label === "")
     .map((s) => ({ group_id: groupID, user_id: me, course_code: course.code, series_number: s.seriesNumber })));
   if (items.length > 0) await api.request("/rest/v1/item_completion?on_conflict=group_id,user_id,course_code,item_kind,item_number", { method: "POST", body: items, prefer: "resolution=ignore-duplicates,return=minimal" });
   if (series.length > 0) await api.request("/rest/v1/series_completion?on_conflict=group_id,user_id,course_code,series_number", { method: "POST", body: series, prefer: "resolution=ignore-duplicates,return=minimal" });
 }
 
-export interface SeriesBoard { seriesNumber: number; exercises: string[]; rows: { userID: string; name: string; isMe: boolean; done: Set<string>; complete: boolean }[] }
+export interface SeriesBoard { seriesNumber: number; label: string; displayName: string; exercises: string[]; rows: { userID: string; name: string; isMe: boolean; done: Set<string>; complete: boolean }[] }
 
 /** Série par série (GroupSeriesEngine) : qui a fait quels exercices obligatoires, d'après mon cours. */
 export function seriesBoards(course: Course, completions: Completions, members: { userID: string; displayName: string }[], me: string): SeriesBoard[] {
   const code = course.code.toUpperCase();
   return course.sortedSeries.map((series) => {
-    const exercises = series.sortedExercises.filter((exercise) => !exercise.isBonus).map((exercise) => exercise.exerciseNumber);
+    const exercises = series.sortedExercises.filter((exercise) => !exercise.isBonus).map((exercise) => exercise.groupNumber);
     const rows = members.map((member) => {
       const id = member.userID.toLowerCase();
       const done = new Set(completions.items.filter((i) => i.userID === id && i.courseCode === code && i.kind === "exercise" && exercises.includes(i.number)).map((i) => i.number));
-      const complete = completions.series.some((s) => s.userID === id && s.courseCode === code && s.seriesNumber === series.seriesNumber);
+      const complete = series.label === "" && completions.series.some((s) => s.userID === id && s.courseCode === code && s.seriesNumber === series.seriesNumber);
       return { userID: id, name: member.displayName, isMe: id === me.toLowerCase(), done, complete };
     }).sort((a, b) => (b.complete ? exercises.length : b.done.size) - (a.complete ? exercises.length : a.done.size) || Number(b.isMe) - Number(a.isMe));
-    return { seriesNumber: series.seriesNumber, exercises, rows };
+    return { seriesNumber: series.seriesNumber, label: series.label, displayName: series.displayName, exercises, rows };
   }).filter((board) => board.exercises.length > 0);
 }
 

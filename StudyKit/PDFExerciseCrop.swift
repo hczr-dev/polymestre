@@ -36,7 +36,10 @@ enum PDFExerciseCrop {
 
     static func region(in document: PDFDocument, terms: [String], nextTerms: [String]) -> Region? {
         guard let start = find(terms, in: document, after: nil) else { return nil }
-        let end = find(nextTerms, in: document, after: start)
+        return region(in: document, from: start, to: find(nextTerms, in: document, after: start))
+    }
+
+    static func region(in document: PDFDocument, from start: Place, to end: Place?) -> Region? {
         let lastPage = end?.page ?? min(start.page + 1, document.pageCount - 1)
         var parts: [(Int, CGRect)] = []
         for index in start.page...lastPage {
@@ -54,7 +57,62 @@ enum PDFExerciseCrop {
 
     /// Le fichier réduit (gardé en cache), ou `nil` si l'exercice est introuvable.
     static func file(source: URL, exercise: Exercise, next: Exercise?) -> URL? {
-        file(source: source, terms: terms(for: exercise), nextTerms: next.map(terms(for:)) ?? [])
+        if let found = file(source: source, terms: terms(for: exercise), nextTerms: next.map(terms(for:)) ?? []) {
+            return found
+        }
+        guard let document = PDFDocument(url: source),
+              let region = region(in: document, exercise: exercise, next: next) else { return nil }
+        return file(source: source, region: region, key: "rank|\(exercise.id)")
+    }
+
+    /// La zone de l'exercice : par ses mots (`terms`), sinon — exercice sans
+    /// numéro imprimé, titré « Exercice » seul — par son **rang** : le n-ième
+    /// titre « Exercice » du document.
+    static func region(in document: PDFDocument, exercise: Exercise, next: Exercise?) -> Region? {
+        if let found = region(in: document, terms: terms(for: exercise), nextTerms: next.map(terms(for:)) ?? []) {
+            return found
+        }
+        guard let rank = exercise.series?.sortedExercises.firstIndex(where: { $0.id == exercise.id }) else { return nil }
+        let headings = bareHeadings(in: document)
+        guard rank < headings.count else { return nil }
+        return region(in: document, from: headings[rank], to: rank + 1 < headings.count ? headings[rank + 1] : nil)
+    }
+
+    /// Les titres « Exercice », « Exercise », « Problème », « Problem », dans
+    /// l'ordre du document — la famille la plus fournie, deux au moins.
+    static func bareHeadings(in document: PDFDocument) -> [Place] {
+        var best: [Place] = []
+        for family in ["Exercice", "Exercise", "Problème", "Problem"] {
+            var places: [Place] = []
+            var previous: Place?
+            while places.count < 40, let place = find([family], in: document, after: previous) {
+                places.append(place)
+                previous = place
+            }
+            if places.count > best.count { best = places }
+        }
+        return best.count >= 2 ? best : []
+    }
+
+    /// Un PDF réduit à une zone déjà trouvée (gardé en cache sous `key`).
+    static func file(source: URL, region: Region, key: String) -> URL? {
+        let stamp = (try? FileManager.default.attributesOfItem(atPath: source.path)[.modificationDate] as? Date)?.timeIntervalSince1970 ?? 0
+        let digest = SHA256.hash(data: Data(("v2|" + source.path + "|\(stamp)|" + key).utf8))
+            .prefix(12).map { String(format: "%02x", $0) }.joined()
+        let directory = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask)[0]
+            .appendingPathComponent("Polymestre/crops", isDirectory: true)
+        try? FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        let target = directory.appendingPathComponent(digest + ".pdf")
+        if FileManager.default.fileExists(atPath: target.path) { return target }
+        guard let document = PDFDocument(url: source) else { return nil }
+        let cropped = PDFDocument()
+        for part in region.parts {
+            guard let page = document.page(at: part.page)?.copy() as? PDFPage else { continue }
+            page.setBounds(part.rect, for: .cropBox)
+            cropped.insert(page, at: cropped.pageCount)
+        }
+        guard cropped.pageCount > 0, cropped.write(to: target) else { return nil }
+        return target
     }
 
     /// Un PDF réduit à ce qui va d'un titre (`terms`) au suivant (`nextTerms`).
@@ -181,8 +239,13 @@ struct ExercisePDFView: View {
             searched = false
             let terms = PDFExerciseCrop.terms(for: exercise)
             let nextTerms = next.map(PDFExerciseCrop.terms(for:)) ?? []
-            region = PDFDocument(url: file).flatMap { PDFExerciseCrop.region(in: $0, terms: terms, nextTerms: nextTerms) }
-            crop = region == nil ? nil : PDFExerciseCrop.file(source: file, terms: terms, nextTerms: nextTerms)
+            region = PDFDocument(url: file).flatMap { PDFExerciseCrop.region(in: $0, exercise: exercise, next: next) }
+            if let region {
+                crop = PDFExerciseCrop.file(source: file, terms: terms, nextTerms: nextTerms)
+                    ?? PDFExerciseCrop.file(source: file, region: region, key: "rank|\(exercise.id)")
+            } else {
+                crop = nil
+            }
             searched = true
         }
     }

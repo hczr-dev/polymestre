@@ -163,6 +163,7 @@ create table if not exists public.sync_exercise_series (
   solutions_at timestamptz,
   solution_url_string text not null default '',
   needs_reread boolean not null default false,
+  label text not null default '',
   course_id uuid,
   updated_at        timestamptz not null default now(),
   deleted_at        timestamptz,

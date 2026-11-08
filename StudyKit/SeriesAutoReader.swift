@@ -216,7 +216,10 @@ final class SeriesAutoReader {
                                                  aiReadsLayout: result.source.readsLayout)
             }
         }
-        guard let match = detected.first(where: { $0.number == series.seriesNumber }) ?? detected.first,
+        // Un PDF qui porte « 5a » et « 5b » : la bonne des deux.
+        guard let match = detected.first(where: { $0.key == series.key })
+                ?? detected.first(where: { $0.number == series.seriesNumber && ($0.label.isEmpty || series.label.isEmpty) })
+                ?? detected.first,
               !match.exercises.isEmpty else { return 0 }
         let exercises = match.exercises.map { exercise in
             ContentExerciseDraft(number: "\(series.seriesNumber).\(exercise.number.split(separator: ".").last.map(String.init) ?? exercise.number)",
@@ -229,7 +232,7 @@ final class SeriesAutoReader {
 
     private func write(_ exercises: [ContentExerciseDraft], into series: ExerciseSeries,
                        course: Course, context: ModelContext, mode: SeriesDraftWriter.Mode = .importMerge) {
-        let draft = SeriesDraft(existingID: series.id, number: series.seriesNumber, title: "",
+        let draft = SeriesDraft(existingID: series.id, number: series.seriesNumber, label: series.label, title: "",
                                 plannedWeek: series.plannedWeek,
                                 exercises: exercises.map { spec in
                                     var exercise = ExerciseDraft(minor: spec.number.split(separator: ".").last.map(String.init) ?? spec.number,

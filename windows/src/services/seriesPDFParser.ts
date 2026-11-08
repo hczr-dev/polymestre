@@ -112,6 +112,8 @@ export interface DetectedSeries {
   /// Intitulé trouvé après « Série 3 », s'il y en a un.
   title: string;
   exercises: DetectedExercise[];
+  /// « b » pour « Série 5b » : deux séries de même numéro (`SeriesIdentity`).
+  label?: string;
 }
 
 export const DetectedSeries = {

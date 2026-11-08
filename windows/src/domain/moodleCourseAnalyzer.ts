@@ -12,6 +12,9 @@ import { trimWhitespaces } from "../models/util.ts";
 import { capitalizedFirst } from "./dateUtils.ts";
 import { icuRegExp } from "./icuRegExp.ts";
 import { MoodleLinks } from "./botafogoProgram.ts";
+import { SeriesIdentity, type SeriesKey } from "./seriesIdentity.ts";
+
+type SeriesGroup = { key: SeriesKey; statement: MoodleActivity[]; solution: MoodleActivity[] };
 import {
   ContentDraft, ContentDraftBuilder, ContentDraftItem, ContentDraftSection,
 } from "./courseContentImport.ts";
@@ -280,12 +283,14 @@ export const MoodleCourseAnalyzer = {
     const pastExams: ContentDraftItem[] = [];
     const deadlines: ContentDraftItem[] = [];
     // Les séries posées hors de leur semaine.
-    const loose = new Map<number, { statement: MoodleActivity[]; solution: MoodleActivity[] }>();
+    // Clé : numéro et étiquette (« 5a », « 5b ») — `SeriesIdentity.id`.
+    const loose = new Map<string, { key: SeriesKey; statement: MoodleActivity[]; solution: MoodleActivity[] }>();
     const addLoose = (activity: MoodleActivity, number: number, solution: boolean) => {
-      const entry = loose.get(number) ?? { statement: [], solution: [] };
+      const key = SeriesIdentity.key(number, SeriesIdentity.label(activity.name));
+      const entry = loose.get(SeriesIdentity.id(key)) ?? { key, statement: [], solution: [] };
       if (solution) entry.solution.push(activity);
       else entry.statement.push(activity);
-      loose.set(number, entry);
+      loose.set(SeriesIdentity.id(key), entry);
     };
 
     for (const section of snapshot.sections) {
@@ -349,16 +354,17 @@ export const MoodleCourseAnalyzer = {
 
       const items: ContentDraftItem[] = [];
       const lectureGroups: { key: string; activities: MoodleActivity[] }[] = [];
-      const seriesGroups: { number: number; statement: MoodleActivity[]; solution: MoodleActivity[] }[] = [];
+      const seriesGroups: SeriesGroup[] = [];
 
-      const addToSeries = (number: number, statement: MoodleActivity | null = null, solution: MoodleActivity | null = null) => {
-        const index = seriesGroups.findIndex((g) => g.number === number);
+      // Deux séries la même semaine : le numéro, et l'étiquette qui les sépare.
+      const addToSeries = (key: SeriesKey, statement: MoodleActivity | null = null, solution: MoodleActivity | null = null) => {
+        const index = seriesGroups.findIndex((g) => SeriesIdentity.same(g.key, key));
         if (index >= 0) {
           if (statement !== null) seriesGroups[index].statement.push(statement);
           if (solution !== null) seriesGroups[index].solution.push(solution);
         } else {
           seriesGroups.push({
-            number,
+            key,
             statement: statement !== null ? [statement] : [],
             solution: solution !== null ? [solution] : [],
           });
@@ -374,6 +380,8 @@ export const MoodleCourseAnalyzer = {
 
       // Les corrigés d'abord mis de côté : ils se rattachent à leur série.
       const pendingSolutions: MoodleActivity[] = [];
+      // Les énoncés sans numéro ni étiquette : une série de la semaine, ou plusieurs.
+      const unnumbered: MoodleActivity[] = [];
       for (const activity of visible) {
         const kind = classify(activity, true);
         if (spreadsFolder && MoodleCourseAnalyzer.isFromFolder(activity)) {
@@ -385,12 +393,18 @@ export const MoodleCourseAnalyzer = {
         }
         switch (kind) {
           case "series": {
-            const number = MoodleCourseAnalyzer.seriesNumber(activity.name)
-              ?? hints[activity.id]?.seriesNumber ?? week ?? section.number;
+            // Sans numéro, la série prend celui de la semaine où Moodle la pose.
+            const explicit = MoodleCourseAnalyzer.seriesNumber(activity.name) ?? hints[activity.id]?.seriesNumber ?? null;
+            const number = explicit ?? week ?? section.number;
+            const key = SeriesIdentity.key(number, SeriesIdentity.label(activity.name));
+            if (explicit === null && key.label === "" && MoodleCourseAnalyzer.isStatementDocument(activity)) {
+              unnumbered.push(activity);
+              break;
+            }
             // « Enoncé/Corrigé de la série 4 » : l'énoncé et le corrigé à la même adresse.
             const both = ContentDraftBuilder.fold(activity.name).includes("corrig")
               && ContentDraftBuilder.fold(activity.name).includes("enonc");
-            addToSeries(number, activity, both ? activity : null);
+            addToSeries(key, activity, both ? activity : null);
             break;
           }
           case "solution":
@@ -415,17 +429,34 @@ export const MoodleCourseAnalyzer = {
             continue;
         }
       }
+      // Deux PDF d'énoncé sans numéro ni jour la même semaine : deux séries,
+      // « 1 » et « 2 » dans l'ordre de Moodle. Un seul : la série de la semaine.
+      const distinctNames = new Set(unnumbered.map((a) => ContentDraftBuilder.fold(a.name)));
+      unnumbered.forEach((activity, rank) => {
+        const label = unnumbered.length > 1 && distinctNames.size === unnumbered.length ? String(rank + 1) : "";
+        addToSeries(SeriesIdentity.key(week ?? section.number, label), activity);
+      });
       for (const solution of pendingSolutions) {
         const explicit = MoodleCourseAnalyzer.seriesNumber(solution.name);
+        const label = SeriesIdentity.normalized(SeriesIdentity.label(solution.name));
+        const sameNumber = seriesGroups.filter((g) => explicit === null || g.key.number === explicit);
+        const sameLabel = sameNumber.filter((g) => g.key.label === label);
+        const closest = MoodleCourseAnalyzer.closestByName(solution, sameNumber);
         if (MoodleCourseAnalyzer.isDeliverableSolution(solution.name)) {
           // « rendu02 sol » : le corrigé d'un rendu noté, un document.
           documents.push(MoodleCourseAnalyzer.document(solution, title));
-        } else if (explicit !== null && seriesGroups.some((g) => g.number === explicit)) {
-          addToSeries(explicit, null, solution);
-        } else if (explicit === null && seriesGroups.length === 1) {
-          addToSeries(seriesGroups[0].number, null, solution);
+        } else if (sameLabel.length > 0 && (sameLabel.length === 1 || explicit !== null)) {
+          addToSeries(sameLabel[0].key, null, solution);
+        } else if (sameNumber.length === 1) {
+          addToSeries(sameNumber[0].key, null, solution);
+        } else if (closest !== null) {
+          // « Corrigé — Suites » pour « Exercices — Suites » : le nom les relie.
+          addToSeries(closest, null, solution);
+        } else if (label === "" && explicit !== null && sameNumber.length > 0) {
+          // « Corrigé série 5 » pour « 5a » et « 5b » : le même corrigé pour les deux.
+          for (const group of sameNumber) addToSeries(group.key, null, solution);
         } else if (explicit !== null || week !== null) {
-          addToSeries(explicit ?? week!, null, solution);
+          addToSeries(SeriesIdentity.key(explicit ?? week!, label), null, solution);
         }
       }
 
@@ -433,8 +464,8 @@ export const MoodleCourseAnalyzer = {
         items.push(MoodleCourseAnalyzer.lectureItem(group.activities, group.key, index + 1,
                                                     title, week ?? 0, lectureGroups.length));
       });
-      for (const group of [...seriesGroups].sort((a, b) => a.number - b.number)) {
-        items.push(MoodleCourseAnalyzer.seriesItem(group.number, group.statement, group.solution));
+      for (const group of [...seriesGroups].sort((a, b) => SeriesIdentity.compare(a.key, b.key))) {
+        items.push(MoodleCourseAnalyzer.seriesItem(group.key, group.statement, group.solution));
       }
       if (items.length === 0) continue;
       sections.push(new ContentDraftSection({
@@ -449,9 +480,17 @@ export const MoodleCourseAnalyzer = {
       });
     }
     // Les séries hors de leur semaine : la semaine de leur numéro.
-    for (const number of [...loose.keys()].sort((a, b) => a - b)) {
-      const entry = loose.get(number)!;
-      const item = MoodleCourseAnalyzer.seriesItem(number, entry.statement, entry.solution);
+    // « Corrigé série 5 » posé à part, pour « 5a » et « 5b » : il va aux deux.
+    for (const [id, entry] of [...loose.entries()]) {
+      if (entry.key.label !== "" || entry.statement.length > 0) continue;
+      const siblings = [...loose.values()].filter((e) => e.key.number === entry.key.number && e.key.label !== "" && e.statement.length > 0);
+      if (siblings.length === 0) continue;
+      for (const sibling of siblings) sibling.solution.push(...entry.solution);
+      loose.delete(id);
+    }
+    for (const entry of [...loose.values()].sort((a, b) => SeriesIdentity.compare(a.key, b.key))) {
+      const number = entry.key.number;
+      const item = MoodleCourseAnalyzer.seriesItem(entry.key, entry.statement, entry.solution);
       const week = Math.min(Math.max(number, 1), Math.max(totalWeeks, 1));
       const index = sections.findIndex((s) => s.week === week);
       if (index >= 0) sections[index].items.push(item);
@@ -514,6 +553,8 @@ export const MoodleCourseAnalyzer = {
       const week = plan.week !== null && inWeeks(plan.week) ? plan.week : null;
       let item: ContentDraftItem;
       let from: { section: number; item: number } | null = null;
+      // Le modèle ne voit que des numéros : « 5a » et « 5b » restent où elles sont.
+      if (draft.sections.flatMap((sec) => sec.items).filter((it) => it.kind === "series" && it.seriesNumber === plan.number).length > 1) continue;
       for (let s = 0; s < draft.sections.length; s += 1) {
         const i = draft.sections[s].items.findIndex((it) => it.kind === "series" && it.seriesNumber === plan.number);
         if (i >= 0) {
@@ -581,7 +622,8 @@ export const MoodleCourseAnalyzer = {
       let target: { section: number; item: number } | null = null;
       for (let s = 0; s < sections.length; s += 1) {
         const i = sections[s].items.findIndex((item) =>
-          item.kind === "series" && item.seriesNumber === orphan.seriesNumber && hasStatement(item));
+          item.kind === "series" && item.seriesNumber === orphan.seriesNumber
+          && (orphan.seriesLabel === "" || item.seriesLabel === orphan.seriesLabel) && hasStatement(item));
         if (i >= 0) {
           target = { section: s, item: i };
           break;
@@ -662,6 +704,29 @@ export const MoodleCourseAnalyzer = {
     return matches(folded, String.raw`(\blectures?\b|\bcours\b|transparents?|slides?|diapos?|\bnotes?\b|enregistrement|recording|\bvideos?\b|chapitres?|chapters?|polycopie|^\d{1,2}[-_ ][a-z])`);
   },
 
+  /** Un énoncé à lire (un PDF), pas une page ou un dossier qui l'accompagne. */
+  isStatementDocument(activity: MoodleActivity): boolean {
+    return activity.module === "resource" || MoodleLinks.isDocument(activity.link)
+      || /\.pdf$/i.test(new URL(activity.link, "https://x").pathname);
+  },
+
+  /** La série dont l'énoncé partage le plus de mots avec le nom du corrigé — `null` sans gagnant net. */
+  closestByName(solution: MoodleActivity, groups: SeriesGroup[]): SeriesKey | null {
+    const noise = new Set(["corrige", "corriges", "corrigee", "solution", "solutions", "sol", "correction", "corrections",
+      "serie", "series", "exercices", "exercice", "exercises", "exercise", "de", "du", "la", "le", "des", "et", "pdf"]);
+    const words = (name: string) => new Set(ContentDraftBuilder.fold(name).split(/[^\p{L}\p{N}]+/u)
+      .filter((w) => w.length > 1 && !noise.has(w) && !/^\d+$/.test(w)));
+    const wanted = words(solution.name);
+    if (wanted.size === 0) return null;
+    const scored = groups.map((g) => ({
+      key: g.key,
+      score: Math.max(0, ...g.statement.map((a) => [...words(a.name)].filter((w) => wanted.has(w)).length)),
+    })).sort((a, b) => b.score - a.score);
+    const best = scored[0];
+    if (!best || best.score === 0 || (scored.length > 1 && scored[1].score >= best.score)) return null;
+    return best.key;
+  },
+
   isDeliverableSolution(name: string): boolean {
     return matches(ContentDraftBuilder.fold(name), String.raw`\brendus?\s*\d*`);
   },
@@ -669,7 +734,7 @@ export const MoodleCourseAnalyzer = {
   /** « Série 3 », « serie04 », « Problème Set 1 ». */
   seriesNumber(name: string): number | null {
     const lower = ContentDraftBuilder.fold(name);
-    const pattern = String.raw`(?:series?|problem ?sets?|exercise sets?|feuilles?|td|homework|week)\s*[-_#.:]?\s*(?:n[o°]\s*)?0*(\d{1,2})\b`;
+    const pattern = String.raw`(?:series?|problem ?sets?|exercise sets?|feuilles?|td|homework|week)\s*[-_#.:]?\s*(?:n[o°]\s*)?0*(\d{1,2})(?!\d)`;
     const match = firstMatch(lower, pattern);
     return match === null ? null : swiftInt(match);
   },
@@ -878,16 +943,18 @@ export const MoodleCourseAnalyzer = {
 
   // MARK: Séries
 
-  seriesItem(number: number, statement: MoodleActivity[], solution: MoodleActivity[]): ContentDraftItem {
+  seriesItem(key: SeriesKey, statement: MoodleActivity[], solution: MoodleActivity[]): ContentDraftItem {
+    const number = key.number;
+    const name = SeriesIdentity.displayName(number, key.label);
     const main = statement[0];
-    const titleSource = main?.name ?? `Série ${number}`;
+    const titleSource = main?.name ?? name;
     // « Problem Set 1: Motion in 1D » → le thème, « Motion in 1D ».
     const parts = titleSource.split(":");
     const topic = parts.length > 1 ? trimWhitespaces(parts.slice(1).join(":")) : "";
     const item = new ContentDraftItem({
       kind: "series", number: String(number),
-      title: topic === "" ? `Série ${number}` : ContentDraftBuilder.cleanTitle(topic),
-      url: main?.link ?? "", videoCount: 0, seriesNumber: number, theoryKind: "reading",
+      title: topic === "" ? name : ContentDraftBuilder.cleanTitle(topic),
+      url: main?.link ?? "", videoCount: 0, seriesNumber: number, theoryKind: "reading", seriesLabel: key.label,
     });
     if (main !== undefined) {
       // Un PDF : un fichier Moodle, ou la cible lue dans une page, un dossier ou un lien.

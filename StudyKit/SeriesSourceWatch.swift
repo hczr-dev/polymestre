@@ -140,7 +140,8 @@ enum SeriesSourceWatch {
         guard data.starts(with: Data("%PDF".utf8)), let document = PDFDocument(data: data) else { return false }
         let lines = PDFLayoutExtractor.lines(from: document)
         let detected = SeriesLayoutParser.fillingStatements(SeriesLayoutParser.parse(lines, defaultSeries: series.seriesNumber), from: lines)
-        guard let exercises = (detected.first { $0.number == series.seriesNumber } ?? detected.first)?.exercises,
+        guard let exercises = (detected.first { $0.key == series.key }
+                                ?? detected.first { $0.number == series.seriesNumber } ?? detected.first)?.exercises,
               !exercises.isEmpty else { return false }
         let current = series.exercises.filter { !$0.title.contains(SeriesDraftWriter.removedMark) }
         guard exercises.count == current.count else { return true }

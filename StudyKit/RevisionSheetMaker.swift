@@ -159,7 +159,7 @@ final class RevisionSheetMaker {
     private func seriesMaterial(_ course: Course, hub: SiteHub) async -> [(title: String, text: String)] {
         var result: [(String, String)] = []
         for series in course.sortedSeries where !series.exercises.isEmpty {
-            let name = series.title.isEmpty ? "Série \(series.seriesNumber)" : "Série \(series.seriesNumber) · \(series.title)"
+            let name = series.title.isEmpty ? series.displayName : "\(series.displayName) · \(series.title)"
             var lines: [String] = []
             for exercise in series.sortedExercises {
                 lines.append("— \(exercise.displayNumber)\(exercise.title.isEmpty ? "" : " · " + exercise.title)")
@@ -197,7 +197,7 @@ final class RevisionSheetMaker {
         }
         for series in course.sortedSeries {
             if let pdf = Self.pdfAddress(series.urlString), seen.insert(pdf).inserted {
-                documents.append(("Énoncé · Série \(series.seriesNumber)", pdf))
+                documents.append(("Énoncé · \(series.displayName)", pdf))
             }
         }
         for (offset, document) in documents.enumerated() {

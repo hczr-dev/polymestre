@@ -120,8 +120,8 @@ export function WeekTimeCard({ days, weekStart, theory, series, corrections, lat
 }
 
 /** Une carte de cours dans sa semaine : les trois axes, le retard en mots, l'examen proche. */
-export function WeekCourseRow({ summary, onOpen }:
-  { summary: WeekCourseSummary; onOpen: (id: string) => void }) {
+export function WeekCourseRow({ summary, onOpen, onOpenLate }:
+  { summary: WeekCourseSummary; onOpen: (id: string) => void; onOpenLate?: (id: string) => void }) {
   const course = summary.course;
   const week = summary.week;
   const tint = course.colorHex;
@@ -133,7 +133,8 @@ export function WeekCourseRow({ summary, onOpen }:
       onClick={() => onOpen(course.id)}>
       <span className="t-course-top">
         <CourseTag code={course.displayCode} tint={tint} />
-        <StandingLabel late={summary.late} ahead={summary.ahead} complete={week.isComplete} />
+        <StandingLabel late={summary.late} ahead={summary.ahead} complete={week.isComplete}
+          onLate={onOpenLate ? () => onOpenLate(course.id) : undefined} />
       </span>
       <span className="serif t-course-name">{course.name === "" ? course.displayCode : course.name}</span>
       {week.hasItems ? (
@@ -159,8 +160,17 @@ export function WeekCourseRow({ summary, onOpen }:
   );
 }
 
-function StandingLabel({ late, ahead, complete }: { late: number; ahead: number; complete: boolean }) {
-  if (late > 0) return <span className="t-standing late">{late} en retard</span>;
+function StandingLabel({ late, ahead, complete, onLate }: { late: number; ahead: number; complete: boolean; onLate?: () => void }) {
+  if (late > 0) {
+    // Dans la carte (un bouton) : un élément cliquable, pas un second bouton.
+    return onLate
+      ? <span className="t-standing late t-late-link" role="link" tabIndex={0} title="Ce qui est à rattraper"
+          onClick={(event) => { event.stopPropagation(); onLate(); }}
+          onKeyDown={(event) => { if (event.key === "Enter") { event.stopPropagation(); onLate(); } }}>
+          {late} en retard ›
+        </span>
+      : <span className="t-standing late">{late} en retard</span>;
+  }
   if (complete) return <span className="t-standing ok"><Icon name="checkmark" size={12} strokeWidth={2.5} />semaine faite</span>;
   if (ahead > 0) return <span className="t-standing ok">{ahead} d'avance</span>;
   return <span className="t-standing quiet"><Icon name="checkmark" size={12} />À jour</span>;

@@ -18,6 +18,8 @@ export interface CropExercise {
   title: string;
   displayNumber: string;
   seriesNumber: number | null;
+  /** Son rang dans la série (0…) : retrouve un exercice sans numéro imprimé. */
+  rank?: number | null;
 }
 
 /// Où un titre a été trouvé : sa page et sa position (fraction du haut).
@@ -92,11 +94,42 @@ export function find(wanted: string[], lines: PDFLayoutLine[], after: Place | nu
   return null;
 }
 
+/// Les titres « Exercice », « Exercise », « Problème », « Problem », dans l'ordre
+/// du document — la famille la plus fournie, deux au moins.
+export function bareHeadings(lines: PDFLayoutLine[]): Place[] {
+  let best: Place[] = [];
+  for (const family of ["Exercice", "Exercise", "Problème", "Problem"]) {
+    const places: Place[] = [];
+    let previous: Place | null = null;
+    while (places.length < 40) {
+      const place = find([family], lines, previous);
+      if (!place) break;
+      places.push(place);
+      previous = place;
+    }
+    if (places.length > best.length) best = places;
+  }
+  return best.length >= 2 ? best : [];
+}
+
+/// La zone de l'exercice : par ses mots, sinon — exercice sans numéro imprimé,
+/// titré « Exercice » seul — par son **rang** : le n-ième titre du document.
+export function regionFor(lines: PDFLayoutLine[], pageCount: number, exercise: CropExercise, next: CropExercise | null): CropRegion | null {
+  const found = region(lines, pageCount, terms(exercise), next ? terms(next) : []);
+  if (found || exercise.rank === undefined || exercise.rank === null) return found;
+  const headings = bareHeadings(lines);
+  if (exercise.rank >= headings.length) return null;
+  return regionBetween(pageCount, headings[exercise.rank], headings[exercise.rank + 1] ?? null);
+}
+
 /// La zone de l'exercice : une partie par page, de son titre au suivant.
 export function region(lines: PDFLayoutLine[], pageCount: number, wanted: string[], nextWanted: string[]): CropRegion | null {
   const start = find(wanted, lines, null);
   if (!start) return null;
-  const end = find(nextWanted, lines, start);
+  return regionBetween(pageCount, start, find(nextWanted, lines, start));
+}
+
+function regionBetween(pageCount: number, start: Place, end: Place | null): CropRegion | null {
   const lastPage = end?.page ?? Math.min(start.page + 1, pageCount - 1);
   const parts: CropRegion["parts"] = [];
   for (let page = start.page; page <= lastPage; page++) {
@@ -131,4 +164,4 @@ export function questions(lines: PDFLayoutLine[]): string[] {
   return best.length >= 2 ? best : [];
 }
 
-export const PDFExerciseCrop = { terms, isHeading, find, region, questions };
+export const PDFExerciseCrop = { terms, isHeading, find, region, regionFor, bareHeadings, questions };

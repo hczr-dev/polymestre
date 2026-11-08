@@ -3,6 +3,7 @@ import { defineToMany, defineToOne, newId } from "./relations.ts";
 import type { ModelStore } from "./store.ts";
 import { isLetter, trimAll, trimWhitespaces } from "./util.ts";
 import type { Course } from "./course.ts";
+import { SeriesIdentity, type SeriesKey } from "../domain/seriesIdentity.ts";
 import type { LinkedTask } from "./linkedTask.ts";
 import type { Mistake } from "./mistake.ts";
 import type { StudySession } from "./studySession.ts";
@@ -25,6 +26,8 @@ export interface ExerciseSeriesInit {
   id?: string;
   course?: Course | null;
   seriesNumber: number;
+  /** « b », « mardi » : la deuxième série d'une semaine. */
+  label?: string;
   title?: string;
   plannedWeek?: number;
   publishedAt?: Date | null;
@@ -39,6 +42,8 @@ export class ExerciseSeries {
   id: string;
   declare course: Course | null;
   seriesNumber: number;
+  /** Ce qui distingue deux séries de même numéro (« a », « mardi ») ; vide sinon. */
+  label = "";
   title: string;
   plannedWeek: number;
   publishedAt: Date | null;
@@ -60,12 +65,17 @@ export class ExerciseSeries {
     this.id = o.id ?? newId();
     this.course = o.course ?? null;
     this.seriesNumber = o.seriesNumber;
-    this.title = (o.title ?? "") === "" ? `Série ${o.seriesNumber}` : o.title!;
+    this.label = SeriesIdentity.normalized(o.label ?? "");
+    this.title = (o.title ?? "") === "" ? SeriesIdentity.displayName(o.seriesNumber, this.label) : o.title!;
     this.plannedWeek = o.plannedWeek ?? 1;
     this.publishedAt = o.publishedAt ?? null;
     this.dueDate = o.dueDate ?? null;
     this.urlString = o.urlString ?? "";
   }
+
+  /** Numéro et étiquette : ce qui identifie la série dans son cours. */
+  get key(): SeriesKey { return SeriesIdentity.key(this.seriesNumber, this.label); }
+  get displayName(): string { return SeriesIdentity.displayName(this.seriesNumber, this.label); }
 
   get sortedExercises(): Exercise[] {
     return [...this.exercises].sort((a, b) => a.sortOrder - b.sortOrder);
@@ -204,6 +214,17 @@ export class Exercise {
 
   /** « Exercice 3.2 ». */
   get displayNumber(): string { return `Exercice ${this.exerciseNumber}`; }
+
+  /**
+   * Le numéro partagé avec un groupe : « 5.1 », ou « 5b.1 » pour un exercice de la
+   * série 5b — sinon le 5.1 de 5a et celui de 5b se confondaient. Inchangé sans étiquette.
+   */
+  get groupNumber(): string {
+    const series = this.series;
+    if (!series || series.label === "") return this.exerciseNumber;
+    const parts = this.exerciseNumber.split(".");
+    return `${series.seriesNumber}${series.label.replace(/ /g, "")}.${parts[parts.length - 1]}`;
+  }
   get isDone(): boolean { return this.doneAt !== null; }
   get isCorrected(): boolean { return this.correctedAt !== null; }
 

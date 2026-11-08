@@ -11,8 +11,8 @@ import SwiftData
 /// supprimer, « Modifier » pour réordonner.
 struct SeriesDraftForm: View {
     @Binding var draft: SeriesDraft
-    /// Numéros des autres séries du cours, pour signaler un doublon.
-    var takenNumbers: Set<Int> = []
+    /// Numéros et étiquettes des autres séries du cours, pour signaler un doublon.
+    var taken: Set<SeriesIdentity.Key> = []
     var maxWeek: Int = 14
     /// Série du même numéro déjà présente (import seulement).
     var mergesInto: ExerciseSeries?
@@ -20,11 +20,14 @@ struct SeriesDraftForm: View {
     var showSource: ((ExerciseDraft) -> Void)?
 
     var body: some View {
-        let problems = draft.problems(takenNumbers: takenNumbers)
+        let problems = draft.problems(taken: taken)
         Section {
             Stepper(value: $draft.number, in: 1...60) {
                 LabeledContent("Série", value: "\(draft.number)")
             }
+            // Deux séries la même semaine : « a » et « b », « mardi » et « jeudi ».
+            TextField("Étiquette (b, jeudi… facultatif)", text: $draft.label)
+                .autocorrectionDisabled()
             TextField("Titre (facultatif)", text: $draft.title)
             Stepper(value: $draft.plannedWeek, in: 1...max(maxWeek, draft.plannedWeek)) {
                 LabeledContent("Semaine prévue", value: "\(draft.plannedWeek)")
@@ -40,7 +43,7 @@ struct SeriesDraftForm: View {
             Text("Série")
         } footer: {
             if let mergesInto {
-                Text("La série \(mergesInto.seriesNumber) existe déjà (\(mergesInto.exercises.count) exercices) : les exercices de même numéro sont mis à jour, les autres ajoutés. Tes coches sont conservées.")
+                Text("La \(mergesInto.displayName) existe déjà (\(mergesInto.exercises.count) exercices) : les exercices de même numéro sont mis à jour, les autres ajoutés. Tes coches sont conservées.")
             }
         }
 
@@ -431,8 +434,8 @@ struct SeriesEditorSheet: View {
         }
     }
 
-    private var takenNumbers: Set<Int> {
-        Set(course.series.filter { $0.id != series?.id }.map(\.seriesNumber))
+    private var taken: Set<SeriesIdentity.Key> {
+        Set(course.series.filter { $0.id != series?.id }.map(\.key))
     }
 
     /// Exercices faits qui disparaîtraient à l'enregistrement.
@@ -446,7 +449,7 @@ struct SeriesEditorSheet: View {
         NavigationStack {
             List {
                 SeriesDraftForm(draft: $draft,
-                                takenNumbers: takenNumbers,
+                                taken: taken,
                                 maxWeek: course.term?.totalWeeks ?? 14)
                 if series != nil {
                     Section {
@@ -472,7 +475,7 @@ struct SeriesEditorSheet: View {
                         if lostDone.isEmpty { save() } else { confirmingLoss = true }
                     }
                     .fontWeight(.semibold)
-                    .disabled(!draft.problems(takenNumbers: takenNumbers).isEmpty)
+                    .disabled(!draft.problems(taken: taken).isEmpty)
                 }
                 #if os(iOS)
                 ToolbarItem(placement: .topBarLeading) {

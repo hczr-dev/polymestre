@@ -174,11 +174,12 @@ enum MoodleCourseAnalyzer {
         // Les séries posées hors de leur semaine — un dossier « Séries » dans la
         // section générale, ou toutes les séries du semestre dans la semaine 1 :
         // chacune rejoint la semaine de son numéro.
-        var loose: [Int: (statement: [MoodleActivity], solution: [MoodleActivity])] = [:]
+        var loose: [SeriesIdentity.Key: (statement: [MoodleActivity], solution: [MoodleActivity])] = [:]
         func addLoose(_ activity: MoodleActivity, number: Int, solution: Bool) {
-            var entry = loose[number] ?? ([], [])
+            let key = SeriesIdentity.Key(number, SeriesIdentity.label(in: activity.name))
+            var entry = loose[key] ?? ([], [])
             if solution { entry.solution.append(activity) } else { entry.statement.append(activity) }
-            loose[number] = entry
+            loose[key] = entry
         }
 
         for section in snapshot.sections {
@@ -227,14 +228,16 @@ enum MoodleCourseAnalyzer {
 
             var items: [ContentDraftItem] = []
             var lectureGroups: [(key: String, activities: [MoodleActivity])] = []
-            var seriesGroups: [(number: Int, statement: [MoodleActivity], solution: [MoodleActivity])] = []
+            var seriesGroups: [(key: SeriesIdentity.Key, statement: [MoodleActivity], solution: [MoodleActivity])] = []
 
-            func addToSeries(_ number: Int, statement: MoodleActivity? = nil, solution: MoodleActivity? = nil) {
-                if let index = seriesGroups.firstIndex(where: { $0.number == number }) {
+            // Deux séries la même semaine (« Série 5a » et « 5b », « Exercices du
+            // mardi » et « du jeudi ») : le numéro, et l'étiquette qui les sépare.
+            func addToSeries(_ key: SeriesIdentity.Key, statement: MoodleActivity? = nil, solution: MoodleActivity? = nil) {
+                if let index = seriesGroups.firstIndex(where: { $0.key == key }) {
                     if let statement { seriesGroups[index].statement.append(statement) }
                     if let solution { seriesGroups[index].solution.append(solution) }
                 } else {
-                    seriesGroups.append((number, statement.map { [$0] } ?? [], solution.map { [$0] } ?? []))
+                    seriesGroups.append((key, statement.map { [$0] } ?? [], solution.map { [$0] } ?? []))
                 }
             }
 
@@ -246,6 +249,9 @@ enum MoodleCourseAnalyzer {
 
             // Les corrigés d'abord mis de côté : ils se rattachent à leur série.
             var pendingSolutions: [MoodleActivity] = []
+            // Les énoncés sans numéro ni étiquette : une seule série de la semaine,
+            // ou plusieurs, à départager par leur rang.
+            var unnumbered: [MoodleActivity] = []
             for activity in visible {
                 let kind = classify(activity, inWeek: true)
                 if spreadsFolder, Self.isFromFolder(activity), let number = seriesNumber(activity.name),
@@ -255,10 +261,17 @@ enum MoodleCourseAnalyzer {
                 }
                 switch kind {
                 case .series:
-                    let number = seriesNumber(activity.name) ?? hints[activity.id]?.seriesNumber ?? week ?? section.number
+                    // Sans numéro, la série prend celui de la semaine où Moodle la pose.
+                    let explicit = seriesNumber(activity.name) ?? hints[activity.id]?.seriesNumber
+                    let number = explicit ?? week ?? section.number
+                    let key = SeriesIdentity.Key(number, SeriesIdentity.label(in: activity.name))
+                    if explicit == nil, key.label.isEmpty, isStatementDocument(activity) {
+                        unnumbered.append(activity)
+                        continue
+                    }
                     // « Enoncé/Corrigé de la série 4 » : l'énoncé et le corrigé à la même adresse.
                     let both = fold(activity.name).contains("corrig") && fold(activity.name).contains("enonc")
-                    addToSeries(number, statement: activity, solution: both ? activity : nil)
+                    addToSeries(key, statement: activity, solution: both ? activity : nil)
                 case .solution:
                     pendingSolutions.append(activity)
                 case .lecture:
@@ -280,17 +293,37 @@ enum MoodleCourseAnalyzer {
                     continue
                 }
             }
+            // Deux PDF d'énoncé sans numéro ni jour dans la même semaine
+            // (« Exercices — Suites », « Exercices — Séries ») : deux séries,
+            // « 1 » et « 2 » dans l'ordre de Moodle. Un seul : la série de la semaine.
+            let distinctNames = Set(unnumbered.map { fold($0.name) })
+            for (rank, activity) in unnumbered.enumerated() {
+                let number = week ?? section.number
+                let label = unnumbered.count > 1 && distinctNames.count == unnumbered.count ? String(rank + 1) : ""
+                addToSeries(SeriesIdentity.Key(number, label), statement: activity)
+            }
             for solution in pendingSolutions {
                 let explicit = seriesNumber(solution.name)
+                let label = SeriesIdentity.normalized(SeriesIdentity.label(in: solution.name))
+                // Les séries que ce corrigé peut viser : son numéro (sinon tout
+                // ce qui est de la semaine), puis son étiquette si elle en a une.
+                let sameNumber = seriesGroups.filter { explicit == nil || $0.key.number == explicit }
+                let sameLabel = sameNumber.filter { $0.key.label == label }
                 if isDeliverableSolution(solution.name) {
                     // « rendu02 sol » : le corrigé d'un rendu noté, un document.
                     documents.append(document(solution, section: title))
-                } else if let number = explicit, seriesGroups.contains(where: { $0.number == number }) {
-                    addToSeries(number, solution: solution)
-                } else if explicit == nil, seriesGroups.count == 1 {
-                    addToSeries(seriesGroups[0].number, solution: solution)
+                } else if let target = sameLabel.first, sameLabel.count == 1 || explicit != nil {
+                    addToSeries(target.key, solution: solution)
+                } else if sameNumber.count == 1 {
+                    addToSeries(sameNumber[0].key, solution: solution)
+                } else if let target = closestByName(solution, among: sameNumber) {
+                    // « Corrigé — Suites » pour « Exercices — Suites » : le nom les relie.
+                    addToSeries(target, solution: solution)
+                } else if label.isEmpty, explicit != nil, !sameNumber.isEmpty {
+                    // « Corrigé série 5 » pour « 5a » et « 5b » : le même corrigé pour les deux.
+                    for group in sameNumber { addToSeries(group.key, solution: solution) }
                 } else if let number = explicit ?? week {
-                    addToSeries(number, solution: solution)
+                    addToSeries(SeriesIdentity.Key(number, label), solution: solution)
                 }
             }
 
@@ -298,8 +331,8 @@ enum MoodleCourseAnalyzer {
                 items.append(lectureItem(group.activities, key: group.key, index: index + 1,
                                          sectionTitle: title, week: week ?? 0, groups: lectureGroups.count))
             }
-            for group in seriesGroups.sorted(by: { $0.number < $1.number }) {
-                items.append(seriesItem(group.number, statement: group.statement, solution: group.solution))
+            for group in seriesGroups.sorted(by: { $0.key < $1.key }) {
+                items.append(seriesItem(group.key, statement: group.statement, solution: group.solution))
             }
             guard !items.isEmpty else { continue }
             sections.append(ContentDraftSection(title: title,
@@ -318,9 +351,17 @@ enum MoodleCourseAnalyzer {
         }
         // Les séries hors de leur semaine : la semaine de leur numéro, une
         // proposition montrée comme telle (`weekIsInferred`).
-        for number in loose.keys.sorted() {
-            let entry = loose[number]!
-            let item = seriesItem(number, statement: entry.statement, solution: entry.solution)
+        // « Corrigé série 5 » posé à part, pour « 5a » et « 5b » : il va aux deux.
+        for key in loose.keys where key.label.isEmpty && loose[key]!.statement.isEmpty {
+            let siblings = loose.keys.filter { $0.number == key.number && !$0.label.isEmpty && !loose[$0]!.statement.isEmpty }
+            guard !siblings.isEmpty else { continue }
+            for sibling in siblings { loose[sibling]!.solution += loose[key]!.solution }
+            loose[key] = nil
+        }
+        for key in loose.keys.sorted() {
+            let entry = loose[key]!
+            let number = key.number
+            let item = seriesItem(key, statement: entry.statement, solution: entry.solution)
             let week = min(max(number, 1), max(totalWeeks, 1))
             if let index = sections.firstIndex(where: { $0.week == week }) {
                 sections[index].items.append(item)
@@ -376,6 +417,10 @@ enum MoodleCourseAnalyzer {
             let week = plan.week.flatMap { weeks.contains($0) ? $0 : nil }
             var item: ContentDraftItem
             var from: (section: Int, item: Int)?
+            // Le modèle ne voit que des numéros : deux séries « 5a » et « 5b »
+            // ne se départagent pas par lui, elles restent où elles sont.
+            let sameNumber = draft.sections.flatMap(\.items).filter { $0.kind == .series && $0.seriesNumber == plan.number }
+            if sameNumber.count > 1 { continue }
             for (s, section) in draft.sections.enumerated() {
                 if let i = section.items.firstIndex(where: { $0.kind == .series && $0.seriesNumber == plan.number }) {
                     from = (s, i)
@@ -437,7 +482,8 @@ enum MoodleCourseAnalyzer {
             let orphan = sections[position.section].items[position.item]
             var target: (section: Int, item: Int)?
             for (s, section) in sections.enumerated() {
-                if let i = section.items.firstIndex(where: { $0.kind == .series && $0.seriesNumber == orphan.seriesNumber && hasStatement($0) }) {
+                if let i = section.items.firstIndex(where: { $0.kind == .series && $0.seriesNumber == orphan.seriesNumber
+                    && (orphan.seriesLabel.isEmpty || $0.seriesLabel == orphan.seriesLabel) && hasStatement($0) }) {
                     target = (s, i)
                     break
                 }
@@ -524,6 +570,30 @@ enum MoodleCourseAnalyzer {
         matches(folded, #"(\blectures?\b|\bcours\b|transparents?|slides?|diapos?|\bnotes?\b|enregistrement|recording|\bvideos?\b|chapitres?|chapters?|polycopie|^\d{1,2}[-_ ][a-z])"#)
     }
 
+    /// La série dont l'énoncé partage le plus de mots avec le nom du corrigé
+    /// (hors « corrigé », « série », numéros) — `nil` sans gagnant net.
+    static func closestByName(_ solution: MoodleActivity,
+                              among groups: [(key: SeriesIdentity.Key, statement: [MoodleActivity], solution: [MoodleActivity])]) -> SeriesIdentity.Key? {
+        let noise: Set<String> = ["corrige", "corriges", "corrigee", "solution", "solutions", "sol", "correction", "corrections",
+                                  "serie", "series", "exercices", "exercice", "exercises", "exercise", "de", "du", "la", "le", "des", "et", "pdf"]
+        func words(_ name: String) -> Set<String> {
+            Set(fold(name).components(separatedBy: CharacterSet.alphanumerics.inverted)
+                .filter { $0.count > 1 && !noise.contains($0) && Int($0) == nil })
+        }
+        let wanted = words(solution.name)
+        guard !wanted.isEmpty else { return nil }
+        let scored = groups.map { group in (group.key, group.statement.map { words($0.name).intersection(wanted).count }.max() ?? 0) }
+            .sorted { $0.1 > $1.1 }
+        guard let best = scored.first, best.1 > 0, scored.count < 2 || scored[1].1 < best.1 else { return nil }
+        return best.0
+    }
+
+    /// Un énoncé à lire (un PDF), pas une page ou un dossier qui l'accompagne.
+    static func isStatementDocument(_ activity: MoodleActivity) -> Bool {
+        activity.module == "resource" || MoodleLinks.isDocument(activity.link)
+            || URL(string: activity.link)?.pathExtension.lowercased() == "pdf"
+    }
+
     static func isDeliverableSolution(_ name: String) -> Bool {
         matches(fold(name), #"\brendus?\s*\d*"#)
     }
@@ -531,7 +601,8 @@ enum MoodleCourseAnalyzer {
     /// « Série 3 », « serie04 », « Série02 », « Problem Set 1 », « série 4 ».
     static func seriesNumber(_ name: String) -> Int? {
         let lower = fold(name)
-        let pattern = #"(?:series?|problem ?sets?|exercise sets?|feuilles?|td|homework|week)\s*[-_#.:]?\s*(?:n[o°]\s*)?0*(\d{1,2})\b"#
+        // `(?!\d)` plutôt que `\b` : « Série 5a » est la série 5 (étiquette « a »).
+        let pattern = #"(?:series?|problem ?sets?|exercise sets?|feuilles?|td|homework|week)\s*[-_#.:]?\s*(?:n[o°]\s*)?0*(\d{1,2})(?!\d)"#
         guard let regex = try? NSRegularExpression(pattern: pattern),
               let match = regex.firstMatch(in: lower, range: NSRange(lower.startIndex..., in: lower)),
               let range = Range(match.range(at: 1), in: lower) else { return nil }
@@ -741,19 +812,22 @@ enum MoodleCourseAnalyzer {
 
     // MARK: Séries
 
-    private static func seriesItem(_ number: Int, statement: [MoodleActivity], solution: [MoodleActivity]) -> ContentDraftItem {
+    private static func seriesItem(_ key: SeriesIdentity.Key, statement: [MoodleActivity], solution: [MoodleActivity]) -> ContentDraftItem {
+        let number = key.number
+        let name = SeriesIdentity.displayName(number: number, label: key.label)
         let main = statement.first
-        let titleSource = main?.name ?? "Série \(number)"
+        let titleSource = main?.name ?? name
         // « Problem Set 1: Motion in 1D » → le thème, « Motion in 1D ».
         let topic = titleSource.split(separator: ":", maxSplits: 1).dropFirst().first
             .map { $0.trimmingCharacters(in: .whitespaces) } ?? ""
         var item = ContentDraftItem(kind: .series,
                                     number: String(number),
-                                    title: topic.isEmpty ? "Série \(number)" : ContentDraftBuilder.cleanTitle(topic),
+                                    title: topic.isEmpty ? name : ContentDraftBuilder.cleanTitle(topic),
                                     url: main?.link ?? "",
                                     videoCount: 0,
                                     seriesNumber: number,
-                                    theoryKind: .reading)
+                                    theoryKind: .reading,
+                                    seriesLabel: key.label)
         if let main {
             // Un PDF : un fichier Moodle, ou la cible lue dans une page, un
             // dossier ou un lien.

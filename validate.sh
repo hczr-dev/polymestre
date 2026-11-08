@@ -56,6 +56,8 @@ cp "$ROOT"/Validation/LocalMCPTests.swift "$WORK/Sources/"
 cp "$ROOT"/Validation/SyncTests.swift "$WORK/Sources/"
 cp "$ROOT"/Validation/SyncCryptoTests.swift "$WORK/Sources/"
 cp "$ROOT"/Validation/IdentityMigrationTests.swift "$WORK/Sources/"
+cp "$ROOT"/Validation/SeriesIdentityTests.swift "$WORK/Sources/"
+cp "$ROOT"/Validation/LateWorkTests.swift "$WORK/Sources/"
 
 # Garde-fou : tout type annoté `@Model` doit figurer dans le schéma versionné.
 #

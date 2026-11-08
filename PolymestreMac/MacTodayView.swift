@@ -163,7 +163,10 @@ struct MacTodayView: View {
             }
             LazyVGrid(columns: [GridItem(.adaptive(minimum: 230), spacing: 14)], spacing: 14) {
                 ForEach(summaries, id: \.course.id) { summary in
-                    Button { open(summary.course.id, nil) } label: { WeekCourseCard(summary: summary) }
+                    // Le cours visé lui-même ouvre « À rattraper » (`MacCourseView`).
+                    Button { open(summary.course.id, nil) } label: {
+                        WeekCourseCard(summary: summary, openLate: { open(summary.course.id, summary.course.id) })
+                    }
                         .buttonStyle(.plain)
                 }
             }
@@ -346,6 +349,7 @@ private struct RunningNowCard: View {
 /// semaine, le retard (corrections comprises) — comme sur l'iPhone.
 private struct WeekCourseCard: View {
     let summary: WeekCourseSummary
+    var openLate: () -> Void = {}
     @State private var hovering = false
 
     var body: some View {
@@ -357,7 +361,17 @@ private struct WeekCourseCard: View {
                 CourseTag(code: course.displayCode, tint: tint)
                 Spacer()
                 if summary.late > 0 {
-                    Text("\(summary.late) en retard").font(.caption.weight(.semibold)).foregroundStyle(Carnet.wrong)
+                    Button(action: openLate) {
+                        HStack(spacing: 2) {
+                            Text("\(summary.late) en retard")
+                            Image(systemName: "chevron.right").font(.caption2.weight(.bold))
+                        }
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(Carnet.wrong)
+                        .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                    .help("Ce qui est à rattraper")
                 } else {
                     Label("À jour", systemImage: "checkmark").font(.caption).foregroundStyle(Carnet.inkSecondary)
                 }

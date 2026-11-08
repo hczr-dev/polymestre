@@ -1,15 +1,11 @@
 import SwiftUI
 import SwiftData
 
-/// La progression d'un cours, dans l'ordre des questions qu'on se pose :
-/// **où j'en suis**, **qu'est-ce qui traîne** (et le rattraper d'ici), puis le
-/// semestre semaine par semaine, et le temps passé cette semaine.
+/// La progression d'un cours : **où j'en suis**, le semestre semaine par
+/// semaine, et le temps passé cette semaine.
 ///
-/// L'ancienne page (cartes système, trois axes par semaine, « en retard sur
-/// S2, S3 » sans dire quoi) répondait mal à « à jour sur les semaines
-/// passées ? » : on y arrivait depuis cette phrase, et il fallait déplier les
-/// semaines une à une pour trouver ce qui manquait. Le retard est désormais une
-/// liste, cochable sur place.
+/// Ce qui traîne a sa propre page, « À rattraper » (`LateWorkView`) : la liste
+/// que cette page tenait comptait autrement que le badge « N en retard ».
 struct ProgressTabView: View {
     let course: Course
 
@@ -18,25 +14,16 @@ struct ProgressTabView: View {
     @State private var expanded: Set<Int> = []
     @State private var openedVideo: TheoryItem?
     @State private var openedExercise: Exercise?
-    @State private var undo: WeekCompletion.Change?
 
     private var weeks: [WeeklyProgress] { ProgressEngine.semesterWeeks(for: course) }
     private var current: Int { course.isTermRunning ? course.currentWeek : 0 }
     private var tint: Color { Carnet.tint(course.colorHex) }
 
-    /// Ce qui reste des semaines passées : théorie non vue, exercices non faits.
-    private var lateTheory: [TheoryItem] {
-        course.sortedTheoryItems.filter { $0.plannedWeek > 0 && $0.plannedWeek < current && !$0.isWatched }
-    }
-    private var lateExercises: [Exercise] {
-        course.sortedSeries.filter { $0.plannedWeek > 0 && $0.plannedWeek < current }
-            .flatMap(\.sortedExercises).filter { !$0.isBonus && !$0.isDone }
-    }
+    private var late: LateWork { LateWork.of(course) }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 26) {
             standing
-            if !lateTheory.isEmpty || !lateExercises.isEmpty { lateSection }
             weeksSection
             unplannedSection
             timeSection
@@ -44,14 +31,13 @@ struct ProgressTabView: View {
         .onAppear { if current > 0 { expanded.insert(current) } }
         .sheet(item: $openedVideo) { VideoDetailSheet(video: $0) }
         .sheet(item: $openedExercise) { ExerciseSheet(exercise: $0) }
-        .animation(Motion.snappy, value: lateTheory.count + lateExercises.count)
     }
 
     // MARK: Où tu en es
 
     private var standing: some View {
         let progress = ProgressEngine.progress(for: course)
-        let late = lateTheory.count + lateExercises.count
+        let late = self.late.total
         let ahead = ProgressEngine.aheadCount(for: course)
         let sentence: String
         if late > 0 {
@@ -72,7 +58,7 @@ struct ProgressTabView: View {
                         .foregroundStyle(Carnet.ink)
                 }
                 if late > 0 {
-                    Text("Des semaines passées : \(lateDetail).")
+                    Text(self.late.summary.prefix(1).uppercased() + self.late.summary.dropFirst() + ".")
                         .font(.subheadline)
                         .foregroundStyle(Carnet.inkSecondary)
                 }
@@ -93,13 +79,6 @@ struct ProgressTabView: View {
         .background(Carnet.sheet, in: RoundedRectangle(cornerRadius: Carnet.sheetCorner, style: .continuous))
     }
 
-    private var lateDetail: String {
-        var parts: [String] = []
-        if !lateTheory.isEmpty { parts.append("\(lateTheory.count) de théorie") }
-        if !lateExercises.isEmpty { parts.append(Plural.count(lateExercises.count, "\(lateExercises.count) exercice", "\(lateExercises.count) exercices")) }
-        return parts.joined(separator: " et ")
-    }
-
     private func axis(_ title: String, _ done: Int, _ total: Int) -> some View {
         VStack(alignment: .leading, spacing: 5) {
             Text(ui: title).font(.caption).foregroundStyle(Carnet.inkSecondary)
@@ -115,80 +94,6 @@ struct ProgressTabView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .accessibilityElement(children: .combine)
         .accessibilityLabel("\(title) : \(done) sur \(total)")
-    }
-
-    // MARK: À rattraper
-
-    private var lateSection: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            CarnetSectionTitle("À rattraper") {
-                Menu {
-                    Button { completeLate(.all) } label: { Label("Tout marquer fait", systemImage: "checkmark.circle") }
-                    Button { completeLate(.allCorrected) } label: { Label("Fait et corrigé (juste)", systemImage: "checkmark.seal") }
-                    Button { completeLate(.theoryOnly) } label: { Label("Seulement la théorie vue", systemImage: TaskType.theory.icon) }
-                } label: {
-                    Label("Tout cocher", systemImage: "checklist.checked").font(.subheadline.weight(.medium))
-                }
-            }
-            CarnetSheet {
-                let rows = lateTheory.map { LateRow.theory($0) } + lateExercises.map { LateRow.exercise($0) }
-                ForEach(Array(rows.prefix(12).enumerated()), id: \.element.id) { index, row in
-                    lateRow(row)
-                    if index < min(rows.count, 12) - 1 { CarnetRule(inset: 52) }
-                }
-                if rows.count > 12 {
-                    CarnetRule(inset: 52)
-                    Text("+ \(rows.count - 12) autres")
-                        .font(.footnote)
-                        .foregroundStyle(Carnet.inkSecondary)
-                        .padding(.horizontal, Carnet.rowInset)
-                        .padding(.vertical, 12)
-                }
-            }
-            if let undo {
-                HStack {
-                    Text("Coché : \(undo.summary).").font(.footnote).foregroundStyle(Carnet.inkSecondary)
-                    Spacer()
-                    Button("Annuler") {
-                        WeekCompletion.undo(undo, in: course)
-                        try? context.save()
-                        self.undo = nil
-                    }
-                    .font(.footnote.weight(.semibold))
-                }
-                .padding(.horizontal, 6)
-            }
-        }
-    }
-
-    private enum LateRow: Identifiable {
-        case theory(TheoryItem)
-        case exercise(Exercise)
-        var id: UUID {
-            switch self {
-            case .theory(let item): return item.id
-            case .exercise(let exercise): return exercise.id
-            }
-        }
-    }
-
-    @ViewBuilder
-    private func lateRow(_ row: LateRow) -> some View {
-        switch row {
-        case .theory(let item):
-            line(done: item.isWatched, week: item.plannedWeek, title: item.title.isEmpty ? item.number : item.title,
-                 detail: CarnetTheoryLine.detail(for: item), toggle: {
-                    item.watchedAt = item.isWatched ? nil : Date()
-                    try? context.save()
-                 }, open: { openedVideo = item })
-        case .exercise(let exercise):
-            line(done: exercise.isDone, week: exercise.series?.plannedWeek ?? 0,
-                 title: exercise.displayNumber + (exercise.title.isEmpty ? "" : " · \(exercise.title)"),
-                 detail: exercise.series.map { "Série \($0.seriesNumber)" } ?? "", toggle: {
-                    exercise.setDone(!exercise.isDone)
-                    try? context.save()
-                 }, open: { openedExercise = exercise })
-        }
     }
 
     private func line(done: Bool, week: Int, title: String, detail: String,
@@ -216,14 +121,6 @@ struct ProgressTabView: View {
         .padding(.leading, 6)
         .padding(.trailing, Carnet.rowInset)
         .padding(.vertical, 6)
-    }
-
-    private func completeLate(_ scope: WeekCompletion.Scope) {
-        guard current > 1 else { return }
-        let change = WeekCompletion.mark(1...(current - 1), of: course, scope: scope)
-        try? context.save()
-        Haptics.success()
-        undo = change.isEmpty ? nil : change
     }
 
     // MARK: Semaine par semaine

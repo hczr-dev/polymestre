@@ -22,6 +22,7 @@ struct CourseDetailView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var tab: Section = .exercises
     @State private var showingProgress = false
+    @State private var showingLate = false
     @State private var showingExams = false
     @State private var showingDocuments = false
     @State private var showingNotes = false
@@ -120,6 +121,9 @@ struct CourseDetailView: View {
             .background(Carnet.ground.ignoresSafeArea())
             .navigationTitle("Progression · \(course.displayCode)")
             .navigationBarTitleDisplayMode(.inline)
+        }
+        .navigationDestination(isPresented: $showingLate) {
+            LateWorkScreen(course: course)
         }
         .navigationDestination(isPresented: $showingExams) {
             CourseExamsView(course: course)
@@ -268,7 +272,7 @@ struct CourseDetailView: View {
             }
             if isCurrent || late > 0 {
                 Rectangle().fill(Carnet.rule).frame(height: 1)
-                Button { showingProgress = true } label: {
+                Button { if late > 0 { showingLate = true } else { showingProgress = true } } label: {
                     HStack(spacing: 10) {
                         Image(systemName: late > 0 ? "exclamationmark.circle" : "checkmark.circle")
                             .foregroundStyle(late > 0 ? Carnet.wrong : Carnet.correct)
@@ -284,7 +288,7 @@ struct CourseDetailView: View {
                     .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
-                .accessibilityHint("Ouvre la progression semaine par semaine")
+                .accessibilityHint(late > 0 ? "Ouvre ce qui est à rattraper" : "Ouvre la progression semaine par semaine")
             }
         }
         .padding(16)
@@ -317,11 +321,10 @@ struct CourseDetailView: View {
         .accessibilityLabel("\(title) : \(done) sur \(total)")
     }
 
-    /// « 3 éléments des semaines passées à rattraper », « À jour, 2 d'avance ».
+    /// « 4 à rattraper : 1 à refaire, 3 exercices à faire », « À jour, 2 d'avance ».
     private func standingSentence(late: Int, ahead: Int) -> String {
         if late > 0 {
-            return late == 1 ? "1 élément des semaines passées à rattraper"
-                             : "\(late) éléments des semaines passées à rattraper"
+            return "\(late) à rattraper : " + LateWork.of(course).summary
         }
         if ahead > 0 { return "À jour, et \(ahead) d'avance" }
         return "À jour sur les semaines passées"
@@ -513,7 +516,7 @@ struct CourseDetailView: View {
         let links = ExerciseLinks.seriesLinks(series)
         let required = series.requiredExercises
         return VStack(alignment: .leading, spacing: 10) {
-            CarnetSectionTitle("Série \(series.seriesNumber)" + (series.topic.isEmpty ? "" : " · \(series.topic)")) {
+            CarnetSectionTitle(series.displayName + (series.topic.isEmpty ? "" : " · \(series.topic)")) {
                 Text("\(series.doneCount)/\(required.count)")
             }
             if !links.isEmpty {
@@ -734,6 +737,13 @@ struct CourseDetailView: View {
                     Link(destination: url) {
                         Label("Ouvrir la page du cours", systemImage: "safari")
                     }
+                }
+                Divider()
+                Button { showingLate = true } label: {
+                    Label("À rattraper", systemImage: "exclamationmark.circle")
+                }
+                Button { showingProgress = true } label: {
+                    Label("Progression semaine par semaine", systemImage: "chart.bar.xaxis")
                 }
                 if pastWeeks != nil {
                     Divider()

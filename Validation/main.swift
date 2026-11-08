@@ -728,6 +728,10 @@ for (ok, label) in desktopBridgeResults() { check(ok, label) }
 for (ok, label) in syncResults() { check(ok, label) }
 for (ok, label) in syncCryptoResults() { check(ok, label) }
 for (ok, label) in identityMigrationResults() { check(ok, label) }
+print("== Deux séries par semaine, exercices sans numéro ==")
+for (ok, label) in seriesIdentityResults(context: context) { check(ok, label) }
+print("== À rattraper ==")
+for (ok, label) in lateWorkResults(context: context) { check(ok, label) }
 check(LocalFileCatalog.pageIndices("1-5,8", total: 10) == [0, 1, 2, 3, 4, 7], "pages : « 1-5,8 »")
 check(LocalFileCatalog.pageIndices("3", total: 10) == [2] && LocalFileCatalog.pageIndices("8-", total: 10) == [7, 8, 9], "pages : une page, une plage ouverte")
 check(LocalFileCatalog.pageIndices("9-20", total: 10) == [8, 9], "pages : bornées au document")
@@ -3458,10 +3462,10 @@ do {
     draft.addExercise(); draft.addExercise()
     check(draft.exercises.map(\.minor) == ["1", "2"], "exercices ajoutés 5.1, 5.2")
     draft.exercises[1].minor = "1"
-    check(draft.problems(takenNumbers: []).contains { $0.contains("5.1") }, "numéro en double signalé")
-    check(draft.problems(takenNumbers: [5]).contains { $0.contains("série 5") }, "série en double signalée")
+    check(draft.problems(taken: []).contains { $0.contains("5.1") }, "numéro en double signalé")
+    check(draft.problems(taken: [SeriesIdentity.Key(5)]).contains { $0.contains("série 5") }, "série en double signalée")
     draft.renumberExercises()
-    check(draft.problems(takenNumbers: []).isEmpty, "renuméroter corrige")
+    check(draft.problems(taken: []).isEmpty, "renuméroter corrige")
 
     // Modification : renuméroter garde l'avancement, retirer supprime.
     let draftCourse = Course(code: "TST-100", name: "Test", credits: 4)

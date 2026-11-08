@@ -73,6 +73,7 @@ enum SyncSchema {
             .dateOptional("solutions_at", \.solutionsAt),
             .text("solution_url_string", \.solutionURLString),
             .bool("needs_reread", \.needsReread),
+            .text("label", \.label),
         ], refs: [
             .one("course_id", \.course, table: "sync_courses", onDelete: .cascade),
         ]),

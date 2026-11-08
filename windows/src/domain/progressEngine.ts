@@ -4,6 +4,7 @@
 // semestre) et ne touche ni au disque ni à l'interface. Les pourcentages sont
 // des fractions (0 → 1) ; la mise en forme reste à l'affichage.
 
+import { lateWork } from "./lateWork.ts";
 import type { Course } from "../models/course.ts";
 import type { Exercise } from "../models/exercise.ts";
 import type { TheoryItem } from "../models/theoryItem.ts";
@@ -112,23 +113,8 @@ function progress(course: Course): CourseProgress {
 
 /** Ce qui aurait dû être fait **avant** cette semaine et ne l'est pas. */
 function lateCount(course: Course, currentWeek?: number | null, now: Date = new Date()): number {
-  const week = currentWeek ?? course.currentWeek;
-  const corrections = correctionsDue(course, now);
-  if (!(week > 1)) return corrections.toRedo;
-  const theory = course.theoryItems.filter((t) => t.plannedWeek > 0 && t.plannedWeek < week && !t.isWatched).length;
-  const pastSeries = course.series.filter((s) => s.plannedWeek > 0 && s.plannedWeek < week);
-  const exercises = pastSeries
-    .flatMap((s) => s.exercises)
-    .filter((e) => !e.isBonus && !e.isDone)
-    .length;
-  // Corriger fait partie du travail : un exercice d'une semaine passée, fait,
-  // dont le corrigé est publié et qui n'est toujours pas corrigé, est en retard.
-  const uncorrected = pastSeries
-    .filter((s) => (s.solutionsAt ? s.solutionsAt <= now : true))
-    .flatMap((s) => s.exercises)
-    .filter((e) => !e.isBonus && e.isDone && !e.isCorrected)
-    .length;
-  return theory + exercises + uncorrected + corrections.toRedo;
+  // Une seule définition du retard : celle de la page « À rattraper ».
+  return lateWork(course, currentWeek, now).total;
 }
 
 /** Les corrections en attente d'un cours. */

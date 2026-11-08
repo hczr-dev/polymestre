@@ -11,6 +11,7 @@ import {
   type DetectedExercise,
 } from "../services/seriesPDFParser.ts";
 import { icuRegExp } from "./icuRegExp.ts";
+import { SeriesIdentity, type SeriesKey } from "./seriesIdentity.ts";
 import { characters, isNumber } from "./textRepair.ts";
 
 /// Une ligne de PDF, avec ce que sa **mise en page** dit d'elle.
@@ -113,7 +114,18 @@ export interface ExerciseMarker {
 const exerciseKeywords = String.raw`exercices?|exercises?|exo|ex|probl[eè]mes?|problems?|aufgabe`;
 
 const seriesPattern = icuRegExp(
-  String.raw`^[ \t]*s[ée]rie[ \t]*(?:n[°o][ \t]*)?(\d{1,2})\b[ \t]*[–—:.\-]?[ \t]*(.*)$`, "i");
+  String.raw`^[ \t]*s[ée]rie[ \t]*(?:n[°o][ \t]*)?(\d{1,2})(?:(?:[ \t]*[-.(][ \t]*)?([a-f])\)?)?\b[ \t]*[–—:.\-]?[ \t]*(.*)$`, "i");
+
+/// « Exercice », « Exercise — Titre », « Exercice (Rosen 1.2) » : le mot seul, sans numéro.
+const unnumberedPattern = icuRegExp(
+  String.raw`^[ \t]*(?:exercice|exercise|probl[eè]me|problem|aufgabe)[ \t]*\*?[ \t]*(?:[:.\-–—][ \t]*(.*)|\(([^)]*)\)[ \t]*(.*)|)$`, "i");
+
+function unnumberedHeading(text: string): string | null {
+  const match = unnumberedPattern.exec(text);
+  if (!match) return null;
+  return match.slice(1).filter((part): part is string => part !== undefined)
+    .map((part) => part.trim()).filter((part) => part !== "").join(" ");
+}
 
 const dashedPattern = icuRegExp(
   String.raw`\bEx[ .\-]?(\d{1,2})[.\-](\d{1,2})\b[ \t]*[:.\-–—]?[ \t]*(.*)$`);
@@ -231,14 +243,23 @@ function parse(lines: PDFLayoutLine[], defaultSeries: number | null = null): Det
   const indents = lines.filter((line) => !isEmptyLine(line) && line.indent > 0).map((line) => line.indent);
   const leftMargin = indents.length === 0 ? 0 : Math.min(...indents);
   const plainHeadings = usesKeywords ? new Set<number>() : plainNumberedHeadings(lines, leftMargin);
+  // Des exercices titrés « Exercice » **sans numéro** : seulement dans un document
+  // qui n'en numérote aucun, et qui en a au moins deux.
+  const unnumberedHeadings = !usesKeywords && plainHeadings.size === 0
+    && lines.filter((line) => unnumberedHeading(trimmed(line)) !== null && (line.isBold || isHeading(line, body, boldBody))).length >= 2;
 
-  const seriesTitles = new Map<number, string>();
-  const groups = new Map<number, DetectedExercise[]>();
+  // Une série = son numéro et son étiquette : « Série 5a » et « 5b » restent deux séries.
+  // Les cartes sont indexées par `SeriesIdentity.id`.
+  const keys = new Map<string, SeriesKey>();
+  const remember = (key: SeriesKey): string => { const id = SeriesIdentity.id(key); keys.set(id, key); return id; };
+  const seriesTitles = new Map<string, string>();
+  const groups = new Map<string, DetectedExercise[]>();
   const seen = new Set<string>();
-  let currentSeries: number | null = null;
-  const order: number[] = [];
+  let currentSeries: SeriesKey | null = null;
+  const order: string[] = [];
+  const unnumberedCount = new Map<string, number>();
   /// Position de l'exercice en cours, pour y rattacher ses questions.
-  let current: { series: number; index: number } | null = null;
+  let current: { series: string; index: number } | null = null;
   /// Les lignes de l'exercice en cours, dans l'ordre : questions et texte.
   let events: QuestionEvent[] = [];
 
@@ -260,8 +281,9 @@ function parse(lines: PDFLayoutLine[], defaultSeries: number | null = null): Det
     const header = seriesHeader(text);
     if (header) {
       closeExercise();
-      const { number, remainder } = header;
-      currentSeries = number;
+      const { remainder } = header;
+      currentSeries = SeriesIdentity.key(header.number, header.label);
+      const number = remember(currentSeries);
       if (!order.includes(number)) order.push(number);
       if (!seriesTitles.has(number)) {
         let title = SeriesPDFParser.cleanTitle(remainder);
@@ -283,17 +305,31 @@ function parse(lines: PDFLayoutLine[], defaultSeries: number | null = null): Det
     const nearMargin = line.indent <= leftMargin + 18;
 
     // 2. Exercice.
-    const marker = exerciseMarker(text, currentSeries ?? fallback);
-    if (marker && (plainHeadings.has(index) || accepts(marker, markedUp, nearMargin, usesKeywords))) {
-      if (seen.has(marker.number)) {
+    const seriesNow: SeriesKey = currentSeries ?? SeriesIdentity.key(fallback);
+    let marker = exerciseMarker(text, seriesNow.number);
+    let plainHeading = plainHeadings.has(index);
+    // « Exercice » sans numéro : un titre mis en forme, numéroté dans l'ordre.
+    const bare = marker === null && unnumberedHeadings ? unnumberedHeading(text) : null;
+    if (bare !== null && (markedUp || (nearMargin && line.isBold))) {
+      const nowID = SeriesIdentity.id(seriesNow);
+      const next = (unnumberedCount.get(nowID) ?? 0) + 1;
+      unnumberedCount.set(nowID, next);
+      marker = { number: `${seriesNow.number}.${next}`, series: null, remainder: bare, kind: "keyword" };
+      plainHeading = true;
+    }
+    if (marker && (plainHeading || accepts(marker, markedUp, nearMargin, usesKeywords))) {
+      const resolvedKey = marker.series === null ? seriesNow
+        : marker.series === seriesNow.number ? seriesNow : SeriesIdentity.key(marker.series);
+      const seenKey = resolvedKey.label + "|" + marker.number;
+      if (seen.has(seenKey)) {
         // Un doublon (corrigé à la suite de l'énoncé, rappel en pied de
         // page) clôt l'exercice précédent sans en créer un nouveau.
         closeExercise();
         continue;
       }
-      seen.add(marker.number);
+      seen.add(seenKey);
       closeExercise();
-      const resolvedSeries = marker.series ?? currentSeries ?? fallback;
+      const resolvedSeries = remember(resolvedKey);
       if (!order.includes(resolvedSeries)) order.push(resolvedSeries);
 
       const list = groups.get(resolvedSeries) ?? [];
@@ -304,7 +340,7 @@ function parse(lines: PDFLayoutLine[], defaultSeries: number | null = null): Det
         isBonus: bonus(lines, index, body, boldBody),
         statement: "",
         subQuestions: [],
-        isConfident: marker.kind !== "numeric" || plainHeadings.has(index),
+        isConfident: marker.kind !== "numeric" || plainHeading,
         pageIndex: line.pageIndex,
         verticalPosition: line.verticalPosition,
       });
@@ -323,18 +359,21 @@ function parse(lines: PDFLayoutLine[], defaultSeries: number | null = null): Det
   }
   closeExercise();
 
-  const result: DetectedSeries[] = [...order].sort((a, b) => a - b).map((number) => ({
-    number,
-    title: seriesTitles.get(number) ?? "",
-    exercises: [...(groups.get(number) ?? [])].sort((a, b) => localizedStandardCompare(a.number, b.number)),
+  const byKey = (a: string, b: string) => SeriesIdentity.compare(keys.get(a)!, keys.get(b)!);
+  const result: DetectedSeries[] = [...order].sort(byKey).map((id) => ({
+    number: keys.get(id)!.number,
+    label: keys.get(id)!.label,
+    title: seriesTitles.get(id) ?? "",
+    exercises: [...(groups.get(id) ?? [])].sort((a, b) => localizedStandardCompare(a.number, b.number)),
   }));
 
   // Une série annoncée sans exercice reconnu est **conservée** : mieux vaut
   // une carte vide à compléter à la main qu'un import qui ne trouve rien.
-  for (const [number, title] of seriesTitles) {
-    if (!groups.has(number) && !order.includes(number)) result.push({ number, title, exercises: [] });
+  for (const [id, title] of seriesTitles) {
+    if (!groups.has(id) && !order.includes(id)) result.push({ number: keys.get(id)!.number, label: keys.get(id)!.label, title, exercises: [] });
   }
-  return DetectedSeries.withoutBlanketBonus(result.sort((a, b) => a.number - b.number));
+  return DetectedSeries.withoutBlanketBonus(result.sort((a, b) =>
+    SeriesIdentity.compare(SeriesIdentity.key(a.number, a.label ?? ""), SeriesIdentity.key(b.number, b.label ?? ""))));
 }
 
 /// Un repère est-il crédible **à cet endroit** de la mise en page ?
@@ -407,7 +446,52 @@ function isReference(remainder: string): boolean {
 /// (« 1) aₙ = … 2) aₙ = … 3) aₙ = … ») : on les sépare, mais seulement si
 /// elles **se suivent** et ont la même ponctuation — « (aₙ) » au milieu d'une
 /// phrase n'est pas une question.
+/// L'étiquette provisoire d'une puce, avant sa numérotation.
+const BULLET = "•";
+
+/// Le texte après une puce de liste (`itemize`, listes Word), ou `null`.
+/// « - » et « * » demandent une espace : « -1 » est un nombre.
+function bulletRemainder(text: string): string | null {
+  const trimmed = text.trim();
+  if (trimmed === "" || !"•◦▪‣∙●○■□–—-*·".includes(trimmed[0])) return null;
+  if (trimmed[1] !== " " && trimmed[1] !== "\t") return null;
+  const value = trimmed.slice(1).trim();
+  return value === "" ? null : value;
+}
+
+/// Les puces numérotées dans l'ordre (SeriesLayout.swift › resolvingBullets).
+function resolvingBullets(events: QuestionEvent[]): QuestionEvent[] {
+  const all = events.flatMap((event) => event.marks);
+  if (!all.some((mark) => mark.delimiter === BULLET)) return events;
+  const labeled = all.filter((mark) => mark.delimiter !== BULLET);
+  const topIndent = Math.min(...all.filter((mark) => mark.delimiter === BULLET).map((mark) => mark.indent));
+  const romans = ["i", "ii", "iii", "iv", "v", "vi", "vii", "viii", "ix", "x", "xi", "xii"];
+  const topStyle = labeled.length > 0 ? style(labeled[0].label) : null;
+  const child = (n: number) => topStyle === "letter" ? romans[Math.min(n, romans.length) - 1] : String.fromCharCode(96 + Math.min(n, 26));
+  let top = 0;
+  let children = 0;
+  let sawLabeled = false;
+  return events.map((event) => ({
+    ...event,
+    marks: event.marks.flatMap((mark): QuestionMark[] => {
+      if (mark.delimiter !== BULLET) { sawLabeled = true; children = 0; return [mark]; }
+      if (labeled.length === 0 && mark.indent <= topIndent + 6) {
+        top += 1; children = 0;
+        return [{ ...mark, label: String(top), delimiter: BULLET }];
+      }
+      if (labeled.length === 0 ? top > 0 : sawLabeled) {
+        children += 1;
+        return [{ ...mark, label: child(children), delimiter: BULLET + "·" }];
+      }
+      return [];
+    }),
+  }));
+}
+
 function questionMark(text: string, allowNumbers: boolean, indent: number): QuestionMark[] | null {
+  // Une puce : une question sans étiquette, numérotée plus tard dans l'ordre.
+  const bullet = bulletRemainder(text);
+  if (bullet !== null) return [{ label: BULLET, indent, delimiter: BULLET, text: bullet }];
   const match = questionPattern.exec(text);
   if (!match) return null;
   const label = questionLabel(text, allowNumbers);
@@ -498,7 +582,8 @@ function questionTreeOfMarks(marks: QuestionMark[]): DetectedSubQuestion[] {
 /// « Ensuite » (« Calculer lim aₙ. Ensuite, … calculer : 1) 2) 3) »), et un
 /// « Ensuite, … » après la liste. Une liste de **conditions** (« satisfait les
 /// conditions suivantes : 1) … 2) … ») n'est pas une liste de questions.
-function questionTree(events: QuestionEvent[]): DetectedSubQuestion[] {
+function questionTree(input: QuestionEvent[]): DetectedSubQuestion[] {
+  const events = resolvingBullets(input);
   const marks = events.flatMap((event) => event.marks);
   const first = marks[0];
   if (!first) return [];
@@ -685,12 +770,20 @@ function bonus(lines: PDFLayoutLine[], index: number, body: number | null, boldB
 
 // MARK: Repères
 
-function seriesHeader(text: string): { number: number; remainder: string } | null {
+/// « Série 5b — Suites » → (5, « b », « Suites »). « Série 5 à rendre » n'a pas d'étiquette.
+function seriesHeader(text: string): { number: number; label: string; remainder: string } | null {
   const match = seriesPattern.exec(text);
   if (!match) return null;
   const number = swiftInt(match[1]);
   if (number === null || !(number >= 1 && number <= 60)) return null;
-  return { number, remainder: match[2] };
+  const letter = match[2] ?? "";
+  let remainder = match[3] ?? "";
+  const label = SeriesIdentity.normalized(letter === "" ? SeriesIdentity.label(text) : letter);
+  // « Série 5.2 — Suites » : le « 2 » est l'étiquette, pas le titre.
+  if (/^\d+$/.test(label) && remainder.startsWith(label) && !/^\d/.test(remainder.slice(label.length))) {
+    remainder = remainder.slice(label.length).replace(/^[ \t–—:.-]+|[ \t–—:.-]+$/g, "");
+  }
+  return { number, label, remainder };
 }
 
 function exerciseMarker(text: string, fallbackSeries: number): ExerciseMarker | null {

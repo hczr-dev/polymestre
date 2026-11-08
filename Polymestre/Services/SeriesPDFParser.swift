@@ -78,8 +78,18 @@ struct DetectedSeries: Equatable, Identifiable {
     /// Intitulé trouvé après « Série 3 », s'il y en a un.
     var title: String
     var exercises: [DetectedExercise]
+    /// « b » pour « Série 5b » : deux séries de même numéro (`SeriesIdentity`).
+    var label: String = ""
 
-    var id: Int { number }
+    init(number: Int, title: String, exercises: [DetectedExercise], label: String = "") {
+        self.number = number
+        self.title = title
+        self.exercises = exercises
+        self.label = SeriesIdentity.normalized(label)
+    }
+
+    var key: SeriesIdentity.Key { SeriesIdentity.Key(number, label) }
+    var id: String { "\(number)|\(label)" }
 
     /// Toute une série « bonus », ce n'est pas une série : c'est une note de
     /// page (« les exercices étoilés sont facultatifs ») lue sous chaque titre,

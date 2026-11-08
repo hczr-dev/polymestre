@@ -7,6 +7,10 @@ final class ExerciseSeries {
     var id: UUID = UUID()
     var course: Course?
     var seriesNumber: Int = 0
+    /// Ce qui distingue deux séries de même numéro — « a », « b », « mardi »,
+    /// « partie 2 » — quand le cours en publie deux par semaine ; vide sinon.
+    /// Une série sans numéro prend celui de sa semaine Moodle (`SeriesIdentity`).
+    var label: String = ""
     var title: String = ""
     var plannedWeek: Int = 0
     var publishedAt: Date?
@@ -33,6 +37,7 @@ final class ExerciseSeries {
     init(id: UUID = UUID(),
          course: Course? = nil,
          seriesNumber: Int,
+         label: String = "",
          title: String = "",
          plannedWeek: Int = 1,
          publishedAt: Date? = nil,
@@ -41,12 +46,18 @@ final class ExerciseSeries {
         self.id = id
         self.course = course
         self.seriesNumber = seriesNumber
-        self.title = title.isEmpty ? "Série \(seriesNumber)" : title
+        self.label = SeriesIdentity.normalized(label)
+        self.title = title.isEmpty ? SeriesIdentity.displayName(number: seriesNumber, label: label) : title
         self.plannedWeek = plannedWeek
         self.publishedAt = publishedAt
         self.dueDate = dueDate
         self.urlString = urlString
     }
+
+    /// Numéro et étiquette : ce qui identifie la série dans son cours.
+    var key: SeriesIdentity.Key { SeriesIdentity.Key(seriesNumber, label) }
+    /// « Série 5 », « Série 5b », « Série 5 · mardi ».
+    var displayName: String { SeriesIdentity.displayName(number: seriesNumber, label: label) }
 
     var sortedExercises: [Exercise] {
         exercises.sorted { $0.sortOrder < $1.sortOrder }
@@ -166,6 +177,15 @@ final class Exercise {
         self.sortOrder = sortOrder
         self.statementURLString = statementURLString
         self.redoRequired = false
+    }
+
+    /// Le numéro partagé avec un groupe : « 5.1 », ou « 5b.1 » pour un exercice
+    /// de la série 5b — sans quoi le 5.1 de 5a et celui de 5b se confondaient
+    /// chez les autres membres. Inchangé pour une série sans étiquette.
+    var groupNumber: String {
+        guard let series, !series.label.isEmpty else { return exerciseNumber }
+        let minor = exerciseNumber.split(separator: ".").last.map(String.init) ?? exerciseNumber
+        return "\(series.seriesNumber)\(series.label.replacingOccurrences(of: " ", with: "")).\(minor)"
     }
 
     /// « Exercice 3.2 » (traduit : la leçon se lit aussi en anglais).

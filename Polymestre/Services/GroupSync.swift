@@ -408,7 +408,9 @@ enum GroupSync {
             let scoped = courses.filter { subjects.contains($0.code.uppercased()) }
 
             let completed = scoped.flatMap { course in
-                course.sortedSeries.filter(\.isComplete).map { (course.code, $0.seriesNumber) }
+                // « Série 5 terminée » ne dit pas laquelle de 5a et 5b : une série
+                // étiquetée ne se partage qu'exercice par exercice.
+                course.sortedSeries.filter { $0.isComplete && $0.label.isEmpty }.map { (course.code, $0.seriesNumber) }
             }
             for item in completed {
                 let alreadyShared = group.completions.contains {
@@ -436,7 +438,7 @@ enum GroupSync {
                                                         userId: social.userID ?? "",
                                                         courseCode: course.code,
                                                         itemKind: GroupItemKind.exercise.rawValue,
-                                                        itemNumber: exercise.exerciseNumber))
+                                                        itemNumber: exercise.groupNumber))
                 }
                 for item in course.theoryItems where item.isWatched {
                     payload.append(RemoteItemCompletion(groupId: remoteID,

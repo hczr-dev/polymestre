@@ -487,7 +487,7 @@ private struct MacGroupHub: View {
 
     private func seriesBoard(_ board: SeriesBoard, tint: Color) -> some View {
         VStack(alignment: .leading, spacing: 6) {
-            Text("Série \(board.seriesNumber)").font(.caption.weight(.semibold))
+            Text(board.displayName).font(.caption.weight(.semibold))
             Text(board.summary).font(.caption2).foregroundStyle(Carnet.inkSecondary)
             Grid(horizontalSpacing: 3, verticalSpacing: 4) {
                 ForEach(board.rows.prefix(8)) { row in

@@ -73,6 +73,27 @@ export class LocalStore {
 
   async migrate(): Promise<void> {
     for (const stmt of ddl) await this.db.execute(stmt);
+    await this.addMissingColumns();
+  }
+
+  /**
+   * Un champ ajouté au schéma (`label` des séries) : `CREATE TABLE IF NOT EXISTS`
+   * ne touche pas une table déjà là, et toute écriture échouait alors sur une
+   * colonne inconnue. Les colonnes absentes s'ajoutent ici, avec leur défaut.
+   */
+  private async addMissingColumns(): Promise<void> {
+    for (const stmt of ddl) {
+      const head = stmt.match(/^CREATE TABLE IF NOT EXISTS (\w+) \(\n([\s\S]*)\n\)$/);
+      if (!head) continue;
+      const [, table, body] = head;
+      const present = new Set((await this.db.select<{ name: string }>(`PRAGMA table_info(${table})`)).map((c) => c.name));
+      for (const line of body.split("\n")) {
+        const def = line.trim().replace(/,$/, "");
+        const name = def.split(/\s+/)[0];
+        if (!name || present.has(name) || /PRIMARY KEY/.test(def)) continue;
+        await this.db.execute(`ALTER TABLE ${table} ADD COLUMN ${def}`);
+      }
+    }
   }
 
   /** Écriture locale : la ligne devient « à envoyer ». */

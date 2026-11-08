@@ -124,7 +124,7 @@ struct ExerciseStudySheet: View {
             // Quand l'énoncé est à côté, il porte déjà le numéro : pas de doublon.
             if showStatement {
             VStack(alignment: .leading, spacing: 4) {
-                Kicker(series.title.isEmpty ? "Série \(series.seriesNumber)" : series.title, color: tint)
+                Kicker(series.title.isEmpty ? series.displayName : series.title, color: tint)
                 Text(exercise.displayNumber).font(Carnet.serif(showStatement ? 30 : 24)).foregroundStyle(Carnet.ink)
                 if !exercise.title.isEmpty, exercise.title != exercise.displayNumber {
                     MacMathText(exercise.title, size: 14).foregroundStyle(Carnet.inkSecondary)

@@ -3,6 +3,7 @@
 // dans les données : l'app applique la commande avec les mêmes règles que
 // l'interface. Une commande qui ne trouve pas sa cible échoue proprement.
 
+import { SeriesIdentity } from "./seriesIdentity.ts";
 import type { Course } from "../models/course.ts";
 import { Exercise } from "../models/exercise.ts";
 import { Exam } from "../models/exam.ts";
@@ -48,6 +49,8 @@ export interface AssistantPayload {
   startedAt?: string | null;
   // Série, évaluation
   number?: number | null;
+  /** « b », « mardi » : la deuxième série d'une semaine. */
+  label?: string | null;
   week?: number | null;
   title?: string | null;
   exercises?: NewExerciseSpec[] | null;
@@ -264,8 +267,10 @@ function applyOne(command: AssistantCommand, courses: Course[], now: Date): stri
       const course = findCourse(p, courses);
       const number = p.number;
       if (number === undefined || number === null || !(number > 0)) throw new Failure("Numéro de série manquant.");
+      const label = SeriesIdentity.normalized(p.label ?? "");
       const draft = new SeriesDraft({
         number,
+        label,
         title: "",
         plannedWeek: p.week ?? course.currentWeek,
         exercises: (p.exercises ?? []).map((spec) => new ExerciseDraft({
@@ -277,13 +282,10 @@ function applyOne(command: AssistantCommand, courses: Course[], now: Date): stri
           subQuestions: (spec.questions ?? []).map((label) => DetectedSubQuestion.make(label)),
         })),
       });
-      const existed = course.series.some((series) => series.seriesNumber === number);
-      SeriesDraftWriter.write(draft, course, "importMerge", null);
-      if (p.title !== undefined && p.title !== null && p.title !== "") {
-        const series = course.series.find((item) => item.seriesNumber === number);
-        if (series !== undefined) series.title = p.title;
-      }
-      return `${course.displayCode} : série ${number} ${existed ? "complétée" : "ajoutée"} (${Plural.count(draft.exercises.length, `${draft.exercises.length} exercice`, `${draft.exercises.length} exercices`)})`;
+      const existed = course.seriesWith(number, label) !== null;
+      const written = SeriesDraftWriter.write(draft, course, "importMerge", null).series;
+      if (p.title !== undefined && p.title !== null && p.title !== "") written.title = p.title;
+      return `${course.displayCode} : ${written.displayName.toLowerCase()} ${existed ? "complétée" : "ajoutée"} (${Plural.count(draft.exercises.length, `${draft.exercises.length} exercice`, `${draft.exercises.length} exercices`)})`;
     }
 
     case "add_exam": {

@@ -325,8 +325,8 @@ function GroupPage({ group, back }: { group: Group; back: () => void }) {
                 {boards.length > 0 && (
                   <div style={{ display: "flex", gap: 14, overflowX: "auto", marginTop: 10 }}>
                     {boards.map((b) => (
-                      <div key={b.seriesNumber} style={{ flex: "none", padding: 8, borderRadius: 8, background: "var(--ground)" }}>
-                        <div style={{ fontSize: 12, fontWeight: 600, marginBottom: 4 }}>Série {b.seriesNumber}</div>
+                      <div key={`${b.seriesNumber}|${b.label}`} style={{ flex: "none", padding: 8, borderRadius: 8, background: "var(--ground)" }}>
+                        <div style={{ fontSize: 12, fontWeight: 600, marginBottom: 4 }}>{b.displayName}</div>
                         {b.rows.slice(0, 8).map((row) => (
                           <div key={row.userID} style={{ display: "flex", alignItems: "center", gap: 3, marginBottom: 3 }}>
                             <span style={{ width: 54, fontSize: 11, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{row.isMe ? "Toi" : row.name}</span>

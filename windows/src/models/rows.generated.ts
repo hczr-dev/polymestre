@@ -79,6 +79,7 @@ export interface ExerciseSeriesRow {
   solutions_at: string | null;
   solution_url_string: string;
   needs_reread: boolean;
+  label: string;
   course_id: string | null;
   updated_at: string;
   deleted_at: string | null;

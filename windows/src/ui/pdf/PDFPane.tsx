@@ -6,7 +6,7 @@
 // Rendu par pdf.js ; la mémoire de la page lue (`ReadingMemory`) relève de la
 // lecture de contenu et n'est pas portée ici.
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Button } from "../kit.tsx";
 import { openPDF, renderBand, type OpenPDF } from "../../services/pdfPages.ts";
 import { linesFromData } from "../../services/pdfLayoutExtractor.ts";
@@ -133,19 +133,18 @@ export function ExercisePDFView({ bytes, exercise, next }: { bytes: Uint8Array; 
   const [ref, width] = useWidth();
   const [cropped, setCropped] = useState(readCropped);
   const [region, setRegion] = useState<CropRegion | null | undefined>(undefined);
-  const key = `${exercise.exerciseNumber}|${exercise.title}|${next?.exerciseNumber ?? ""}`;
-  const wanted = useMemo(() => PDFExerciseCrop.terms(exercise), [exercise]);
-  const wantedNext = useMemo(() => (next ? PDFExerciseCrop.terms(next) : []), [next]);
+  const key = `${exercise.exerciseNumber}|${exercise.title}|${exercise.rank ?? ""}|${next?.exerciseNumber ?? ""}`;
 
   useEffect(() => {
     if (!pdf) return;
     let alive = true;
     setRegion(undefined);
     layoutOf(bytes).then((lines) => {
-      if (alive) setRegion(PDFExerciseCrop.region(lines, pdf.pageCount, wanted, wantedNext));
+      if (alive) setRegion(PDFExerciseCrop.regionFor(lines, pdf.pageCount, exercise, next));
     }).catch(() => { if (alive) setRegion(null); });
     return () => { alive = false; };
-  }, [pdf, bytes, key, wanted, wantedNext]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pdf, bytes, key]);
 
   const toggle = () => {
     const value = !cropped;

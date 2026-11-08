@@ -65,8 +65,7 @@ struct WeekTimeCard: View {
                     axis("Corrigés", corrections)
                 }
                 if late > 0 {
-                    Label(late == 1 ? "1 élément des semaines passées à rattraper"
-                                    : "\(late) éléments des semaines passées à rattraper",
+                    Label("\(late) à rattraper dans tes cours",
                           systemImage: "exclamationmark.circle")
                         .font(.footnote)
                         .foregroundStyle(Carnet.wrong)
@@ -137,6 +136,8 @@ struct WeekTimeCard: View {
 /// corrections faits sur prévus, et le retard en mots.
 struct WeekCourseRow: View {
     let summary: WeekCourseSummary
+    /// Toucher « N en retard » ouvre « À rattraper » (le reste de la ligne, le cours).
+    var openLate: (() -> Void)? = nil
 
     var body: some View {
         let course = summary.course
@@ -215,9 +216,25 @@ struct WeekCourseRow: View {
     @ViewBuilder
     private func standing(late: Int, ahead: Int, week: WeeklyProgress) -> some View {
         if late > 0 {
-            Text("\(late) en retard")
-                .font(.caption.weight(.semibold))
-                .foregroundStyle(Carnet.wrong)
+            if let openLate {
+                Button(action: openLate) {
+                    HStack(spacing: 2) {
+                        Text("\(late) en retard")
+                        Image(systemName: "chevron.right").font(.caption2.weight(.bold))
+                    }
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(Carnet.wrong)
+                    .padding(.vertical, 6)
+                    .padding(.leading, 8)
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .accessibilityHint("Ouvre ce qui est à rattraper")
+            } else {
+                Text("\(late) en retard")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(Carnet.wrong)
+            }
         } else if week.isComplete {
             Label("semaine faite", systemImage: "checkmark")
                 .font(.caption.weight(.semibold))

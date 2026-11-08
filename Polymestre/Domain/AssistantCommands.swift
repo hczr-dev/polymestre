@@ -37,6 +37,8 @@ struct AssistantCommand: Codable, Equatable {
         var startedAt: String?
         // Série, évaluation
         var number: Int?
+        /// « b », « mardi » : la deuxième série d'une semaine.
+        var label: String?
         var week: Int?
         var title: String?
         var exercises: [NewExercise]?
@@ -170,7 +172,9 @@ enum AssistantCommandApplier {
         case "add_series":
             let course = try findCourse(p, in: courses)
             guard let number = p.number, number > 0 else { throw Failure(message: "Numéro de série manquant.") }
+            let label = SeriesIdentity.normalized(p.label ?? "")
             let draft = SeriesDraft(number: number,
+                                    label: label,
                                     title: "",
                                     plannedWeek: p.week ?? course.currentWeek,
                                     exercises: (p.exercises ?? []).map { spec in
@@ -183,11 +187,10 @@ enum AssistantCommandApplier {
                                         draft.statement = spec.statement ?? ""
                                         return draft
                                     })
-            let existed = course.series.contains { $0.seriesNumber == number }
-            SeriesDraftWriter.write(draft, to: course, mode: .importMerge, context: context)
-            if let title = p.title, !title.isEmpty,
-               let series = course.series.first(where: { $0.seriesNumber == number }) { series.title = title }
-            return "\(course.displayCode) : série \(number) \(existed ? "complétée" : "ajoutée") (\(Plural.count(draft.exercises.count, "\(draft.exercises.count) exercice", "\(draft.exercises.count) exercices")))"
+            let existed = course.series(number: number, label: label) != nil
+            let written = SeriesDraftWriter.write(draft, to: course, mode: .importMerge, context: context).series
+            if let title = p.title, !title.isEmpty { written.title = title }
+            return "\(course.displayCode) : \(written.displayName.lowercased()) \(existed ? "complétée" : "ajoutée") (\(Plural.count(draft.exercises.count, "\(draft.exercises.count) exercice", "\(draft.exercises.count) exercices")))"
 
         case "add_exam":
             let course = try findCourse(p, in: courses)

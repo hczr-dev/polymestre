@@ -95,29 +95,13 @@ enum ProgressEngine {
 
     // MARK: Rythme
 
-    /// Ce qui aurait dû être fait **avant** cette semaine et ne l'est pas :
-    /// théorie non vue, exercices (hors bonus) non faits des semaines passées.
+    /// Ce qui aurait dû être fait **avant** cette semaine et ne l'est pas — à
+    /// refaire, à corriger, exercices non faits, théorie non vue (`LateWork`).
     /// C'est le « 1 en retard » d'une carte de cours — la semaine en cours n'y
     /// compte pas, elle n'est pas finie.
     static func lateCount(for course: Course, currentWeek: Int? = nil, now: Date = Date()) -> Int {
-        let week = currentWeek ?? course.currentWeek
-        let corrections = correctionsDue(for: course, now: now)
-        guard week > 1 else { return corrections.toRedo }
-        let theory = course.theoryItems.filter { $0.plannedWeek > 0 && $0.plannedWeek < week && !$0.isWatched }.count
-        let pastSeries = course.series.filter { $0.plannedWeek > 0 && $0.plannedWeek < week }
-        let exercises = pastSeries
-            .flatMap(\.exercises)
-            .filter { !$0.isBonus && !$0.isDone }
-            .count
-        // Corriger fait partie du travail : un exercice d'une semaine passée,
-        // fait, dont le corrigé est publié et qui n'est toujours pas corrigé,
-        // est en retard — comme un exercice à refaire.
-        let uncorrected = pastSeries
-            .filter { $0.solutionsAt.map { $0 <= now } ?? true }
-            .flatMap(\.exercises)
-            .filter { !$0.isBonus && $0.isDone && !$0.isCorrected }
-            .count
-        return theory + exercises + uncorrected + corrections.toRedo
+        // Une seule définition du retard : celle de la page « À rattraper ».
+        LateWork.of(course, currentWeek: currentWeek, now: now).total
     }
 
     /// Les corrections en attente d'un cours : exercices faits à corriger (le

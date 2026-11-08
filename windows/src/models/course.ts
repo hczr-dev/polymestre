@@ -7,6 +7,7 @@ import { localizedStandardCompare, makeURL, splitLines, trimAll } from "./util.t
 import type { AcademicTerm } from "./academicTerm.ts";
 import type { Exam } from "./exam.ts";
 import type { Exercise, ExerciseSeries } from "./exercise.ts";
+import { SeriesIdentity } from "../domain/seriesIdentity.ts";
 import type { LinkedCalendarEvent } from "./linkedCalendarEvent.ts";
 import type { LinkedTask } from "./linkedTask.ts";
 import type { PastExam } from "./pastExam.ts";
@@ -251,7 +252,22 @@ export class Course {
   }
 
   get sortedSeries(): ExerciseSeries[] {
-    return [...this.series].sort((a, b) => a.seriesNumber - b.seriesNumber);
+    return [...this.series].sort((a, b) => SeriesIdentity.compare(a.key, b.key));
+  }
+
+  /**
+   * La série de ce numéro et de cette étiquette. Une étiquette apparue (la série
+   * enregistrée sans, relue avec « mardi ») retrouve celle de même numéro qui
+   * n'en avait pas, quand `soleOfNumber` dit que la source n'en a qu'une.
+   */
+  seriesWith(number: number, label = "", soleOfNumber = true): ExerciseSeries | null {
+    const key = SeriesIdentity.key(number, label);
+    const exact = this.series.find((s) => SeriesIdentity.same(s.key, key));
+    if (exact) return exact;
+    if (!soleOfNumber) return null;
+    const same = this.series.filter((s) => s.seriesNumber === number);
+    if (key.label === "") return same.length === 1 ? same[0] : null;
+    return same.find((s) => s.label === "") ?? null;
   }
 
   /** Sections de théorie présentes. */

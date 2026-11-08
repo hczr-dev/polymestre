@@ -335,7 +335,7 @@ export function SeriesImportSheet({ course, initialFiles, initialText, onClose }
               {drafts.map((draft) => (
                 <SeriesDraftForm key={draft.id} draft={draft} maxWeek={selectedCourse?.term?.totalWeeks ?? 14}
                   mergesInto={(() => {
-                    const same = selectedCourse?.series.find((s) => s.seriesNumber === draft.number);
+                    const same = selectedCourse?.seriesWith(draft.number, draft.label) ?? null;
                     return same ? { seriesNumber: same.seriesNumber, exerciseCount: same.exercises.length } : null;
                   })()}
                   onChange={touch} showSource={pageImages.length === 0 ? undefined : showSource(draft)} />

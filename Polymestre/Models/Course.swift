@@ -240,7 +240,22 @@ final class Course {
     }
 
     var sortedSeries: [ExerciseSeries] {
-        series.sorted { $0.seriesNumber < $1.seriesNumber }
+        series.sorted { $0.key < $1.key }
+    }
+
+    /// La série de ce numéro et de cette étiquette.
+    ///
+    /// Sans série à cette étiquette exacte, une étiquette **apparue** (la série
+    /// enregistrée sans, relue avec « mardi ») retrouve la série de même numéro
+    /// qui n'en avait pas — pourvu que `soleOfNumber` dise que la source n'en a
+    /// qu'une à ce numéro. Sans quoi chaque nouvelle lecture créerait un double.
+    func series(number: Int, label: String = "", soleOfNumber: Bool = true) -> ExerciseSeries? {
+        let key = SeriesIdentity.Key(number, label)
+        if let exact = series.first(where: { $0.key == key }) { return exact }
+        guard soleOfNumber else { return nil }
+        let same = series.filter { $0.seriesNumber == number }
+        if key.label.isEmpty { return same.count == 1 ? same[0] : nil }
+        return same.first { $0.label.isEmpty }
     }
 
     /// Sections de théorie présentes.

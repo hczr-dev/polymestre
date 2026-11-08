@@ -105,7 +105,7 @@ export const tables: Table[] = [
     name: "sync_exercise_series",
     fields: [
       i("seriesNumber"), t("title"), i("plannedWeek"), dt("publishedAt", opt), dt("dueDate", opt),
-      t("urlString"), t("topic"), dt("solutionsAt", opt), t("solutionURLString"), b("needsReread"),
+      t("urlString"), t("topic"), dt("solutionsAt", opt), t("solutionURLString"), b("needsReread"), t("label"),
     ],
     refs: [{ swift: "course", table: "sync_courses", onDelete: "cascade" }],
   },

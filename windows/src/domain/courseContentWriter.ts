@@ -12,6 +12,7 @@ import { swiftInt } from "../services/seriesPDFParser.ts";
 import { BotafogoLinks } from "./botafogoProgram.ts";
 import { ContentDraft, ContentDraftBuilder, ContentDraftItem } from "./courseContentImport.ts";
 import { ExerciseDraft, SeriesDraft, SeriesDraftWriter } from "./seriesDraft.ts";
+import { SeriesIdentity } from "./seriesIdentity.ts";
 
 /** Ce qu'un import a changé, pour le dire en une phrase. */
 export class ContentImportResult {
@@ -65,7 +66,7 @@ export const ContentDraftWriter = {
   writeDetails(item: ContentDraftItem, series: ExerciseSeries, course: Course,
                context: ModelStore, complete = false): number {
     const topic = item.title.trim();
-    if (topic !== "" && topic !== `Série ${series.seriesNumber}`
+    if (topic !== "" && topic !== `Série ${series.seriesNumber}` && topic !== series.displayName
         && (ContentDraftBuilder.seriesNumber(topic) === null || [...topic].length > 12)) {
       series.topic = topic;
     }
@@ -76,6 +77,7 @@ export const ContentDraftWriter = {
     const draft = new SeriesDraft({
       existingID: series.id,
       number: series.seriesNumber,
+      label: series.label,
       title: "",
       plannedWeek: series.plannedWeek,
       exercises: item.exercises.map((spec) => {
@@ -241,7 +243,19 @@ export const ContentDraftWriter = {
             const number = item.seriesNumber ?? swiftInt(item.number);
             if (number === null) continue;
             let series: ExerciseSeries;
-            const existing = course.series.find((candidate) => candidate.seriesNumber === number);
+            // Seule à ce numéro, ou la première de ses sœurs (« 5a » avant « 5b ») :
+            // elle reprend la série enregistrée sans étiquette, et son avancement.
+            const siblings = draft.sections.flatMap((s) => s.items)
+              .filter((other) => other.kind === "series" && (other.seriesNumber ?? swiftInt(other.number)) === number);
+            const firstLabel = siblings.map((other) => SeriesIdentity.normalized(other.seriesLabel))
+              .sort((a, b) => a === b ? 0 : SeriesIdentity.labelPrecedes(a, b) ? -1 : 1)[0];
+            const sole = siblings.length <= 1 || SeriesIdentity.normalized(item.seriesLabel) === firstLabel;
+            const existing = course.seriesWith(number, item.seriesLabel, sole) ?? undefined;
+            if (existing !== undefined && existing.label === "" && item.seriesLabel !== "") {
+              // Une étiquette apparue (« mardi ») se pose sur la série d'avant.
+              if (existing.title === existing.displayName) existing.title = SeriesIdentity.displayName(number, item.seriesLabel);
+              existing.label = SeriesIdentity.normalized(item.seriesLabel);
+            }
             if (existing !== undefined) {
               // Un corrigé seul (sans énoncé) ne déplace jamais sa série.
               const carriesStatement = item.url !== "" || item.pdfURL !== "";
@@ -281,7 +295,7 @@ export const ContentDraftWriter = {
               result.seriesUpdated += 1;
             } else {
               series = new ExerciseSeries({
-                course, seriesNumber: number, plannedWeek: item.plannedWeek(section),
+                course, seriesNumber: number, label: item.seriesLabel, plannedWeek: item.plannedWeek(section),
                 urlString: item.pdfURL === "" ? item.url : item.pdfURL,
               });
               context.insert(series);

@@ -276,7 +276,8 @@ const TOOLS = [
       type: "object",
       properties: {
         course,
-        number: { type: "number" },
+        number: { type: "number", description: "Numéro de la série ; sans numéro, celui de sa semaine" },
+        label: { type: "string", description: "Ce qui distingue deux séries de même numéro (« b », « mardi »), sinon vide" },
         week: { type: "number", description: "Semaine du semestre" },
         title: { type: "string" },
         exercises: {
@@ -440,7 +441,7 @@ function getCourse(data: any, args: any) {
     id: c.id, code: c.code, nom: c.name, credits: c.credits, semaine: c.currentWeek, enseignant: c.lecturer,
     fichiers: fileIndex(data).filter((e) => e.courseId === c.id).map((e) => ({ id: e.id, type: e.type, titre: e.titre, serie: e.serie })),
     series: series.map((s: any) => ({
-      id: s.id, numero: s.number, titre: s.title, semaine: s.plannedWeek, terminee: s.complete,
+      id: s.id, numero: s.number, etiquette: s.label || undefined, titre: s.title, semaine: s.plannedWeek, terminee: s.complete,
       sujet: s.topic || undefined, adresse: s.url || undefined, adresseCorrige: s.solutionUrl || undefined,
       exercices: (s.exercises ?? []).map((e: any) => ({
         id: e.id, numero: e.number, titre: e.title || undefined, enonce: e.statement, etape: e.stage,
@@ -807,17 +808,18 @@ function prepareWrite(name: string, args: any, data: any): { kind: string; paylo
         number: String(x.number), title: x.title, statement: x.statement, bonus: !!x.bonus,
         questions: (x.questions ?? []).map(String),
       }));
-      const existing = (c.series ?? []).find((s: any) => s.number === number);
+      const label = String(args.label ?? "").trim().toLowerCase();
+      const existing = (c.series ?? []).find((s: any) => s.number === number && String(s.label ?? "") === label);
       if (!existing) {
         c.series = [...(c.series ?? []), {
-          id: `en-attente-${crypto.randomUUID()}`, number, title: args.title ?? `Série ${number}`, plannedWeek: args.week ?? c.currentWeek, complete: false,
+          id: `en-attente-${crypto.randomUUID()}`, number, label, title: args.title ?? `Série ${number}${label}`, plannedWeek: args.week ?? c.currentWeek, complete: false,
           exercises: exercises.map((x: any) => ({ id: `en-attente-${crypto.randomUUID()}`, number: x.number, title: x.title ?? "", statement: x.statement, bonus: x.bonus, done: false, corrected: false, redo: false, stage: "à faire", questions: x.questions.map((q: string) => ({ path: q, label: q, text: "", done: false })) })),
         }];
       }
       return {
         kind: "add_series",
-        payload: { courseId: c.id, number, week: args.week, title: args.title, exercises },
-        summary: `${c.code} série ${number} (${exercises.length} exercices)`,
+        payload: { courseId: c.id, number, label, week: args.week, title: args.title, exercises },
+        summary: `${c.code} série ${number}${label} (${exercises.length} exercices)`,
       };
     }
     case "add_exam": {

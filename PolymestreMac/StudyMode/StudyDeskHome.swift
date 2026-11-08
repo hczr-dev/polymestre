@@ -479,7 +479,7 @@ struct StudyDeskHome: View {
 
     private var seriesDetail: String {
         guard let series else { return "Pas de série" }
-        let name = series.title.isEmpty ? "Série \(series.seriesNumber)" : series.title
+        let name = series.title.isEmpty ? series.displayName : series.title
         return "\(name) · \(series.doneCount)/\(series.requiredExercises.count)" + (nextExercise.map { " · ensuite \($0.displayNumber)" } ?? "")
     }
 

@@ -121,6 +121,7 @@ function coursePayload(course: Course, includeContent: boolean): Record<string, 
       plannedWeek: series.plannedWeek,
       complete: series.isComplete,
     };
+    if (series.label !== "") seriesEntry["label"] = series.label;
     if (includeContent) {
       if (series.urlString !== "") seriesEntry["url"] = series.urlString;
       if (series.solutionURLString !== "") seriesEntry["solutionUrl"] = series.solutionURLString;

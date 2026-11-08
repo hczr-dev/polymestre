@@ -47,7 +47,7 @@ enum AssistantFiles {
         for course in courses where course.isTracked {
             let base: [String: Any] = ["courseId": course.id.uuidString, "course": course.displayCode]
             for series in course.sortedSeries {
-                let label = series.title.isEmpty ? "Série \(series.seriesNumber)" : "Série \(series.seriesNumber) — \(series.title)"
+                let label = series.title.isEmpty ? series.displayName : "\(series.displayName) — \(series.title)"
                 if let file = SeriesPDFStore.shared.localFile(for: series) {
                     locals.append(local(file, id: "serie:\(series.id.uuidString)", kind: "enonce", title: "\(label) (énoncé)",
                                         name: "\(slug(course.displayCode))-serie-\(series.seriesNumber).pdf", mime: "application/pdf",

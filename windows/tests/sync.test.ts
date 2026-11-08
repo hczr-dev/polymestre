@@ -203,3 +203,20 @@ describe("synchronisation", () => {
     expect(rewind(null)).toBeNull();
   });
 });
+
+describe("Base locale : un champ ajouté au schéma", () => {
+  it("une table d'avant (sans `label`) reçoit la colonne, et s'écrit", async () => {
+    const db = memoryDb();
+    // La table des séries telle qu'une installation d'avant l'a créée.
+    await db.execute("CREATE TABLE sync_exercise_series (id TEXT PRIMARY KEY, series_number INTEGER NOT NULL DEFAULT 0, title TEXT NOT NULL DEFAULT '', planned_week INTEGER NOT NULL DEFAULT 0, published_at TEXT, due_date TEXT, url_string TEXT NOT NULL DEFAULT '', topic TEXT NOT NULL DEFAULT '', solutions_at TEXT, solution_url_string TEXT NOT NULL DEFAULT '', needs_reread INTEGER NOT NULL DEFAULT 0, course_id TEXT, updated_at TEXT NOT NULL DEFAULT '', deleted_at TEXT, server_updated_at TEXT, dirty INTEGER NOT NULL DEFAULT 1)");
+    await db.execute("INSERT INTO sync_exercise_series (id, series_number) VALUES ('old', 5)");
+    const store = new LocalStore(db);
+    await store.migrate();
+    await store.migrate();
+    const old = await db.select<{ label: string }>("SELECT label FROM sync_exercise_series WHERE id = 'old'");
+    expect(old[0]?.label).toBe("");
+    await store.write("sync_exercise_series", { id: "new", series_number: 5, label: "b" });
+    const rows = await db.select<{ label: string }>("SELECT label FROM sync_exercise_series WHERE id = 'new'");
+    expect(rows[0]?.label).toBe("b");
+  });
+});

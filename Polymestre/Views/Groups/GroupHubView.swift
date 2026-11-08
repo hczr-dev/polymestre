@@ -218,7 +218,7 @@ struct GroupHubView: View {
         let tint = course.map { Carnet.tint($0.colorHex) } ?? Carnet.inkSecondary
         return VStack(alignment: .leading, spacing: 10) {
             HStack(alignment: .firstTextBaseline) {
-                Text("\(code) · Série \(board.seriesNumber)").font(.subheadline.weight(.semibold)).foregroundStyle(tint)
+                Text("\(code) · \(board.displayName)").font(.subheadline.weight(.semibold)).foregroundStyle(tint)
                 Spacer()
                 Text(board.summary).font(.footnote).foregroundStyle(Carnet.inkSecondary)
             }

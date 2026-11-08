@@ -127,14 +127,24 @@ enum SeriesLayoutParser {
         }
         let leftMargin = lines.filter { !$0.isEmpty && $0.indent > 0 }.map(\.indent).min() ?? 0
         let plainHeadings = usesKeywords ? [] : plainNumberedHeadings(lines, leftMargin: leftMargin)
+        // Des exercices titrés « Exercice » **sans numéro** : seulement dans un
+        // document qui n'en numérote aucun, et qui en a au moins deux — un
+        // « Exercice » isolé est plus souvent un intitulé de page.
+        let unnumberedHeadings = !usesKeywords && plainHeadings.isEmpty
+            && lines.filter { unnumberedHeading($0.trimmed) != nil && ($0.isBold || isHeading($0, body: body, boldBody: boldBody)) }.count >= 2
 
-        var seriesTitles: [Int: String] = [:]
-        var groups: [Int: [DetectedExercise]] = [:]
+        // Une série = son numéro et son étiquette : « Série 5a » et « Série 5b »
+        // dans un même PDF restent deux séries.
+        typealias Key = SeriesIdentity.Key
+        var seriesTitles: [Key: String] = [:]
+        var groups: [Key: [DetectedExercise]] = [:]
         var seen = Set<String>()
-        var currentSeries: Int?
-        var order: [Int] = []
+        var currentSeries: Key?
+        var order: [Key] = []
         /// Position de l'exercice en cours, pour y rattacher ses questions.
-        var current: (series: Int, index: Int)?
+        var current: (series: Key, index: Int)?
+        /// Les exercices titrés « Exercice » sans numéro, comptés dans l'ordre.
+        var unnumberedCount: [Key: Int] = [:]
         /// Les lignes de l'exercice en cours, dans l'ordre : questions et texte.
         var events: [QuestionEvent] = []
 
@@ -151,8 +161,9 @@ enum SeriesLayoutParser {
             guard !text.isEmpty else { continue }
 
             // 1. En-tête de série.
-            if let (number, remainder) = seriesHeader(text) {
+            if let (number, label, remainder) = seriesHeaderWithLabel(text) {
                 closeExercise()
+                let number = Key(number, label)
                 currentSeries = number
                 if order.contains(number) == false { order.append(number) }
                 if seriesTitles[number] == nil {
@@ -175,17 +186,28 @@ enum SeriesLayoutParser {
             let nearMargin = line.indent <= leftMargin + 18
 
             // 2. Exercice.
-            if let marker = exerciseMarker(text, fallbackSeries: currentSeries ?? fallback),
-               plainHeadings.contains(index)
+            let seriesNow = currentSeries ?? Key(fallback)
+            var found = exerciseMarker(text, fallbackSeries: seriesNow.number)
+            var plainHeading = plainHeadings.contains(index)
+            // « Exercice » sans numéro (« Exercice — Suites de Cauchy ») : un
+            // titre mis en forme, numéroté dans l'ordre du document.
+            if found == nil, unnumberedHeadings, let remainder = unnumberedHeading(text), markedUp || nearMargin && line.isBold {
+                let next = (unnumberedCount[seriesNow] ?? 0) + 1
+                unnumberedCount[seriesNow] = next
+                found = ExerciseMarker(number: "\(seriesNow.number).\(next)", series: nil, remainder: remainder, kind: .keyword)
+                plainHeading = true
+            }
+            if let marker = found,
+               plainHeading
                 || accepts(marker, markedUp: markedUp, nearMargin: nearMargin, usesKeywords: usesKeywords) {
-                guard seen.insert(marker.number).inserted else {
+                let resolvedSeries = marker.series.map { major in major == seriesNow.number ? seriesNow : Key(major) } ?? seriesNow
+                guard seen.insert(resolvedSeries.label + "|" + marker.number).inserted else {
                     // Un doublon (corrigé à la suite de l'énoncé, rappel en pied de
                     // page) clôt l'exercice précédent sans en créer un nouveau.
                     closeExercise()
                     continue
                 }
                 closeExercise()
-                let resolvedSeries = marker.series ?? currentSeries ?? fallback
                 if order.contains(resolvedSeries) == false { order.append(resolvedSeries) }
 
                 groups[resolvedSeries, default: []].append(
@@ -193,7 +215,7 @@ enum SeriesLayoutParser {
                                      title: title(for: marker, line: line, next: nextLine(lines, after: index),
                                                   body: body, boldBody: boldBody),
                                      isBonus: bonus(lines, from: index, body: body, boldBody: boldBody),
-                                     isConfident: marker.kind != .numeric || plainHeadings.contains(index),
+                                     isConfident: marker.kind != .numeric || plainHeading,
                                      pageIndex: line.pageIndex,
                                      verticalPosition: line.verticalPosition))
                 current = (resolvedSeries, groups[resolvedSeries]!.count - 1)
@@ -209,20 +231,21 @@ enum SeriesLayoutParser {
         }
         closeExercise()
 
-        var result = order.sorted().map { number in
-            DetectedSeries(number: number,
-                           title: seriesTitles[number] ?? "",
-                           exercises: (groups[number] ?? []).sorted {
+        var result = order.sorted().map { key in
+            DetectedSeries(number: key.number,
+                           title: seriesTitles[key] ?? "",
+                           exercises: (groups[key] ?? []).sorted {
                                $0.number.localizedStandardCompare($1.number) == .orderedAscending
-                           })
+                           },
+                           label: key.label)
         }
 
         // Une série annoncée sans exercice reconnu est **conservée** : mieux vaut
         // une carte vide à compléter à la main qu'un import qui ne trouve rien.
-        for (number, title) in seriesTitles where groups[number] == nil && !order.contains(number) {
-            result.append(DetectedSeries(number: number, title: title, exercises: []))
+        for (key, title) in seriesTitles where groups[key] == nil && !order.contains(key) {
+            result.append(DetectedSeries(number: key.number, title: title, exercises: [], label: key.label))
         }
-        return DetectedSeries.withoutBlanketBonus(result.sorted { $0.number < $1.number })
+        return DetectedSeries.withoutBlanketBonus(result.sorted { $0.key < $1.key })
     }
 
     /// Un repère est-il crédible **à cet endroit** de la mise en page ?
@@ -301,6 +324,11 @@ enum SeriesLayoutParser {
     /// elles **se suivent** et ont la même ponctuation — « (aₙ) » au milieu d'une
     /// phrase n'est pas une question.
     static func questionMark(_ text: String, allowNumbers: Bool, indent: Double) -> [QuestionMark]? {
+        // Une puce (« • », « – », « ◦ ») : une question **sans étiquette**, numérotée
+        // plus tard dans l'ordre (`resolvingBullets`).
+        if let bullet = bulletRemainder(text) {
+            return [QuestionMark(label: bulletLabel, indent: indent, delimiter: bulletLabel, text: bullet)]
+        }
         let ns = text as NSString
         guard let match = questionPattern.firstMatch(in: text, options: [],
                                                      range: NSRange(location: 0, length: ns.length)),
@@ -341,6 +369,67 @@ enum SeriesLayoutParser {
             return label
         }
         return nil
+    }
+
+    /// L'étiquette provisoire d'une puce, avant sa numérotation.
+    static let bulletLabel = "•"
+
+    /// Le texte après une puce de liste (`itemize` de LaTeX, listes Word), ou `nil`.
+    /// « - » et « * » demandent une espace : « -1 » est un nombre.
+    static func bulletRemainder(_ text: String) -> String? {
+        let trimmed = text.trimmingCharacters(in: .whitespaces)
+        guard let first = trimmed.first, "•◦▪‣∙●○■□–—-*·".contains(first) else { return nil }
+        let rest = trimmed.dropFirst()
+        guard rest.first == " " || rest.first == "\t" else { return nil }
+        let value = rest.trimmingCharacters(in: .whitespaces)
+        return value.isEmpty ? nil : value
+    }
+
+    /// Les puces numérotées dans l'ordre, comme les exercices sans numéro.
+    ///
+    /// Sans autre étiquette dans l'exercice, les puces du premier retrait sont les
+    /// questions (1, 2, 3) et les puces plus à droite leurs points (a, b, c). Sous
+    /// des questions étiquetées (« 1) … • … • »), les puces sont les points de la
+    /// question au-dessus, dans un style qui n'est pas le sien. Une puce avant toute
+    /// question étiquetée reste du texte.
+    static func resolvingBullets(_ events: [QuestionEvent]) -> [QuestionEvent] {
+        let all = events.flatMap(\.marks)
+        guard all.contains(where: { $0.delimiter == bulletLabel }) else { return events }
+        let labeled = all.filter { $0.delimiter != bulletLabel }
+        let topIndent = all.filter { $0.delimiter == bulletLabel }.map(\.indent).min() ?? 0
+        let romans = ["i", "ii", "iii", "iv", "v", "vi", "vii", "viii", "ix", "x", "xi", "xii"]
+        func letter(_ n: Int) -> String { String(UnicodeScalar(UInt8(96 + min(n, 26)))) }
+        // Sous des questions étiquetées, les points prennent un autre style que le leur.
+        let topStyle = labeled.first.map { style(of: $0.label) }
+        func child(_ n: Int) -> String {
+            topStyle == .letter ? romans[min(n, romans.count) - 1] : letter(n)
+        }
+        var top = 0, children = 0, sawLabeled = false
+        return events.map { event in
+            var copy = event
+            copy.marks = event.marks.compactMap { mark in
+                guard mark.delimiter == bulletLabel else {
+                    sawLabeled = true
+                    children = 0
+                    return mark
+                }
+                var resolved = mark
+                if labeled.isEmpty, mark.indent <= topIndent + 6 {
+                    top += 1
+                    children = 0
+                    resolved.label = "\(top)"
+                    resolved.delimiter = bulletLabel
+                } else if labeled.isEmpty ? top > 0 : sawLabeled {
+                    children += 1
+                    resolved.label = child(children)
+                    resolved.delimiter = bulletLabel + "·"
+                } else {
+                    return nil
+                }
+                return resolved
+            }
+            return copy
+        }
     }
 
     /// Une étiquette de question, avec le retrait de sa ligne.
@@ -409,6 +498,7 @@ enum SeriesLayoutParser {
     /// « Ensuite, … » après la liste. Une liste de **conditions** (« satisfait les
     /// conditions suivantes : 1) … 2) … ») n'est pas une liste de questions.
     static func questionTree(_ events: [QuestionEvent]) -> [DetectedSubQuestion] {
+        let events = resolvingBullets(events)
         let marks = events.flatMap(\.marks)
         guard let first = marks.first else { return [] }
 
@@ -617,8 +707,24 @@ enum SeriesLayoutParser {
     static let exerciseKeywords = #"exercices?|exercises?|exo|ex|probl[eè]mes?|problems?|aufgabe"#
 
     private static let seriesPattern = try! NSRegularExpression(
-        pattern: #"^[ \t]*s[ée]rie[ \t]*(?:n[°o][ \t]*)?(\d{1,2})\b[ \t]*[–—:.\-]?[ \t]*(.*)$"#,
+        pattern: #"^[ \t]*s[ée]rie[ \t]*(?:n[°o][ \t]*)?(\d{1,2})(?:(?:[ \t]*[-.(][ \t]*)?([a-f])\)?)?\b[ \t]*[–—:.\-]?[ \t]*(.*)$"#,
         options: [.caseInsensitive])
+
+    /// « Exercice », « Exercise — Titre », « Exercice (Rosen 1.2) » : le mot
+    /// seul, sans numéro. Le reste de la ligne (le titre) est rendu.
+    private static let unnumberedPattern = try! NSRegularExpression(
+        pattern: #"^[ \t]*(?:exercice|exercise|probl[eè]me|problem|aufgabe)[ \t]*\*?[ \t]*(?:[:.\-–—][ \t]*(.*)|\(([^)]*)\)[ \t]*(.*)|)$"#,
+        options: [.caseInsensitive])
+
+    static func unnumberedHeading(_ text: String) -> String? {
+        let ns = text as NSString
+        guard let match = unnumberedPattern.firstMatch(in: text, options: [], range: NSRange(location: 0, length: ns.length)) else { return nil }
+        let parts = (1..<match.numberOfRanges).compactMap { index -> String? in
+            let range = match.range(at: index)
+            return range.location == NSNotFound ? nil : ns.substring(with: range).trimmingCharacters(in: .whitespaces)
+        }.filter { !$0.isEmpty }
+        return parts.joined(separator: " ")
+    }
 
     private static let dashedPattern = try! NSRegularExpression(
         pattern: #"\bEx[ .\-]?(\d{1,2})[.\-](\d{1,2})\b[ \t]*[:.\-–—]?[ \t]*(.*)$"#,
@@ -655,11 +761,27 @@ enum SeriesLayoutParser {
     }
 
     static func seriesHeader(_ text: String) -> (number: Int, remainder: String)? {
+        seriesHeaderWithLabel(text).map { ($0.number, $0.remainder) }
+    }
+
+    /// « Série 5b — Suites » → (5, « b », « Suites ») ; « Série 5 — mardi » →
+    /// (5, « mardi », « mardi »). Une lettre suivie d'un mot (« Série 5 à rendre »)
+    /// n'est pas une étiquette.
+    static func seriesHeaderWithLabel(_ text: String) -> (number: Int, label: String, remainder: String)? {
         let ns = text as NSString
         guard let match = seriesPattern.firstMatch(in: text, options: [],
                                                    range: NSRange(location: 0, length: ns.length)),
               let number = Int(ns.substring(with: match.range(at: 1))), (1...60).contains(number) else { return nil }
-        return (number, ns.substring(with: match.range(at: 2)))
+        let letter = match.range(at: 2).location == NSNotFound ? "" : ns.substring(with: match.range(at: 2))
+        var remainder = ns.substring(with: match.range(at: 3))
+        let label = letter.isEmpty ? SeriesIdentity.label(in: text) : letter
+        // « Série 5.2 — Suites » : le « 2 » est l'étiquette, pas le titre.
+        if !label.isEmpty, label.allSatisfy(\.isNumber), remainder.hasPrefix(label),
+           !(remainder.dropFirst(label.count).first?.isNumber ?? false) {
+            remainder = String(remainder.dropFirst(label.count))
+                .trimmingCharacters(in: CharacterSet(charactersIn: " \t–—:.-"))
+        }
+        return (number, SeriesIdentity.normalized(label), remainder)
     }
 
     static func exerciseMarker(_ text: String, fallbackSeries: Int) -> ExerciseMarker? {

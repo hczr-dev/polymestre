@@ -17,7 +17,7 @@ enum GroupProgressBuilder {
         guard let course else { return SubjectReference() }
         return SubjectReference(
             seriesNumbers: Array(Set(course.sortedSeries.map(\.seriesNumber))).sorted(),
-            exerciseNumbers: Array(Set(course.allExercises.map(\.exerciseNumber))).sorted(),
+            exerciseNumbers: Array(Set(course.allExercises.map(\.groupNumber))).sorted(),
             theoryNumbers: Array(Set(course.theoryItems.map(\.number))).sorted())
     }
 
@@ -104,10 +104,11 @@ extension GroupProgressBuilder {
         let target = subject.uppercased()
         let refs = (course?.sortedSeries ?? []).map { series in
             GroupSeriesEngine.SeriesRef(number: series.seriesNumber,
+                                        label: series.label,
                                         title: series.title,
                                         plannedWeek: series.plannedWeek,
-                                        required: series.sortedExercises.filter { !$0.isBonus }.map(\.exerciseNumber),
-                                        bonus: series.sortedExercises.filter(\.isBonus).map(\.exerciseNumber))
+                                        required: series.sortedExercises.filter { !$0.isBonus }.map(\.groupNumber),
+                                        bonus: series.sortedExercises.filter(\.isBonus).map(\.groupNumber))
         }
         let members = group.members.map {
             GroupSeriesEngine.MemberRef(userID: $0.userID, displayName: $0.shownName, isMe: $0.isMe)

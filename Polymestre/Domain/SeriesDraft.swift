@@ -13,16 +13,19 @@ struct SeriesDraft: Identifiable, Equatable {
     /// La série enregistrée que ce brouillon modifie, s'il y en a une.
     var existingID: UUID?
     var number: Int
+    /// « b », « mardi » : ce qui distingue deux séries de même numéro (`SeriesIdentity`).
+    var label: String = ""
     var title: String
     var plannedWeek: Int
     var dueDate: Date?
     var exercises: [ExerciseDraft]
 
-    init(id: UUID = UUID(), existingID: UUID? = nil, number: Int, title: String,
+    init(id: UUID = UUID(), existingID: UUID? = nil, number: Int, label: String = "", title: String,
          plannedWeek: Int, dueDate: Date? = nil, exercises: [ExerciseDraft]) {
         self.id = id
         self.existingID = existingID
         self.number = number
+        self.label = SeriesIdentity.normalized(label)
         self.title = title
         self.plannedWeek = plannedWeek
         self.dueDate = dueDate
@@ -33,9 +36,10 @@ struct SeriesDraft: Identifiable, Equatable {
     init(series: ExerciseSeries) {
         self.init(existingID: series.id,
                   number: series.seriesNumber,
+                  label: series.label,
                   // « Série 3 » est le titre par défaut : on le laisse vide pour
                   // que changer le numéro ne laisse pas un « Série 3 » périmé.
-                  title: series.title == "Série \(series.seriesNumber)" ? "" : series.title,
+                  title: series.title == series.displayName || series.title == "Série \(series.seriesNumber)" ? "" : series.title,
                   plannedWeek: series.plannedWeek,
                   dueDate: series.dueDate,
                   exercises: series.sortedExercises.map(ExerciseDraft.init(exercise:)))
@@ -54,14 +58,19 @@ struct SeriesDraft: Identifiable, Equatable {
 
     var leafCount: Int { exercises.reduce(0) { $0 + $1.leafCount } }
 
+    var key: SeriesIdentity.Key { SeriesIdentity.Key(number, label) }
+    var displayName: String { SeriesIdentity.displayName(number: number, label: label) }
+
     /// Ce qui empêche d'enregistrer, en phrases.
     ///
-    /// `takenNumbers` : les numéros des **autres** séries du cours. Deux séries 3
-    /// dans un même cours rendaient la progression et les groupes incohérents.
-    func problems(takenNumbers: Set<Int>) -> [String] {
+    /// `taken` : les séries (numéro et étiquette) des **autres** séries du cours.
+    /// Deux séries 5 la même semaine se distinguent par leur étiquette (« a », « b »).
+    func problems(taken: Set<SeriesIdentity.Key>) -> [String] {
         var result: [String] = []
-        if takenNumbers.contains(number) {
-            result.append("La série \(number) existe déjà dans ce cours.")
+        if taken.contains(key) {
+            result.append(label.isEmpty
+                ? "La série \(number) existe déjà dans ce cours. Pour une deuxième série la même semaine, donne-lui une étiquette (« b », « jeudi »)."
+                : "La \(displayName) existe déjà dans ce cours.")
         }
         let minors = exercises.map { $0.minor.trimmingCharacters(in: .whitespaces) }
         if minors.contains(where: \.isEmpty) {
@@ -377,21 +386,22 @@ enum SeriesDraftWriter {
         let series: ExerciseSeries
         let existing: ExerciseSeries? = switch mode {
         case .edit: course.series.first { $0.id == draft.existingID }
-        case .importMerge: course.series.first { $0.seriesNumber == draft.number }
-        case .revision: course.series.first { $0.id == draft.existingID } ?? course.series.first { $0.seriesNumber == draft.number }
+        case .importMerge: course.series.first { $0.id == draft.existingID } ?? course.series(number: draft.number, label: draft.label)
+        case .revision: course.series.first { $0.id == draft.existingID } ?? course.series(number: draft.number, label: draft.label)
         }
         if let existing {
             series = existing
             series.seriesNumber = draft.number
+            if mode == .edit || !draft.label.isEmpty { series.label = SeriesIdentity.normalized(draft.label) }
             if mode == .edit || !title.isEmpty {
-                series.title = title.isEmpty ? "Série \(draft.number)" : title
+                series.title = title.isEmpty ? draft.displayName : title
             }
             if mode == .edit {
                 series.plannedWeek = draft.plannedWeek
                 series.dueDate = draft.dueDate
             }
         } else {
-            series = ExerciseSeries(course: course, seriesNumber: draft.number, title: title,
+            series = ExerciseSeries(course: course, seriesNumber: draft.number, label: draft.label, title: title,
                                     plannedWeek: draft.plannedWeek, dueDate: draft.dueDate)
             context?.insert(series)
             if context == nil { course.series.append(series) }

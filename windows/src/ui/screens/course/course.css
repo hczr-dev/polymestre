@@ -299,3 +299,12 @@ textarea.cs-area { width: 100%; min-height: 130px; background: var(--ground); }
   display: inline-flex; gap: 8px; align-items: center; padding: 10px 16px; border-radius: 999px;
   background: var(--sheet); box-shadow: var(--shadow-2); font-weight: 600;
 }
+
+/* À rattraper (LateTab) */
+.cs-late-open { cursor: pointer; }
+.cs-late-open:hover .t { text-decoration: underline; text-decoration-color: var(--rule); }
+.cs-late-mark { width: 22px; display: inline-flex; justify-content: center; }
+.cs-late-block + .cs-late-block { border-top: 1px solid var(--rule); }
+.cs-late-head { display: flex; align-items: center; gap: 8px; padding: 10px 0 2px; font-size: 13px; }
+.cs-late-head .spacer { flex: 1; }
+.cs-late-link { background: none; border: 0; padding: 0; font: inherit; cursor: pointer; text-decoration: underline; text-underline-offset: 2px; }

@@ -26,6 +26,7 @@ import { fmtNumber, hostOf, openURL, siteName, webURL, ProgressRing, type Course
 import { TheoryTab } from "./course/TheoryTab.tsx";
 import { ExercisesTab } from "./course/ExercisesTab.tsx";
 import { ProgressTab } from "./course/ProgressTab.tsx";
+import { LateTab } from "./course/LateTab.tsx";
 import { ExamsTab } from "./course/ExamsTab.tsx";
 import { NotesTab } from "./course/NotesTab.tsx";
 import { MoodleImportSheet } from "./course/import/MoodleImportSheet.tsx";
@@ -33,8 +34,8 @@ import { SeriesImportSheet } from "./course/import/SeriesImportSheet.tsx";
 import { CourseDialog, ExamDialog, PastExamDialog, SeriesDialog, TheoryDialog } from "./course/Dialogs.tsx";
 import "./course/course.css";
 
-type CourseTab = "site" | "theory" | "exercises" | "progress" | "exams" | "notes";
-const TABS: CourseTab[] = ["site", "theory", "exercises", "progress", "exams", "notes"];
+type CourseTab = "site" | "theory" | "exercises" | "late" | "progress" | "exams" | "notes";
+const TABS: CourseTab[] = ["site", "theory", "exercises", "late", "progress", "exams", "notes"];
 
 /** Ce qui est en cours d'édition dans une boîte de dialogue. */
 type Editor =
@@ -79,8 +80,11 @@ function initialTab(): CourseTab {
  */
 export function CourseScreen({ course, focusTarget }: { course: Course; focusTarget?: string | null }) {
   const { save, remove } = useData();
+  // Viser le cours lui-même ouvre « À rattraper » (le « N en retard » d'Aujourd'hui).
+  const [focus, setFocus] = useState<string | null>(focusTarget === course.id ? null : focusTarget ?? null);
   const [tab, setTab] = useState<CourseTab>(() =>
-    focusTarget && course.theoryItems.some((item) => item.id === focusTarget) ? "theory"
+    focusTarget === course.id ? "late"
+      : focusTarget && course.theoryItems.some((item) => item.id === focusTarget) ? "theory"
       : focusTarget && course.allExercises.some((e) => e.id === focusTarget) ? "exercises"
       : initialTab());
   const [week, setWeek] = useState(0);
@@ -145,6 +149,7 @@ export function CourseScreen({ course, focusTarget }: { course: Course; focusTar
     ...(hasCourseSite(course) ? [{ value: "site" as CourseTab, label: "Le cours" }] : []),
     { value: "theory", label: <>Théorie <span className="mono faint small">{progress.watchedCount}/{progress.videoCount}</span></> },
     { value: "exercises", label: <>Exercices <span className="mono faint small">{progress.doneCount}/{progress.exerciseCount}</span></> },
+    { value: "late", label: <>À rattraper{late > 0 && <> <span className="mono small" style={{ color: "var(--wrong)" }}>{late}</span></>}</> },
     { value: "progress", label: "Progression" },
     { value: "exams", label: <>Examens{examCount > 0 && <> <span className="mono faint small">{examCount}</span></>}</> },
     { value: "notes", label: "Notes" },
@@ -198,7 +203,9 @@ export function CourseScreen({ course, focusTarget }: { course: Course; focusTar
         <div className="cs-summary">
           <span className="cs-sub">
             {course.currentWeek > 0 && <span>{`Semaine ${course.currentWeek} / ${course.term?.totalWeeks ?? 14}`} ·</span>}
-            <span className={late > 0 ? "late" : undefined}>{standing}</span>
+            {late > 0
+              ? <button type="button" className="late cs-late-link" onClick={() => setTab("late")} title="Ce qui est à rattraper">{standing}</button>
+              : <span>{standing}</span>}
           </span>
           <span className="grow" />
           <div className="cs-stat"><b>{progress.watchedCount}/{progress.videoCount}</b><span>Théorie</span></div>
@@ -234,8 +241,10 @@ export function CourseScreen({ course, focusTarget }: { course: Course; focusTar
           <CourseSitePane course={course} tint={tintOfCourse(course)} />
         </div>
       )}
-      {tab === "theory" && <TheoryTab course={course} week={week} saveAll={persistAll} actions={actions} focusID={focusTarget} />}
-      {tab === "exercises" && <ExercisesTab course={course} week={week} saveAll={persistAll} actions={actions} focusID={focusTarget} />}
+      {tab === "theory" && <TheoryTab course={course} week={week} saveAll={persistAll} actions={actions} focusID={focus} />}
+      {tab === "exercises" && <ExercisesTab course={course} week={week} saveAll={persistAll} actions={actions} focusID={focus} />}
+      {tab === "late" && <LateTab course={course} saveAll={persistAll}
+        onOpen={(id, kind) => { setWeek(0); setFocus(id); setTab(kind === "theory" ? "theory" : "exercises"); }} />}
       {tab === "progress" && <ProgressTab course={course} saveAll={persistAll} />}
       {tab === "exams" && <ExamsTab course={course} saveAll={persistAll} actions={actions} />}
       {tab === "notes" && <NotesTab course={course} saveAll={persistAll} />}

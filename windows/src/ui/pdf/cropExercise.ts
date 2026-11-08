@@ -8,5 +8,6 @@ export function cropExercise(exercise: Exercise): CropExercise {
     title: exercise.title,
     displayNumber: exercise.displayNumber,
     seriesNumber: exercise.series?.seriesNumber ?? null,
+    rank: exercise.series ? exercise.series.sortedExercises.findIndex((e) => e.id === exercise.id) : null,
   };
 }

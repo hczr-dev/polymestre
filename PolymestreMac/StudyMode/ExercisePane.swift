@@ -166,7 +166,7 @@ struct ExercisePane: View {
     }
 
     private func name(_ series: ExerciseSeries) -> String {
-        series.title.isEmpty ? "Série \(series.seriesNumber)" : series.title
+        series.title.isEmpty ? series.displayName : series.title
     }
 
     /// Choisir un exercice, c'est y passer le chrono : le temps est compté à
@@ -326,7 +326,7 @@ private struct SeriesBar: View {
             Menu {
                 ForEach(allSeries) { item in
                     Button { pickSeries(item) } label: {
-                        Text(item.title.isEmpty ? "Série \(item.seriesNumber)" : item.title)
+                        Text(item.title.isEmpty ? item.displayName : item.title)
                         Text("\(item.doneCount)/\(item.requiredExercises.count) faits")
                     }
                 }
@@ -334,7 +334,7 @@ private struct SeriesBar: View {
                 HStack(spacing: 6) {
                     ThinRing(fraction: series.requiredExercises.isEmpty ? 0 : Double(series.doneCount) / Double(series.requiredExercises.count), tint: tint)
                         .frame(width: 16, height: 16)
-                    Text(series.title.isEmpty ? "Série \(series.seriesNumber)" : series.title)
+                    Text(series.title.isEmpty ? series.displayName : series.title)
                         .font(Carnet.serif(.title3, weight: .medium))
                         .foregroundStyle(Carnet.ink)
                         .lineLimit(1)
@@ -603,7 +603,7 @@ private struct SeriesOverview: View {
             VStack(alignment: .leading, spacing: 22) {
                 VStack(alignment: .leading, spacing: 8) {
                     if let course = series.course { Kicker(course.displayCode, color: tint) }
-                    Text(series.title.isEmpty ? "Série \(series.seriesNumber)" : series.title)
+                    Text(series.title.isEmpty ? series.displayName : series.title)
                         .font(StudyType.display)
                         .foregroundStyle(Carnet.ink)
                     HStack(spacing: 14) {

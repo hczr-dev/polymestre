@@ -25,6 +25,8 @@ struct SeriesMemberProgress: Identifiable, Equatable {
 /// Une série du référentiel, avec la ligne de chaque membre.
 struct SeriesBoard: Identifiable, Equatable {
     var seriesNumber: Int
+    /// « b », « mardi » : deux séries de même numéro (`SeriesIdentity`).
+    var label: String = ""
     var title: String
     var plannedWeek: Int
     /// Les exercices **obligatoires** de la série, d'après mon cours.
@@ -33,7 +35,8 @@ struct SeriesBoard: Identifiable, Equatable {
     /// Trié : le plus avancé d'abord, moi à égalité.
     var rows: [SeriesMemberProgress]
 
-    var id: Int { seriesNumber }
+    var id: String { "\(seriesNumber)|\(label)" }
+    var displayName: String { SeriesIdentity.displayName(number: seriesNumber, label: label) }
     var total: Int { exerciseNumbers.count }
     var completedCount: Int { rows.filter(\.isComplete).count }
     var startedCount: Int { rows.filter { $0.doneCount > 0 || $0.declaredComplete }.count }
@@ -75,6 +78,7 @@ enum GroupSeriesEngine {
 
     struct SeriesRef: Equatable {
         var number: Int
+        var label: String = ""
         var title: String
         var plannedWeek: Int
         var required: [String]
@@ -90,7 +94,7 @@ enum GroupSeriesEngine {
             .mapValues { Set($0.map(\.number)) }
         let declared = Set(seriesDone.map { "\($0.userID)|\($0.seriesNumber)" })
 
-        return series.sorted { $0.number < $1.number }.map { ref in
+        return series.sorted { SeriesIdentity.Key($0.number, $0.label) < SeriesIdentity.Key($1.number, $1.label) }.map { ref in
             let required = ref.required
             var rows = members.map { member -> SeriesMemberProgress in
                 let mine = doneByUser[member.userID] ?? []
@@ -100,7 +104,8 @@ enum GroupSeriesEngine {
                                             isMe: member.isMe || member.userID == meID,
                                             doneNumbers: done,
                                             total: required.count,
-                                            declaredComplete: declared.contains("\(member.userID)|\(ref.number)"))
+                                            // Une déclaration « série 5 » ne vaut que pour la série 5 sans étiquette.
+                                            declaredComplete: ref.label.isEmpty && declared.contains("\(member.userID)|\(ref.number)"))
             }
             rows.sort { lhs, rhs in
                 if lhs.isComplete != rhs.isComplete { return lhs.isComplete }
@@ -109,6 +114,7 @@ enum GroupSeriesEngine {
                 return lhs.displayName.localizedStandardCompare(rhs.displayName) == .orderedAscending
             }
             return SeriesBoard(seriesNumber: ref.number,
+                               label: ref.label,
                                title: ref.title,
                                plannedWeek: ref.plannedWeek,
                                exerciseNumbers: required,

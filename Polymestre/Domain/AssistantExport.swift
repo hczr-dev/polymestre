@@ -146,6 +146,7 @@ enum AssistantExport {
                 "plannedWeek": series.plannedWeek,
                 "complete": series.isComplete,
             ]
+            if !series.label.isEmpty { seriesEntry["label"] = series.label }
             if includeContent {
                 if !series.urlString.isEmpty { seriesEntry["url"] = series.urlString }
                 if !series.solutionURLString.isEmpty { seriesEntry["solutionUrl"] = series.solutionURLString }

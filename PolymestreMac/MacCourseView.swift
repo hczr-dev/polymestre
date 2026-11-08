@@ -22,6 +22,8 @@ struct MacCourseView: View {
     /// Ce qui s'édite, dans une feuille (les mêmes formulaires que l'iPhone).
     @State private var editor: Editor?
     @State private var dropTargeted = false
+    /// « À rattraper », en feuille.
+    @State private var showingLate = false
 
     enum Editor: Identifiable {
         case course
@@ -89,6 +91,13 @@ struct MacCourseView: View {
             }
             .onChange(of: focusTarget, initial: true) { _, target in
                 guard let target else { return }
+                // Viser le cours lui-même : ouvrir « À rattraper » (le « N en retard »
+                // d'Aujourd'hui).
+                if target == course.id {
+                    focusTarget = nil
+                    showingLate = true
+                    return
+                }
                 if course.theoryItems.contains(where: { $0.id == target }) { tab = .theory } else { tab = .series }
                 week = 0
                 selection = target
@@ -133,6 +142,18 @@ struct MacCourseView: View {
                 .help("Inspecteur")
             }
         }
+        .sheet(isPresented: $showingLate) {
+            NavigationStack {
+                LateWorkView(course: course,
+                             openExercise: { reveal($0.id) },
+                             openTheory: { reveal($0.id) },
+                             openURL: { NSWorkspace.shared.open($0) })
+                    .toolbar {
+                        ToolbarItem(placement: .confirmationAction) { Button("Fermer") { showingLate = false } }
+                    }
+            }
+            .frame(minWidth: 520, idealWidth: 620, minHeight: 560, idealHeight: 720)
+        }
         .sheet(item: $editor) { editor in
             switch editor {
             case .course: CourseFormView(course: course)
@@ -160,6 +181,12 @@ struct MacCourseView: View {
         }
     }
 
+    /// Ferme « À rattraper » et montre l'élément dans la liste et l'inspecteur.
+    private func reveal(_ id: UUID) {
+        showingLate = false
+        focusTarget = id
+    }
+
     // MARK: En-tête
 
     /// Le titre sur toute la largeur, les chiffres dessous : un long nom de
@@ -179,9 +206,17 @@ struct MacCourseView: View {
             HStack(alignment: .center, spacing: 22) {
                 Text([course.credits > 0 ? "\(course.credits.formatted()) ECTS" : nil,
                       course.currentWeek > 0 ? "semaine \(course.currentWeek)" : nil,
-                      late > 0 ? "\(late) en retard" : "à jour"].compactMap { $0 }.joined(separator: " · "))
-                    .foregroundStyle(late > 0 ? Carnet.wrong : Carnet.inkSecondary)
+                      late > 0 ? nil : "à jour"].compactMap { $0 }.joined(separator: " · "))
+                    .foregroundStyle(Carnet.inkSecondary)
                     .lineLimit(1)
+                if late > 0 {
+                    Button { showingLate = true } label: {
+                        Label("\(late) en retard", systemImage: "exclamationmark.circle")
+                            .foregroundStyle(Carnet.wrong)
+                    }
+                    .buttonStyle(.borderless)
+                    .help("Ce qui est à rattraper")
+                }
                 Picker("Semaine", selection: $week) {
                     Text("Tout le semestre").tag(0)
                     Divider()
@@ -347,7 +382,7 @@ private struct SeriesHeader: View {
 
     var body: some View {
         HStack(spacing: 10) {
-            Text(series.title.isEmpty ? "Série \(series.seriesNumber)" : series.title)
+            Text(series.title.isEmpty ? series.displayName : series.title)
                 .font(Carnet.serif(.title3))
                 .foregroundStyle(Carnet.ink)
             if series.plannedWeek > 0 {

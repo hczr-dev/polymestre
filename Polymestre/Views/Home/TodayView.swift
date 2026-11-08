@@ -64,6 +64,7 @@ struct TodayView: View {
     @State private var sheet: TodaySheet?
     /// Un cours ouvert depuis « La semaine » ou une échéance.
     @State private var openedCourseDetail: Course?
+    @State private var openedLate: Course?
 
     init() {
         let since = DateUtils.addDays(-7, to: DateUtils.startOfWeek(Date()))
@@ -177,6 +178,9 @@ struct TodayView: View {
             .carnetSubtitle(dateLine(state))
             .navigationDestination(item: $openedCourseDetail) { course in
                 CourseDetailView(course: course)
+            }
+            .navigationDestination(item: $openedLate) { course in
+                LateWorkScreen(course: course)
             }
             .toolbar {
                 // Moi — le bilan et les réglages — derrière l'avatar, en haut à
@@ -337,7 +341,7 @@ struct TodayView: View {
                     Button {
                         openedCourseDetail = summary.course
                     } label: {
-                        WeekCourseRow(summary: summary)
+                        WeekCourseRow(summary: summary, openLate: { openedLate = summary.course })
                     }
                     .buttonStyle(PressableStyle(scale: 0.99))
                     if index < state.summaries.count - 1 { CarnetRule(inset: Carnet.rowInset) }

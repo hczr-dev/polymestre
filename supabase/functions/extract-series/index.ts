@@ -60,7 +60,7 @@ Réponds UNIQUEMENT par un objet JSON :
 - Exemple : un numéro qui se termine par « … telle que : » puis, plus à droite, « 1. … ; 2. … » → cet exercice, avec deux questions. Les numéros voisins, alignés à gauche, restent des exercices.
 - Autre cas : « Calculer : » puis « 1. la somme … ; 2. la somme … » au même niveau → UN exercice dont ces numéros sont les questions, parce qu'ils suivent une introduction terminée par deux points et se présentent comme des fragments.
 - « questions » ne contient que les étiquettes, en texte court : « 1 », « 2 », « a », « ii ». Jamais l'énoncé, jamais de formule. Omets « questions » s'il n'y en a qu'une.
-- « number » de série est un entier (« Série 02a » → 2). Numéro d'exercice : « série.exercice », même si le PDF recommence à 1 dans chaque section. Sans numéro, prends le suivant dans l'ordre. N'invente aucun exercice.
+- « number » de série est un entier ; « label » distingue deux séries de même numéro, sinon "" (« Série 02a » → number 2, label "a" ; « Série 5 — mardi » → label "mardi"). Numéro d'exercice : « série.exercice », même si le PDF recommence à 1 dans chaque section. Un exercice sans numéro imprimé (« Exercice » seul, ou un intitulé seul) prend le suivant dans l'ordre du document. N'invente aucun exercice.
 - « title » toujours rempli, et **court** : 2 à 6 mots, jamais une phrase, jamais le nom du cours. Si le PDF imprime un intitulé à côté du numéro (« 3. Banked turn »), recopie-le TEL QUEL, sans le traduire ni le reformuler. Sinon nomme la tâche toi-même, à partir du titre de section ou de l'objet (« Comparer des bornes supérieures », « Somme des parties entières »). **Ne recopie jamais l'énoncé** : il commence par un verbe à l'infinitif ou à l'impératif et se termine par un point, ce n'est pas un titre.
 - « isBonus » : true si bonus, facultatif, optionnel ou étoilé.
 - Aucune série : {"series":[]}.`;
@@ -78,14 +78,16 @@ Réponds UNIQUEMENT par un objet JSON :
 
 Règles :
 - LANGUE : écris « title », « statement » et « text » dans la langue des pages. Ne traduis JAMAIS — une page anglaise donne des champs anglais, même si cette consigne est en français.
-- « exercises » = les EXERCICES (Ex-03-01, Exercice 2, « 3. Banked turn » en gras…). « number » = « série.exercice », avec le numéro IMPRIMÉ : ne renumérote pas, ne saute rien, et une question numérotée « 1. » sous un exercice n'est jamais un exercice.
+- « exercises » = les EXERCICES (Ex-03-01, Exercice 2, « 3. Banked turn » en gras…). « number » = « série.exercice », avec le numéro IMPRIMÉ : ne renumérote pas, ne saute rien, et une question numérotée « 1. » sous un exercice n'est jamais un exercice. Un exercice SANS numéro imprimé (titré « Exercice » seul, ou par son seul intitulé en gras) prend le numéro suivant dans l'ordre des pages.
+- Série : « number » entier ; « label » ce qui distingue deux séries de même numéro, sinon "" (« Série 5b » → number 5, label "b" ; « Série 5 — mardi » → label "mardi").
 - « parts » = le travail à cocher dans l'exercice, sur DEUX niveaux au plus : une question numérotée « 1) » avec ses points « (a) (b) » dans « children ».
 - Deux colonnes (« 1) … 3) » sur une ligne, « 2) … 4) » sur la suivante) : range par numéro, 1, 2, 3, 4.
 - Plusieurs questions sur une même ligne (« 1) … 2) … 3) ») : ce sont des questions séparées.
 - Une consigne à faire AVANT la liste et séparée d'elle (« Calculer lim aₙ. Ensuite, calculer : 1) 2) 3) ») → une partie {"label":null,"kind":"part","text":"…"} en tête.
 - Une consigne APRÈS la liste (« Ensuite, pour la suite … donner … ») → une partie {"label":null,"kind":"part"} en fin.
 - Une liste de CONDITIONS ou d'hypothèses (« satisfait les conditions suivantes : 1) … 2) … ») n'est PAS du travail : pas de « parts ».
-- Un exercice sans question numérotée : omets « parts ».
+- Des questions en liste à PUCES (•, –, ◦) sans étiquette : ce sont des questions, « label » "1", "2", "3" dans l'ordre ; des puces sous une question numérotée sont ses points « children » ("a", "b"). Une liste de conditions en puces n'est pas du travail.
+- Un exercice sans question numérotée ni à puces : omets « parts ».
 - « text » : court (≤ 80 caractères), dans la langue du PDF. N'invente rien.
 - Formules (dans « text » et « statement ») : LaTeX léger SANS $ : indices « x_n », « a_{2k+1} », exposants « n^2 », fractions « \\frac{an+b}{cn+d} », racines « \\sqrt{n^2+2} », « \\lim_{n \\to \\infty} », et les symboles en Unicode (≤ ≥ ≠ ∈ ∞ ℕ ℝ ε ℓ ⇔). Dans le JSON, chaque barre oblique inverse est doublée (« \\\\frac »).
 - « title » : l'intitulé imprimé à côté du numéro, recopié TEL QUEL s'il existe ; sinon 2 à 6 mots qui nomment la tâche, jamais l'énoncé recopié.
@@ -516,11 +518,12 @@ async function complete(
  */
 function mergeSeries(chunks: unknown[]): unknown[] {
   type Exercise = { number?: unknown; parts?: unknown[] };
-  type Series = { number?: unknown; title?: unknown; exercises?: Exercise[] };
+  type Series = { number?: unknown; label?: unknown; title?: unknown; exercises?: Exercise[] };
   const bySeries = new Map<string, Series>();
   for (const item of chunks as Series[]) {
     if (!item || typeof item !== "object") continue;
-    const key = String(item.number ?? "");
+    // « 5a » et « 5b » lus dans deux morceaux restent deux séries.
+    const key = String(item.number ?? "") + "|" + String(item.label ?? "").trim().toLowerCase();
     const existing = bySeries.get(key);
     if (!existing) {
       bySeries.set(key, { ...item, exercises: [...(item.exercises ?? [])] });

@@ -47,6 +47,43 @@ enum MacDebugLaunch {
                         .modelContainer(memory)
                         .padding(20).frame(width: 420).background(Carnet.ground))
                     size = NSSize(width: 420, height: 460)
+                case "late":
+                    // « À rattraper » sur le cours de démonstration le plus en retard.
+                    let memory = try! ModelContainer(for: PolymestreSchema.current, configurations: [
+                        ModelConfiguration(schema: PolymestreSchema.current, isStoredInMemoryOnly: true, cloudKitDatabase: .none)])
+                    MacStore.previewSeedPublic(memory.mainContext)
+                    let ctx = memory.mainContext
+                    let all = (try? ctx.fetch(FetchDescriptor<Course>())) ?? []
+                    let course = all.first
+                    // Des semaines passées avec du retard de chaque sorte.
+                    if let course {
+                        let titles = [["Bornes supérieures", "Parties entières", "Inégalité de Bernoulli", "Valeur absolue", "Densité de ℚ"],
+                                      ["Suites récurrentes", "Monotonie d'une suite homographique", "Limite de n^{1/n}", "Critère de Cauchy"],
+                                      ["Séries géométriques", "Critère de d'Alembert", "Séries alternées", "Produit de Cauchy", "Série harmonique"]]
+                        for (i, week) in [4, 5, 6].enumerated() {
+                            let series = ExerciseSeries(course: course, seriesNumber: week, label: week == 6 ? "b" : "", plannedWeek: week)
+                            series.title = ["Borne supérieure", "Suites", "Séries"][i]
+                            ctx.insert(series)
+                            for (j, title) in titles[i].enumerated() {
+                                let exercise = Exercise(series: series, exerciseNumber: "\(week).\(j + 1)", title: title, sortOrder: j)
+                                ctx.insert(exercise)
+                                switch (i + j) % 5 {
+                                case 0: break
+                                case 1: exercise.setDone(true)
+                                case 2: exercise.correct(.wrong); exercise.redoRequired = true
+                                default: exercise.correct(.correct)
+                                }
+                            }
+                        }
+                        for (n, week, title) in [("4.1", 4, "Le supremum"), ("5.1", 5, "Suites convergentes"), ("5.2", 5, "Théorème des gendarmes")] {
+                            ctx.insert(TheoryItem(course: course, sectionNumber: week, number: n, title: title, kind: .video,
+                                                  plannedWeek: week, sortOrder: week, urlString: ""))
+                        }
+                    }
+                    content = AnyView(Group {
+                        if let course { LateWorkView(course: course, openExercise: { _ in }, openTheory: { _ in }, openURL: { _ in }) }
+                    }.modelContainer(memory).frame(width: 640, height: 1400).background(Carnet.ground))
+                    size = NSSize(width: 640, height: 1400)
                 case "hold":
                     // La barre « Maintiens pour finir » dans ses trois états.
                     content = AnyView(VStack(spacing: 18) {

@@ -5,6 +5,7 @@
 // pour nom.
 
 import { describe, expect, it } from "vitest";
+import { SeriesIdentity } from "../../src/domain/seriesIdentity.ts";
 
 import {
   SeriesAIParsing, layoutBudget, maxCharacters, prepare, prepareLayout,
@@ -303,7 +304,7 @@ describe("Brouillons de série : plan rapide, gestes sur l'arbre, enregistrement
     expect(draft.problems([]).some((problem) => problem.includes("5.1"))).toBe(true);
   });
   it("série en double signalée", () => {
-    expect(draft.problems([5]).some((problem) => problem.includes("série 5"))).toBe(true);
+    expect(draft.problems([SeriesIdentity.key(5)]).some((problem) => problem.includes("série 5"))).toBe(true);
   });
   it("renuméroter corrige", () => {
     draft.renumberExercises();

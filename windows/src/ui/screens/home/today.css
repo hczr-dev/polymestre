@@ -168,3 +168,5 @@ button.t-row:hover::before, button.t-row:hover + .t-row::before { opacity: 0; }
 .c-label .field, .c-label .select { width: 100%; }
 .c-color { padding: 3px; height: 32px; cursor: pointer; }
 .c-error { color: var(--wrong); font-size: 12px; }
+.t-late-link { cursor: pointer; border-radius: 4px; }
+.t-late-link:hover, .t-late-link:focus-visible { text-decoration: underline; text-underline-offset: 2px; }

@@ -68,7 +68,7 @@ struct StudySeriesPhone: View {
     }
 
     private func name(_ series: ExerciseSeries) -> String {
-        series.title.isEmpty ? "Série \(series.seriesNumber)" : series.title
+        series.title.isEmpty ? series.displayName : series.title
     }
 
     /// Choisir un exercice, c'est y passer le chrono (comme sur le Mac).

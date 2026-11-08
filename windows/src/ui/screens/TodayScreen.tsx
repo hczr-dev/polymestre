@@ -23,7 +23,8 @@ const subscribeTimer = timerController.subscribe;
 const timerRunning = () => timerController.snapshot().state !== null;
 
 export function TodayScreen({ onOpenCourse, onOpenFocus, onEnterStudyMode }: {
-  onOpenCourse: (id: string) => void;
+  /** `item` : l'élément à montrer ; le cours lui-même ouvre « À rattraper ». */
+  onOpenCourse: (id: string, item?: string | null) => void;
   onOpenFocus?: () => void;
   onEnterStudyMode?: (courseID?: string) => void;
 }) {
@@ -106,7 +107,8 @@ export function TodayScreen({ onOpenCourse, onOpenFocus, onEnterStudyMode }: {
               <Section title={`${weekTitle} · cours suivis`}>
                 <div className="t-cards">
                   {summaries.map((summary) => (
-                    <WeekCourseRow key={summary.course.id} summary={summary} onOpen={onOpenCourse} />
+                    <WeekCourseRow key={summary.course.id} summary={summary} onOpen={onOpenCourse}
+                      onOpenLate={(id) => onOpenCourse(id, id)} />
                   ))}
                 </div>
               </Section>

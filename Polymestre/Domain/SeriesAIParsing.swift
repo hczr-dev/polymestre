@@ -144,8 +144,9 @@ enum SeriesAIParsing {
     {"series":[{"number":3,"title":"Récurrences","exercises":[{"number":"3.1","title":"Tri fusion","isBonus":false,"questions":[{"label":"1","text":"Montrer la borne"},{"label":"2","text":"Cas d'égalité"}]}]}]}
     Format du texte : « # » en début de ligne marque un titre du PDF ; les espaces de tête reproduisent le retrait (une question est décalée sous son exercice) ; « --- page N --- » sépare les pages ; « [Indice : … série N] » donne le numéro de série à utiliser.
     Langue : écris « title » et le texte des questions dans la langue du PDF — « [Langue du document : …] » la donne quand elle est connue. Ne traduis JAMAIS : un PDF anglais donne des titres anglais.
+    Questions en liste à puces (•, –, ◦) sans étiquette : ce sont des questions, numérote-les « 1 », « 2 », « 3 » dans l'ordre ; des puces sous une question numérotée sont ses points (« a », « b »). Une liste de conditions ou d'hypothèses en puces n'est pas une liste de questions.
     Exercices et questions : « exercises » contient les EXERCICES, pas les questions. Un exercice peut poser plusieurs questions — elles vont dans « questions ». Si le PDF introduit une liste par une phrase suivie de deux points (« Calculer : », « Déterminer : ») puis numérote 1., 2., ce sont les questions d'un même exercice. Si chaque numéro est une consigne autonome, ce sont des exercices distincts.
-    Numérotation : « number » de la série est un entier (« Série 02a » donne 2) ; le numéro d'un exercice s'écrit toujours « série.exercice » (« 3.2 »), même si le PDF recommence à 1 dans chaque section ; sans numéro, prends le numéro suivant dans l'ordre. N'invente aucun exercice absent du texte.
+    Numérotation : « number » de la série est un entier ; « label » est ce qui distingue deux séries de même numéro, sinon "" (« Série 02a » → number 2, label "a" ; « Série 5 — mardi » → label "mardi" ; « Série 5, partie 2 » → label "partie 2") ; le numéro d'un exercice s'écrit toujours « série.exercice » (« 3.2 »), même si le PDF recommence à 1 dans chaque section ; un exercice sans numéro imprimé (titré « Exercice » seul, ou seulement par son intitulé) prend le numéro suivant dans l'ordre du document. N'invente aucun exercice absent du texte.
     Titre : « title » est TOUJOURS rempli, jamais vide. Reprends l'intitulé court s'il existe ; sinon écris toi-même 2 à 6 mots qui nomment la tâche, en t'appuyant sur le titre de la section ou sur l'objet de l'exercice. Ne recopie jamais l'énoncé complet.
     « isBonus » vaut true si l'exercice est marqué bonus, facultatif, optionnel ou étoilé. S'il n'y a aucune série, renvoie {"series":[]}.
     """
@@ -198,14 +199,23 @@ enum SeriesAIParsing {
     private struct Payload: Decodable {
         struct Series: Decodable {
             var number: Int?
+            var label: String?
             var title: String?
             var exercises: [Exercise]?
 
-            enum Keys: String, CodingKey { case number, title, exercises }
+            enum Keys: String, CodingKey { case number, label, title, exercises }
 
             init(from decoder: Decoder) throws {
                 let container = try decoder.container(keyedBy: Keys.self)
                 number = Flexible.int(container, Keys.number)
+                label = Flexible.string(container, Keys.label)
+                // « number » écrit « 5b » malgré la consigne : le numéro et l'étiquette.
+                if let raw = try? container.decodeIfPresent(String.self, forKey: .number),
+                   let digits = raw.range(of: #"^\s*0*(\d{1,2})"#, options: .regularExpression) {
+                    number = number ?? Int(raw[digits].trimmingCharacters(in: .whitespaces))
+                    let rest = raw[digits.upperBound...].trimmingCharacters(in: CharacterSet(charactersIn: " -.()"))
+                    if label?.isEmpty ?? true, !rest.isEmpty { label = rest }
+                }
                 title = Flexible.string(container, Keys.title)
                 // Une liste absente ou d'un type inattendu ne doit pas faire perdre
                 // la série : on la remplace par une liste vide.
@@ -298,6 +308,7 @@ enum SeriesAIParsing {
         var result: [DetectedSeries] = []
         for series in payload.series ?? [] {
             guard let number = series.number, (1...60).contains(number) else { continue }
+            let label = SeriesIdentity.normalized(series.label ?? "")
             var seen = Set<String>()
             var exercises: [DetectedExercise] = []
             var nextIndex = 1
@@ -323,16 +334,17 @@ enum SeriesAIParsing {
                                                   pageIndex: exercise.page.map { max(0, $0 - 1) }))
             }
             exercises.sort { $0.number.localizedStandardCompare($1.number) == .orderedAscending }
-            if let existing = result.firstIndex(where: { $0.number == number }) {
+            if let existing = result.firstIndex(where: { $0.key == SeriesIdentity.Key(number, label) }) {
                 let known = Set(result[existing].exercises.map(\.number))
                 result[existing].exercises += exercises.filter { !known.contains($0.number) }
             } else {
                 result.append(DetectedSeries(number: number,
                                              title: (series.title ?? "").trimmingCharacters(in: .whitespacesAndNewlines),
-                                             exercises: exercises))
+                                             exercises: exercises,
+                                             label: label))
             }
         }
-        return result.sorted { $0.number < $1.number }
+        return result.sorted { $0.key < $1.key }
     }
 
     /// Les sous-questions d'un exercice, étiquetées et dédoublonnées, sur deux
@@ -414,8 +426,10 @@ enum SeriesAIParsing {
 
         if heuristic.count <= 1, ai.count == 1 {
             let target = preferredSeries ?? ai[0].number
-            ai = ai.map { renumber($0, to: target) }
-            heuristic = heuristic.map { renumber($0, to: target) }
+            // L'étiquette lue d'un côté vaut pour les deux (« Série 5b » en tête).
+            let label = heuristic.first.map(\.label).flatMap { $0.isEmpty ? nil : $0 } ?? ai[0].label
+            ai = ai.map { var s = renumber($0, to: target); s.label = label; return s }
+            heuristic = heuristic.map { var s = renumber($0, to: target); s.label = label; return s }
         } else if let preferredSeries, heuristic.count == 1, ai.count > 1,
                   !ai.contains(where: { $0.number == heuristic[0].number }) {
             heuristic = heuristic.map { renumber($0, to: preferredSeries) }
@@ -424,12 +438,18 @@ enum SeriesAIParsing {
         var result = ai
         let aiSeriesNumbers = Set(ai.map(\.number))
         for series in heuristic {
-            guard let index = result.firstIndex(where: { $0.number == series.number }) else {
+            // La même série : même numéro et même étiquette — ou une étiquette
+            // vue d'un seul côté, quand ce numéro n'en désigne qu'une.
+            let sameNumber = result.indices.filter { result[$0].number == series.number }
+            let found = sameNumber.first { result[$0].label == series.label }
+                ?? (sameNumber.count == 1 && (series.label.isEmpty || result[sameNumber[0]].label.isEmpty) ? sameNumber.first : nil)
+            if let found, result[found].label.isEmpty { result[found].label = series.label }
+            guard let index = found else {
                 // Série que le modèle n'a pas vue : on la garde si elle repose sur
                 // des repères sûrs.
                 let kept = series.exercises.filter(\.isConfident)
                 if !kept.isEmpty || (series.exercises.isEmpty && !aiSeriesNumbers.contains(series.number) && !series.title.isEmpty) {
-                    result.append(DetectedSeries(number: series.number, title: series.title, exercises: kept))
+                    result.append(DetectedSeries(number: series.number, title: series.title, exercises: kept, label: series.label))
                 }
                 continue
             }
@@ -501,7 +521,7 @@ enum SeriesAIParsing {
             }
             result[index].exercises.sort { $0.number.localizedStandardCompare($1.number) == .orderedAscending }
         }
-        return DetectedSeries.withoutBlanketBonus(result.sorted { $0.number < $1.number })
+        return DetectedSeries.withoutBlanketBonus(result.sorted { $0.key < $1.key })
     }
 
     /// Des exercices numérotés 1…n sans trou, tous sur des repères sûrs.
