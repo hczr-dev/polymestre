@@ -22,7 +22,7 @@ struct CourseNotesView: View {
                     .font(.caption)
                     .foregroundStyle(Carnet.inkTertiary)
                 Spacer()
-                Button(editing ? "Terminé" : (course.notes.isEmpty ? "Écrire" : "Modifier")) {
+                Button(editing ? String(localized: "Terminé") : (course.notes.isEmpty ? "Écrire" : "Modifier")) {
                     if editing { try? context.save() }
                     editing.toggle()
                     focused = editing

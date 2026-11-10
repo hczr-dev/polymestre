@@ -31,7 +31,7 @@ struct StudyRail: View {
                     Button { desk.floatClaude() } label: { Label("Flottant", systemImage: "macwindow") }
                     Button { desk.dockClaude() } label: { Label("Ancré à droite", systemImage: "sidebar.right") }
                 }
-            RailButton(title: "À côté", icon: "sidebar.right", selected: desk.sideOpen) { desk.sideOpen.toggle() }
+            RailButton(title: String(localized: "À côté"), icon: "sidebar.right", selected: desk.sideOpen) { desk.sideOpen.toggle() }
                 .help("Le volet d'à côté : un cahier, l'énoncé, un PDF… (⌘\\)")
             Spacer()
             Rectangle().fill(StudyPalette.rule).frame(width: 34, height: 1)

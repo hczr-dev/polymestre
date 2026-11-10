@@ -148,9 +148,9 @@ struct StudyModeScreen: View {
         var id: String { rawValue }
         var title: String {
             switch self {
-            case .desk: return "Bureau"
+            case .desk: return String(localized: "Bureau")
             case .series: return String(localized: "Série")
-            case .course: return String(localized: "Cours")
+            case .course: return String(localized: "Cours (au singulier)")
             case .calc: return String(localized: "Calcul")
             case .music: return String(localized: "Musique")
             }
@@ -621,7 +621,7 @@ struct StudyModeScreen: View {
                     step(index + 1, item.title, series.map { "\($0.title.isEmpty ? $0.displayName : $0.title) · \($0.doneCount)/\($0.requiredExercises.count)" } ?? String(localized: "Pas de série"),
                          done: series?.isComplete == true) { tab = .series }
                 case .help:
-                    step(index + 1, item.title, "Un indice de Claude", done: false) { askClaude(ClaudeTutor.QuickAction.hint.prompt) }
+                    step(index + 1, item.title, String(localized: "Un indice de Claude"), done: false) { askClaude(ClaudeTutor.QuickAction.hint.prompt) }
                 case .debrief:
                     step(index + 1, item.title, String(localized: "Post-mortem quand la série est corrigée"), done: false) {
                         askClaude(ClaudeTutor.postMortemPrompt(useSkill: false))
@@ -798,12 +798,21 @@ struct StudyModeSettingsView: View {
             }
 
             Section {
-                ForEach(sites, id: \.self) { site in
-                    Text(site)
+                let groups = StudyMode.siteGroups(sites)
+                ForEach(groups.named, id: \.self) { site in
+                    Text(verbatim: site)
                 }
-                .onDelete { offsets in
-                    sites.remove(atOffsets: offsets)
-                    lock.sites = sites
+                .onDelete { offsets in removeSites(offsets.map { groups.named[$0] }) }
+                if !groups.service.isEmpty {
+                    // Connexions et hébergeurs : une ligne, dépliable pour qui veut y toucher.
+                    DisclosureGroup {
+                        ForEach(groups.service, id: \.self) { site in
+                            Text(verbatim: site).foregroundStyle(Carnet.inkSecondary)
+                        }
+                        .onDelete { offsets in removeSites(offsets.map { groups.service[$0] }) }
+                    } label: {
+                        LabeledContent("Connexion et hébergement", value: String(localized: "\(groups.service.count) domaines"))
+                    }
                 }
                 HStack {
                     TextField("Ajouter un site", text: $newSite)
@@ -831,6 +840,11 @@ struct StudyModeSettingsView: View {
         .navigationTitle("Mode étude")
         .navigationBarTitleDisplayMode(.inline)
         .onAppear { sites = lock.sites }
+    }
+
+    private func removeSites(_ removed: [String]) {
+        sites.removeAll { removed.contains($0) }
+        lock.sites = sites
     }
 
     private func addSite() {

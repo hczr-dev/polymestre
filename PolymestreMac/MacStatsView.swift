@@ -116,7 +116,7 @@ struct MacStatsView: View {
                 HStack(spacing: 36) {
                     figure(DateUtils.hoursLabel(seconds: total), String(localized: "d'étude"))
                     figure(days > 0 ? DateUtils.hoursLabel(seconds: total / days) : "—", String(localized: "par jour actif"))
-                    figure("\(days)", days > 1 ? String(localized: "jours actifs") : String(localized: "jour actif"))
+                    figure("\(days)", days == 1 ? String(localized: "jour actif") : String(localized: "jours actifs"))
                     figure("\(goalDays)", String(localized: "objectif atteint"))
                     Spacer()
                 }
@@ -308,7 +308,7 @@ private struct SessionEditor: View {
 
     var body: some View {
         Form {
-            Picker("Cours", selection: Binding(get: { session.course?.id },
+            Picker("Cours (au singulier)", selection: Binding(get: { session.course?.id },
                                               set: { id in session.course = courses.first { $0.id == id } })) {
                 Text("Sans cours").tag(UUID?.none)
                 ForEach(courses.filter(\.isTracked)) { Text("\($0.displayCode) — \($0.name)").tag(UUID?.some($0.id)) }

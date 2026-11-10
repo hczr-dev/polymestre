@@ -219,7 +219,7 @@ struct EPFLLifeView: View {
                             .accessibilityLabel("Date clé")
                     }
                     if milestone.isApproximate {
-                        Pill(text: "approximatif", color: .secondary)
+                        Pill(text: String(localized: "approximatif"), color: .secondary)
                     }
                 }
                 Text(subtitle(milestone, showsCountdown: showsCountdown))

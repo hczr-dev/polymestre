@@ -158,7 +158,7 @@ struct ContentImportView: View {
                         Text(course == nil ? "Importer tous mes cours depuis Moodle" : "Importer \(course!.displayCode) depuis Moodle")
                             .font(.body.weight(.semibold))
                             .foregroundStyle(Color.primary)
-                        Text(model.phase == .working ? model.progress : "Semaines, vidéos, supports et séries — trouvés par le code du cours")
+                        Text(model.phase == .working ? model.progress : String(localized: "Semaines, vidéos, supports et séries — trouvés par le code du cours"))
                             .font(.footnote)
                             .foregroundStyle(Color.secondary)
                             .fixedSize(horizontal: false, vertical: true)
@@ -354,7 +354,7 @@ final class MoodleImportModel {
     }
 
     private func load(_ ref: MoodleCourseRef, for course: Course) async {
-        status[course.id] = "lecture de \(ref.shortname)…"
+        status[course.id] = String(localized: "lecture de \(ref.shortname)…")
         do {
             let snapshot = try await client.snapshot(of: ref)
             let termStart = course.term?.startDate ?? term.start
@@ -1218,7 +1218,7 @@ struct ContentDraftSections: View {
         } header: {
             VStack(alignment: .leading, spacing: Layout.snug) {
                 Toggle(isOn: section.isIncluded) {
-                    MathText(section.wrappedValue.title.isEmpty ? "Sans titre" : section.wrappedValue.title,
+                    MathText(section.wrappedValue.title.isEmpty ? String(localized: "Sans titre") : section.wrappedValue.title,
                              font: .subheadline.weight(.semibold))
                         .foregroundStyle(.primary)
                         .textCase(nil)
@@ -1375,7 +1375,7 @@ struct ContentReviewView: View {
 
     private var targetSection: some View {
         Section("Dans le cours") {
-            Picker("Cours", selection: $targetID) {
+            Picker("Cours (au singulier)", selection: $targetID) {
                 Text("Nouveau cours « \(shortTitle) »").tag(UUID?.none)
                 ForEach(courses.filter(\.isTracked)) { course in
                     Text("\(course.displayCode) — \(course.name)").tag(UUID?.some(course.id))
@@ -1393,7 +1393,7 @@ struct ContentReviewView: View {
         Button {
             apply()
         } label: {
-            Text(draft.isEmpty ? "Rien à importer" : importTitle)
+            Text(draft.isEmpty ? String(localized: "Rien à importer") : importTitle)
                 .font(.subheadline.weight(.semibold))
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, Layout.control)

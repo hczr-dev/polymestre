@@ -509,7 +509,7 @@ struct HoldButton: View {
 
     var body: some View {
         HoldToActButton(duration: hold, action: action) { pressing in
-            Label(pressing ? "Maintiens…" : title, systemImage: systemImage)
+            Label(pressing ? String(localized: "Maintiens…") : title, systemImage: systemImage)
                 .font(.body.weight(.semibold))
                 .foregroundStyle(StudyPalette.ink)
                 .padding(.horizontal, 20)
@@ -652,7 +652,7 @@ struct StudyShieldView: View {
                 Image(systemName: "moon.stars.fill")
                     .font(.largeTitle.weight(.light))
                     .foregroundStyle(StudyPalette.inkSecondary)
-                Text("\(screen.blockedName ?? "Cette app") attendra")
+                Text("\(screen.blockedName ?? String(localized: "Cette app")) attendra")
                     .font(StudyType.heroShield)
                     .foregroundStyle(StudyPalette.ink)
                 StudyTimeline(interval: 60) { date in

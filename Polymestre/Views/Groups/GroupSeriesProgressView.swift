@@ -145,7 +145,7 @@ struct GroupSeriesProgressView: View {
                              title: String(localized: "terminées par toi"), onCard: true)
                     StatCard(icon: "person.3.fill",
                              value: "\(group.members.count)",
-                             title: "membres", onCard: true)
+                             title: String(localized: "membres"), onCard: true)
                 }
                 if let gap {
                     Label("\(gap.name) a \(Plural.count(gap.gap, "\(gap.gap) exercice", "\(gap.gap) exercices")) d'avance sur toi",

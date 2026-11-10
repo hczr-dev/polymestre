@@ -133,7 +133,7 @@ struct GroupMembersView: View {
                     Text(member.isMe ? "Toi" : member.shownName)
                         .font(.subheadline.weight(.semibold))
                     if member.isAdmin {
-                        Pill(text: "Admin", color: .orange, icon: "crown.fill")
+                        Pill(text: String(localized: "Admin"), color: .orange, icon: "crown.fill")
                     }
                 }
                 Text(subjectsLabel(member))

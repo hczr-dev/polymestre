@@ -411,7 +411,7 @@ struct EdPollCard: View {
                     }
                     if let error { Text(error).font(.caption).foregroundStyle(Carnet.wrong) }
                     Spacer()
-                    Text(poll.isClosed ? "Fermé · \(votes(poll.voters))" : votes(poll.voters))
+                    Text(poll.isClosed ? String(localized: "Fermé · \(votes(poll.voters))") : votes(poll.voters))
                         .font(.caption).foregroundStyle(Carnet.inkTertiary)
                 }
             } else if failed {

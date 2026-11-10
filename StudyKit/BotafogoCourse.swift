@@ -415,7 +415,7 @@ struct BotafogoCourseView: View {
     @ViewBuilder
     private var infos: some View {
         ForEach(Array(book.infos.enumerated()), id: \.offset) { _, group in
-            Text(MathMarkup.plain(group.name ?? "Infos"))
+            Text(MathMarkup.plain(group.name ?? String(localized: "Infos")))
                 .font(Carnet.serif(14, weight: .medium))
                 .foregroundStyle(Carnet.ink)
                 .padding(.horizontal, 8)
@@ -767,7 +767,7 @@ struct BotafogoWeekHome: View {
                 let done = sections.filter { read.contains($0.path) }.count
                 VStack(alignment: .leading, spacing: 24) {
                     VStack(alignment: .leading, spacing: 8) {
-                        Kicker("Cette semaine · semaine \(index + 1)", color: tint)
+                        Kicker(String(localized: "Cette semaine · semaine \(index + 1)"), color: tint)
                         MacMathText(week.name ?? "Semaine \(index + 1)", size: 36, design: .serif)
                             .foregroundStyle(Carnet.ink)
                             .fixedSize(horizontal: false, vertical: true)

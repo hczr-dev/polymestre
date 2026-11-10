@@ -82,10 +82,12 @@ export function carnetTint(hex: string, dark: boolean): string {
   return toHex(...hsbToRgb(hue, nextSaturation, nextBrightness));
 }
 
-/** Les teintes de `StatsPalette` (StatsView.swift), avant `Carnet.tint`. */
+/** Les teintes de `TaskType.tint` (StudyKit/CarnetCore.swift), avant `Carnet.tint`. */
 function baseCategoryHex(type: TaskType): string {
   switch (TaskType.canonical(type)) {
     case "theory": return "#4F6FB8";
+    // Sa propre teinte, pas le gris d'« Autre » : comme sur l'iPhone et le Mac.
+    case "lecture": return "#3E8E96";
     case "exercise": return "#C08A2E";
     case "correction": return "#5E9A6A";
     case "flashcards": return "#A0567E";
@@ -98,8 +100,10 @@ export function taskColor(type: TaskType, dark: boolean): string {
   return carnetTint(baseCategoryHex(type), dark);
 }
 
-/** Le gris de l'amphi : `Carnet.inkTertiary`, sans teinte propre. */
-export const LECTURE_COLOR = "var(--ink-tertiary)";
+/** La teinte de l'amphi : celle de `TaskType.lecture.tint`, la même sur les trois plateformes. */
+export function lectureColor(dark: boolean): string {
+  return taskColor("lecture", dark);
+}
 
 /** Vert / ambre / rouge, les seuls verdicts de correction. */
 export function correctnessColor(correctness: Correctness): string {

@@ -250,7 +250,7 @@ struct EdXProblemCard: View {
         VStack(alignment: .leading, spacing: 12) {
             if let problem {
                 HStack {
-                    Kicker(problem.title.isEmpty ? "Exercice" : problem.title)
+                    Kicker(problem.title.isEmpty ? String(localized: "Exercice") : problem.title)
                     Spacer()
                     if problem.total > 0 {
                         Text("\(Int(problem.score))/\(Int(problem.total))").font(.caption.monospacedDigit()).foregroundStyle(Carnet.inkSecondary)

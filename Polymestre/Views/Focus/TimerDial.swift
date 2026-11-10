@@ -32,8 +32,15 @@ struct TimerDial: View {
     /// viser la minute, assez large pour ajouter une heure en un geste.
     private static let minutesPerTurn: Double = 60
 
-    @ScaledMetric(relativeTo: .largeTitle) private var diameter: CGFloat = 270
-    @ScaledMetric(relativeTo: .largeTitle) private var timeSize: CGFloat = 64
+    /// Au repos, le cadran se fait petit : « 00:00 » ne dit rien, et la place
+    /// revient à ce qui lance une session (les choix, les raccourcis). Il
+    /// reprend sa taille dès qu'un temps s'écoule.
+    var compact: Bool = false
+
+    @ScaledMetric(relativeTo: .largeTitle) private var fullDiameter: CGFloat = 270
+    @ScaledMetric(relativeTo: .largeTitle) private var fullTimeSize: CGFloat = 64
+    private var diameter: CGFloat { fullDiameter * (compact ? 0.68 : 1) }
+    private var timeSize: CGFloat { fullTimeSize * (compact ? 0.72 : 1) }
     @ScaledMetric(relativeTo: .body) private var ringWidth: CGFloat = 5
 
     private var clamped: Double { min(1, max(0, progress ?? 0)) }

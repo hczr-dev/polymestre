@@ -39,7 +39,7 @@ struct MacSettingsView: View {
             List(Page.allCases, selection: Binding(get: { Page(rawValue: page) ?? .general }, set: { page = ($0 ?? .general).rawValue })) { item in
                 Label(item.title, systemImage: item.icon).tag(item)
             }
-            .navigationSplitViewColumnWidth(200)
+            .navigationSplitViewColumnWidth(210)
             .toolbar(removing: .sidebarToggle)
         } detail: {
             Group {
@@ -116,7 +116,7 @@ private struct AboutSection: View {
             LabeledContent("Version", value: AppDistribution.versionLabel)
             if let update = updater.available {
                 HStack {
-                    Text("Polymestre \(update.version) est disponible.")
+                    Text("Polymestre \(update.label) est disponible.")
                     Spacer()
                     Button("Télécharger") { updater.download() }
                 }
@@ -235,15 +235,16 @@ private struct StudySettingsPane: View {
     @AppStorage("settings.advanced.study") private var advanced = false
     @State private var newSite = ""
     @State private var siteError = false
+    @State private var showingServiceSites = false
 
     private var keepAwakeFooter: String {
         switch settings.studyKeepAwake {
         case .off:
             return String(localized: "Le Mac se met en veille comme d'habitude.")
         case .system:
-            return String(localized: "Pendant que le chrono tourne ; en pause, le Mac dort.")
+            return String(localized: "Le Mac reste éveillé pendant que le chrono tourne ; en pause, il dort.")
         case .display:
-            return String(localized: "Pendant que le chrono tourne ; l'écran peut s'éteindre en pause ou sur batterie faible.")
+            return String(localized: "Le Mac reste éveillé pendant que le chrono tourne ; l'écran peut s'éteindre en pause ou sur batterie faible.")
         }
     }
 
@@ -303,20 +304,24 @@ private struct StudySettingsPane: View {
             }
 
             Section {
-                ForEach(settings.studySites, id: \.self) { site in
-                    HStack {
-                        Image(systemName: "globe").foregroundStyle(.secondary)
-                        Text(site)
-                        Spacer()
-                        Button { settings.studySites.removeAll { $0 == site } } label: {
-                            Image(systemName: "minus.circle")
+                let groups = StudyMode.siteGroups(settings.studySites)
+                ForEach(groups.named, id: \.self) { site in siteRow(site) }
+                if !groups.service.isEmpty {
+                    // Connexions et hébergeurs : une ligne, dépliable pour qui veut y toucher.
+                    DisclosureGroup(isExpanded: $showingServiceSites) {
+                        ForEach(groups.service, id: \.self) { site in siteRow(site) }
+                    } label: {
+                        HStack {
+                            Image(systemName: "key").foregroundStyle(.secondary)
+                            Text("Connexion et hébergement")
+                            Spacer()
+                            Text("\(groups.service.count) domaines").foregroundStyle(.secondary)
                         }
-                        .buttonStyle(.borderless)
-                        .help("Retirer")
                     }
+                    .help("Pages de connexion (edu-ID, Microsoft, Google, Apple) et hébergeurs des vidéos et des fichiers : sans eux, Moodle ou Claude ne s'ouvrent pas.")
                 }
                 HStack {
-                    TextField("wolframalpha.com", text: $newSite)
+                    TextField("Ajouter un site", text: $newSite)
                         .onSubmit(addSite)
                     Button("Ajouter", action: addSite).disabled(newSite.isEmpty)
                 }
@@ -375,6 +380,19 @@ private struct StudySettingsPane: View {
         .disabled(timer.isLocked)
     }
 
+    private func siteRow(_ site: String) -> some View {
+        HStack {
+            Image(systemName: "globe").foregroundStyle(.secondary)
+            Text(verbatim: site)
+            Spacer()
+            Button { settings.studySites.removeAll { $0 == site } } label: {
+                Image(systemName: "minus.circle")
+            }
+            .buttonStyle(.borderless)
+            .help("Retirer")
+        }
+    }
+
     private func addSite() {
         guard let domain = StudyMode.normalizedDomain(newSite) else {
             siteError = true
@@ -390,7 +408,7 @@ private struct StudySettingsPane: View {
         panel.directoryURL = URL(fileURLWithPath: "/Applications")
         panel.allowedContentTypes = [.application]
         panel.allowsMultipleSelection = true
-        panel.prompt = "Permettre"
+        panel.prompt = String(localized: "Permettre")
         guard panel.runModal() == .OK else { return }
         for url in panel.urls {
             guard let id = Bundle(url: url)?.bundleIdentifier, !settings.studyApps.contains(id) else { continue }
@@ -481,7 +499,7 @@ private struct ClaudeSettingsPane: View {
                         }
                         if let models = file?.models, models.tutor != nil || models.system != nil {
                             LabeledContent("Modèles") {
-                                Text("indices : \(models.tutor ?? "défaut") · système : \(models.system ?? "défaut")").foregroundStyle(.secondary)
+                                Text("indices : \(models.tutor ?? String(localized: "défaut")) · système : \(models.system ?? String(localized: "défaut"))").foregroundStyle(.secondary)
                             }
                         }
                         if settings.reviewRedo {
@@ -511,7 +529,7 @@ private struct ClaudeSettingsPane: View {
                         if let url = MacLocalMCP.shared.url {
                             LabeledContent("Adresse") {
                                 HStack {
-                                    Text("http://127.0.0.1:\(url.port ?? 0)/…").foregroundStyle(.secondary)
+                                    Text(verbatim: "http://127.0.0.1:\(url.port ?? 0)/…").foregroundStyle(.secondary)
                                     Button("Copier la commande") {
                                         NSPasteboard.general.clearContents()
                                         NSPasteboard.general.setString("claude mcp add --transport http polymestre-files \(url.absoluteString)", forType: .string)
@@ -519,7 +537,7 @@ private struct ClaudeSettingsPane: View {
                                 }
                             }
                         } else {
-                            Text(MacLocalMCP.shared.lastError ?? "Démarrage…").foregroundStyle(Carnet.wrong)
+                            Text(MacLocalMCP.shared.lastError ?? String(localized: "Démarrage…")).foregroundStyle(Carnet.wrong)
                         }
                     }
                     LabeledContent("App Claude") {

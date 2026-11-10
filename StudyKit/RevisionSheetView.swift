@@ -138,7 +138,7 @@ struct RevisionSheetView: View {
         VStack(alignment: .leading, spacing: 8) {
             HStack(alignment: .firstTextBaseline, spacing: 10) {
                 VStack(alignment: .leading, spacing: 2) {
-                    Kicker("Fiche de révision · \(course.displayCode)", color: tint)
+                    Kicker(String(localized: "Fiche de révision · \(course.displayCode)"), color: tint)
                     Text(course.name).font(Carnet.serif(compact ? 20 : 26)).foregroundStyle(Carnet.ink).lineLimit(2)
                 }
                 Spacer(minLength: 8)
@@ -201,7 +201,7 @@ struct RevisionSheetView: View {
             } label: {
                 HStack(spacing: 6) {
                     Image(systemName: scope == nil ? "books.vertical" : "bookmark.fill").foregroundStyle(tint)
-                    Text(scope == nil ? "Tout le cours" : MathMarkup.plain(sheet?.chapter(scope)?.title ?? "")).lineLimit(1)
+                    Text(scope == nil ? String(localized: "Tout le cours") : MathMarkup.plain(sheet?.chapter(scope)?.title ?? "")).lineLimit(1)
                     Image(systemName: "chevron.up.chevron.down").font(.caption2).foregroundStyle(Carnet.inkTertiary)
                 }
                 .font(.callout.weight(.medium))

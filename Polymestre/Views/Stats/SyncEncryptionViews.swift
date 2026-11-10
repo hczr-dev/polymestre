@@ -93,11 +93,11 @@ struct SyncEncryptionPanel: View {
                 case .pairHost:
                     PairHostSheet(sync: sync)
                 case .pairJoin:
-                    CodeEntrySheet(title: "Entrer un code d'appairage", prompt: "XXXX-XXXX-XXXX-XXXX-XXXX-XXXX-XX", action: "Ajouter",
+                    CodeEntrySheet(title: String(localized: "Entrer un code d'appairage"), prompt: "XXXX-XXXX-XXXX-XXXX-XXXX-XXXX-XX", action: "Ajouter",
                                    hint: String(localized: "Sur un appareil déjà connecté : Réglages › Synchronisation › Ajouter un appareil. Saisis le code affiché, ou scanne le QR code."),
                                    scanner: true) { try await sync.joinPairing(code: $0) }
                 case .restore:
-                    CodeEntrySheet(title: "Utiliser la clé de secours", prompt: "XXXX-XXXX-…", action: "Restaurer",
+                    CodeEntrySheet(title: String(localized: "Utiliser la clé de secours"), prompt: "XXXX-XXXX-…", action: "Restaurer",
                                    hint: String(localized: "La clé de secours de 54 caractères, montrée à l'activation du chiffrement."),
                                    scanner: false) { try await sync.restore(recoveryKey: $0) }
                 case .reset:
@@ -315,7 +315,7 @@ private struct CodeEntrySheet: View {
                 if let error { Section { Text(error).font(.footnote).foregroundStyle(.red) } }
                 if !done {
                     Section {
-                        Button { Task { await run() } } label: { Text(ui: busy ? "Vérification…" : action) }
+                        Button { Task { await run() } } label: { Text(ui: busy ? String(localized: "Vérification…") : action) }
                             .disabled(busy || text.trimmingCharacters(in: .whitespaces).isEmpty)
                     }
                 }

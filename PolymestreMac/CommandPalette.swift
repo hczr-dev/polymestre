@@ -81,7 +81,7 @@ struct CommandPalette: View {
             HStack(spacing: 14) {
                 hint("↩", String(localized: "ouvrir"))
                 hint("⌘↩", String(localized: "chronométrer"))
-                hint("↑↓", "choisir")
+                hint("↑↓", String(localized: "choisir"))
                 Spacer()
                 hint(String(localized: "Échap"), String(localized: "fermer"))
             }

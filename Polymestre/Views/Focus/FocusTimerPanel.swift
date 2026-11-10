@@ -124,9 +124,10 @@ struct FocusTimerPanel: View {
                     .padding(.horizontal, 12).padding(.vertical, 6)
                     .background(Carnet.sheetRaised, in: Capsule())
             }
-            contextSection
-            targetCard
-
+            // Le temps et ses boutons d'abord, toujours au même endroit : sous
+            // les choix et la carte de l'exercice, le chrono en marche passait
+            // sous la barre d'onglets, pause et fin hors de l'écran.
+            //
             // Le cadran et ses boutons se redessinent chaque seconde tant qu'il y a
             // quelque chose qui s'écoule : un travail compté ou une pause qui
             // décompte. À l'arrêt, rien ne bat.
@@ -137,6 +138,16 @@ struct FocusTimerPanel: View {
             if isAdjusting {
                 adjustPanel
                     .transition(.opacity.combined(with: .move(edge: .top)))
+            }
+
+            // En session, l'exercice suivi passe avant les choix : c'est lui
+            // qu'on coche ; les choix ne servent plus qu'à changer de travail.
+            if focus.hasSession {
+                targetCard
+                contextSection
+            } else {
+                contextSection
+                targetCard
             }
 
             // La session qui vient de finir : le temps, par exercice, et de
@@ -261,18 +272,18 @@ struct FocusTimerPanel: View {
         VStack(alignment: .leading, spacing: 12) {
             CarnetSheet {
                 Menu {
-                    Picker("Cours", selection: courseBinding) {
+                    Picker("Cours (au singulier)", selection: courseBinding) {
                         Label("Sans cours", systemImage: "circle.dashed").tag(UUID?.none)
                         ForEach(trackedCourses) { course in
                             Text("\(course.displayCode) — \(course.name)").tag(UUID?.some(course.id))
                         }
                     }
                 } label: {
-                    contextRow(title: "Cours",
+                    contextRow(title: "Cours (au singulier)",
                                value: course.map { "\($0.displayCode) · \($0.name)" } ?? String(localized: "Choisir"),
                                tint: course.map { Carnet.tint($0.colorHex) })
                 }
-                .accessibilityLabel("Cours")
+                .accessibilityLabel("Cours (au singulier)")
                 .accessibilityValue(course?.displayCode ?? "aucun")
                 CarnetRule(inset: Carnet.rowInset)
                 Menu {
@@ -308,7 +319,7 @@ struct FocusTimerPanel: View {
                         contextRow(title: "Sur", value: targetLabel ?? String(localized: "Tout le cours"), tint: nil)
                     }
                     .accessibilityLabel("Cible")
-                    .accessibilityValue(targetLabel ?? "tout le cours")
+                    .accessibilityValue(targetLabel ?? String(localized: "tout le cours"))
                 }
             }
 
@@ -393,7 +404,7 @@ struct FocusTimerPanel: View {
             let position = siblings.firstIndex { $0.id == exercise.id }
             VStack(alignment: .leading, spacing: 12) {
                 HStack(alignment: .center, spacing: 4) {
-                    stepButton(systemImage: "chevron.left", label: "Exercice précédent",
+                    stepButton(systemImage: "chevron.left", label: String(localized: "Exercice précédent"),
                                target: position.flatMap { siblings.indices.contains($0 - 1) ? siblings[$0 - 1] : nil })
                     VStack(alignment: .leading, spacing: 2) {
                         Text(exercise.displayNumber)
@@ -405,36 +416,40 @@ struct FocusTimerPanel: View {
                             .font(.footnote)
                             .foregroundStyle(Carnet.inkSecondary)
                     }
-                    stepButton(systemImage: "chevron.right", label: "Exercice suivant",
+                    stepButton(systemImage: "chevron.right", label: String(localized: "Exercice suivant"),
                                target: position.flatMap { siblings.indices.contains($0 + 1) ? siblings[$0 + 1] : nil })
                     Spacer()
                     Button("Ouvrir") { openedExercise = exercise }
                         .font(.subheadline.weight(.medium))
                         .foregroundStyle(Carnet.ink)
                 }
-                // L'énoncé, exercice par exercice : replié d'un toucher, et
-                // l'état est gardé d'une session à l'autre.
-                Button {
-                    withAnimation(Motion.snappy) { showsStatement.toggle() }
-                    Haptics.soft()
-                } label: {
-                    HStack(spacing: 6) {
-                        Image(systemName: "doc.text")
-                        Text(showsStatement ? "Masquer l'énoncé" : "Afficher l'énoncé")
-                        Spacer(minLength: 0)
-                        Image(systemName: showsStatement ? "chevron.up" : "chevron.down")
-                            .font(.caption.weight(.semibold))
+                // Seulement s'il y a un énoncé à montrer : sans texte, sans PDF et
+                // sans lien, la ligne ne dépliait que « pas d'énoncé lisible ».
+                if ExerciseStatementView.hasSomething(for: exercise) {
+                    // L'énoncé, exercice par exercice : replié d'un toucher, et
+                    // l'état est gardé d'une session à l'autre.
+                    Button {
+                        withAnimation(Motion.snappy) { showsStatement.toggle() }
+                        Haptics.soft()
+                    } label: {
+                        HStack(spacing: 6) {
+                            Image(systemName: "doc.text")
+                            Text(showsStatement ? "Masquer l'énoncé" : "Afficher l'énoncé")
+                            Spacer(minLength: 0)
+                            Image(systemName: showsStatement ? "chevron.up" : "chevron.down")
+                                .font(.caption.weight(.semibold))
+                        }
+                        .font(.subheadline.weight(.medium))
+                        .foregroundStyle(Carnet.inkSecondary)
+                        .frame(minHeight: 32)
+                        .contentShape(Rectangle())
                     }
-                    .font(.subheadline.weight(.medium))
-                    .foregroundStyle(Carnet.inkSecondary)
-                    .frame(minHeight: 32)
-                    .contentShape(Rectangle())
-                }
-                .buttonStyle(.plain)
-                if showsStatement {
-                    ExerciseStatementView(exercise: exercise, onOpenLink: { browsing = $0 })
-                        .id(exercise.id)
-                        .transition(.opacity)
+                    .buttonStyle(.plain)
+                    if showsStatement {
+                        ExerciseStatementView(exercise: exercise, onOpenLink: { browsing = $0 })
+                            .id(exercise.id)
+                            .transition(.opacity)
+                    }
                 }
                 if !leaves.isEmpty {
                     FlowLayout(spacing: 6) {
@@ -580,7 +595,7 @@ struct FocusTimerPanel: View {
                                    progress: status.progress,
                                    caption: paused
                                        ? String(localized: "En pause · \(TimerText.clock(elapsed)) travaillées")
-                                       : "Bloc \(status.blockNumber) · \(TimerText.clock(elapsed)) au total",
+                                       : String(localized: "Bloc \(status.blockNumber) · \(TimerText.clock(elapsed)) au total"),
                                    tint: tint)
             }
             return DialContent(time: TimerText.clock(elapsed),
@@ -613,7 +628,8 @@ struct FocusTimerPanel: View {
                       onSet: { total in
                           focus.setElapsed(total)
                           Haptics.success()
-                      })
+                      },
+                      compact: !focus.hasSession && !isAdjusting)
                 .frame(maxWidth: .infinity)
 
             if focus.isPomodoro {
@@ -677,23 +693,23 @@ struct FocusTimerPanel: View {
     private func primaryButton(phase: FocusPhase) -> some View {
         switch phase {
         case .onBreak:
-            TimerPrimaryButton(title: "Reprendre", icon: "forward.fill", tint: .teal) {
+            TimerPrimaryButton(title: String(localized: "Reprendre"), icon: "forward.fill", tint: .teal) {
                 focus.skipBreak()
             }
         case .readyForBlock(let block):
-            TimerPrimaryButton(title: "Bloc \(block)", icon: "play.fill", tint: tint) {
+            TimerPrimaryButton(title: String(localized: "Bloc \(block)"), icon: "play.fill", tint: tint) {
                 focus.resume()
             }
         case .working:
-            TimerPrimaryButton(title: "Pause", icon: "pause.fill", tint: tint) {
+            TimerPrimaryButton(title: String(localized: "Pause (bouton)"), icon: "pause.fill", tint: tint) {
                 focus.pause()
             }
         case .paused:
-            TimerPrimaryButton(title: "Reprendre", icon: "play.fill", tint: tint) {
+            TimerPrimaryButton(title: String(localized: "Reprendre"), icon: "play.fill", tint: tint) {
                 focus.resume()
             }
         case .idle:
-            TimerPrimaryButton(title: "Démarrer", icon: "play.fill", tint: tint) {
+            TimerPrimaryButton(title: String(localized: "Démarrer"), icon: "play.fill", tint: tint) {
                 focus.start(courseID: draftCourseID,
                             taskType: draftTaskType,
                             targetID: draftTargetID,

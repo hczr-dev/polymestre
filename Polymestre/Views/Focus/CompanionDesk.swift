@@ -89,7 +89,7 @@ struct CompanionDesk: View {
         TimelineView(.periodic(from: StudyMode.tickAnchor(focus.state), by: 1)) { context in
             let onBreak = focus.state?.breakEndsAt.map { $0 > context.date } ?? false
             VStack(spacing: 4) {
-                Text(onBreak ? "Pause — lève-toi, bois un verre d'eau" : (course?.displayCode ?? String(localized: "Mode étude")))
+                Text(onBreak ? String(localized: "Pause — lève-toi, bois un verre d'eau") : (course?.displayCode ?? String(localized: "Mode étude")))
                     .font(.caption.weight(.semibold)).textCase(onBreak ? nil : .uppercase).tracking(1)
                     .foregroundStyle(tint)
                 Text(TimerText.clock(StudyMode.clock(focus.state, at: context.date)))
@@ -143,8 +143,8 @@ struct CompanionDesk: View {
             }
             .buttonStyle(.plain)
             HStack(spacing: 10) {
-                dropButton("Je bloque", icon: "hand.raised", detail: "photo → un indice") { scanning = .stuck }
-                dropButton("Question", icon: "mic", detail: "tape ou dicte") { asking = true }
+                dropButton(String(localized: "Je bloque"), icon: "hand.raised", detail: String(localized: "photo → un indice")) { scanning = .stuck }
+                dropButton(String(localized: "Question"), icon: "mic", detail: String(localized: "tape ou dicte")) { asking = true }
             }
         }
     }

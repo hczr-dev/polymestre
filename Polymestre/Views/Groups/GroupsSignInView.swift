@@ -194,7 +194,7 @@ struct GroupsSignInView: View {
             return String(localized: "Un compte existe déjà avec cette adresse : choisis « J'ai un compte ».")
         }
         if text.contains("invalid") && text.contains("credential") {
-            return "Adresse ou mot de passe incorrect."
+            return String(localized: "Adresse ou mot de passe incorrect.")
         }
         if text.contains("confirm") {
             return String(localized: "Confirme ton adresse avec le lien reçu par e-mail, puis connecte-toi.")
@@ -202,7 +202,7 @@ struct GroupsSignInView: View {
         if text.contains("network") || text.contains("offline") || text.contains("internet") {
             return String(localized: "Pas de connexion : réessaie une fois en ligne.")
         }
-        return raw.map { "Connexion impossible : \($0)" } ?? "Connexion impossible."
+        return raw.map { String(localized: "Connexion impossible : \($0)") } ?? String(localized: "Connexion impossible.")
     }
 
     private func handleApple(_ result: Result<ASAuthorization, Error>) {

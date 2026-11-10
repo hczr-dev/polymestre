@@ -149,7 +149,7 @@ struct OnTheGoCard: View {
                 ForEach(due.prefix(3)) { exercise in
                     Button { openExercise(exercise) } label: {
                         row(icon: "arrow.counterclockwise.circle.fill", color: Carnet.review,
-                            title: "Reprise : \(exercise.series?.course?.displayCode ?? "") \(exercise.displayNumber)",
+                            title: String(localized: "Reprise : \(exercise.series?.course?.displayCode ?? "") \(exercise.displayNumber)"),
                             detail: String(localized: "sur papier, l'énoncé seul — ") + (exercise.redoWhy.isEmpty ? "15 min" : exercise.redoWhy))
                     }
                     .buttonStyle(.plain)

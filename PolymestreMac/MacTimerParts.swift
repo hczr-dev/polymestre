@@ -104,7 +104,7 @@ struct TimerSetupRow: View {
                 PillLabel(dot: course.map { Carnet.tint($0.colorHex) }, title: course?.displayCode ?? String(localized: "Sans cours"))
             }
             .pillMenu()
-            .help(course?.name ?? "Choisir un cours")
+            .help(course?.name ?? String(localized: "Choisir un cours"))
 
             Menu {
                 ForEach(TaskType.choices) { type in
@@ -342,7 +342,7 @@ private struct RecapRow: View {
         VStack(alignment: .leading, spacing: 6) {
             HStack(spacing: 8) {
                 RoundedRectangle(cornerRadius: 2).fill(tint).frame(width: 3, height: 16)
-                Text(course?.displayCode ?? "Libre").font(.callout.weight(.semibold)).foregroundStyle(Carnet.ink)
+                Text(course?.displayCode ?? String(localized: "Libre")).font(.callout.weight(.semibold)).foregroundStyle(Carnet.ink)
                 Text(MacTargets.headline(course: course, taskType: part.taskType, targetID: part.targetID))
                     .lineLimit(1)
                     .foregroundStyle(Carnet.inkSecondary)

@@ -130,7 +130,7 @@ struct CoursePieCard: View {
                                 Text(DateUtils.hoursLabel(seconds: selected?.seconds ?? total))
                                     .font(Carnet.serif(.title3))
                                     .foregroundStyle(Carnet.ink)
-                                Text(selected?.name ?? "au total")
+                                Text(selected?.name ?? String(localized: "au total"))
                                     .font(.caption2)
                                     .foregroundStyle(Carnet.inkSecondary)
                                     .lineLimit(1)

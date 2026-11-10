@@ -279,7 +279,7 @@ struct ClaudePane: View {
             }
         } label: {
             VStack(alignment: .leading, spacing: 0) {
-                Text(scope == .system ? "Général" : (series.map(name) ?? "Claude"))
+                Text(scope == .system ? String(localized: "Général") : (series.map(name) ?? "Claude"))
                     .font(Carnet.serif(.title3, weight: .medium))
                     .foregroundStyle(Carnet.ink)
                     .lineLimit(1)
@@ -306,7 +306,7 @@ struct ClaudePane: View {
                 }
             }
         } label: {
-            Text(exercise?.displayNumber ?? "Aucun exercice")
+            Text(exercise?.displayNumber ?? String(localized: "Aucun exercice"))
                 .font(.callout)
                 .padding(.horizontal, 10).padding(.vertical, 4)
                 .background(tint.opacity(exercise == nil ? 0.06 : 0.16), in: Capsule())
@@ -522,9 +522,9 @@ struct ClaudePane: View {
                 }
             }
         case .nextStep:
-            return ClaudeSuggestion(id: "next", label: "Étape suivante", icon: "arrow.right.circle") { send(ClaudeTutor.QuickAction.nextStep.prompt) }
+            return ClaudeSuggestion(id: "next", label: String(localized: "Étape suivante"), icon: "arrow.right.circle") { send(ClaudeTutor.QuickAction.nextStep.prompt) }
         case .explain:
-            return ClaudeSuggestion(id: "explain", label: "La notion", icon: "book") { send(ClaudeTutor.QuickAction.explain.prompt) }
+            return ClaudeSuggestion(id: "explain", label: String(localized: "La notion"), icon: "book") { send(ClaudeTutor.QuickAction.explain.prompt) }
         case .solution:
             return ClaudeSuggestion(id: "solution", label: String(localized: "La solution"), icon: "eye") {
                 send(ClaudeTutor.QuickAction.solution.prompt, model: .some(file?.model(for: nil, scope: .system)))

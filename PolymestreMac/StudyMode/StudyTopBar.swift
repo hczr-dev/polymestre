@@ -198,12 +198,12 @@ struct StudyTopBar: View {
                     .font(.callout)
                     .foregroundStyle(StudyPalette.inkTertiary)
                     .help("Session verrouillée")
-                HoldButton(title: "Sortie d'urgence", systemImage: "exclamationmark.triangle", hold: StudyMode.emergencyHold) {
+                HoldButton(title: String(localized: "Sortie d'urgence"), systemImage: "exclamationmark.triangle", hold: StudyMode.emergencyHold) {
                     timer.finish(emergency: true)
                 }
                 .help("Maintiens \(Int(StudyMode.emergencyHold)) secondes : la session s'enregistre, notée « sortie d'urgence ».")
             } else {
-                HoldButton(title: "Terminer", systemImage: "checkmark", hold: settings.studyHoldToLeave ? 1.5 : 0) {
+                HoldButton(title: String(localized: "Terminer"), systemImage: "checkmark", hold: settings.studyHoldToLeave ? 1.5 : 0) {
                     timer.finish()
                 }
             }

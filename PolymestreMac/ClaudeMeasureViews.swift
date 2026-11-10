@@ -31,8 +31,8 @@ struct ClaudeMeasureSettingsPane: View {
             }
 
             Section("Projets") {
-                LimitStepper(title: "En semaine", value: $draft.budgetWeekday)
-                LimitStepper(title: "Le week-end", value: $draft.budgetWeekend)
+                LimitStepper(title: String(localized: "En semaine"), value: $draft.budgetWeekday)
+                LimitStepper(title: String(localized: "Le week-end"), value: $draft.budgetWeekend)
                 Stepper("D'abord étudier, en semaine : \(minutes(draft.studyFirstWeekday))",
                         value: $draft.studyFirstWeekday, in: 0...480, step: 15)
                 Stepper("D'abord étudier, le week-end : \(minutes(draft.studyFirstWeekend))",
@@ -356,7 +356,7 @@ struct ClaudeMeasureMenuLine: View {
             }
             .font(.caption)
             .foregroundStyle(Carnet.inkSecondary)
-            .help(service.verdict.allow ? (service.verdict.warn ?? "Avec mesure") : service.verdict.message)
+            .help(service.verdict.allow ? (service.verdict.warn ?? String(localized: "Avec mesure")) : service.verdict.message)
             .onAppear { service.refreshUsage() }
         }
     }

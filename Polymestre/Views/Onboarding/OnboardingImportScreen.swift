@@ -204,9 +204,9 @@ private struct StepRail: View {
     }
 
     private static let steps = [
-        Step(label: "Plan", icon: "list.bullet.rectangle.portrait", stages: [.waiting, .outline]),
+        Step(label: String(localized: "Plan (du cours)"), icon: "list.bullet.rectangle.portrait", stages: [.waiting, .outline]),
         Step(label: String(localized: "Ouverture"), icon: "doc.viewfinder", stages: [.activities]),
-        Step(label: "Analyse", icon: "text.magnifyingglass", stages: [.sources, .analysis]),
+        Step(label: String(localized: "Analyse"), icon: "text.magnifyingglass", stages: [.sources, .analysis]),
         Step(label: String(localized: "Rangement"), icon: "calendar", stages: [.writing, .done]),
     ]
 

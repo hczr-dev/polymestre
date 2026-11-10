@@ -166,10 +166,10 @@ extension ContentLink.Kind {
     var chipLabel: String {
         switch self {
         case .video: return String(localized: "Vidéo")
-        case .slides: return "Transparents"
-        case .notes: return "Notes"
+        case .slides: return String(localized: "Transparents")
+        case .notes: return String(localized: "Notes")
         case .pdf: return "PDF"
-        case .page: return "Page"
+        case .page: return String(localized: "Page")
         case .solution: return String(localized: "Corrigé")
         }
     }
@@ -268,12 +268,8 @@ struct CarnetExerciseLine: View {
 }
 
 extension Correctness {
-    /// « juste », « à revoir », « faux » : le mot d'une ligne d'exercice.
-    var lineLabel: String {
-        switch self {
-        case .correct: return "juste"
-        case .partial: return String(localized: "à revoir")
-        case .wrong: return "faux"
-        }
-    }
+    /// « juste », « moyen », « faux » : le mot d'une ligne d'exercice — les
+    /// mêmes trois mots que partout ailleurs (`shortLabel`), en minuscules.
+    /// « à revoir » se confondait avec « à refaire », qui est autre chose.
+    var lineLabel: String { shortLabel.lowercased() }
 }

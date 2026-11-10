@@ -189,6 +189,22 @@ enum StudyMode {
         return sites
     }
 
+    /// La plomberie : pages de connexion (edu-ID, Microsoft, Google, Apple) et
+    /// hébergeurs de contenu (vidéos Kaltura, pièces jointes d'Ed, fichiers de
+    /// Claude). Sans eux Moodle ou Claude ne s'ouvrent pas, mais ce ne sont pas des
+    /// sites où l'on va : les réglages les replient en une ligne au lieu de
+    /// seize adresses que personne ne reconnaît.
+    static let serviceSites: Set<String> = ["switch.ch", "kaltura.com", "edusercontent.com", "openlearnity.org",
+                                            "login.microsoftonline.com", "login.live.com", "msauth.net", "msftauth.net",
+                                            "accounts.google.com", "appleid.apple.com",
+                                            "anthropic.com", "claudeusercontent.com", "app.wooclap.com"]
+
+    /// La liste des réglages en deux : les sites qu'on reconnaît, dans leur
+    /// ordre, et la plomberie. Rien n'est retiré de la liste elle-même.
+    static func siteGroups(_ sites: [String]) -> (named: [String], service: [String]) {
+        (sites.filter { !serviceSites.contains($0) }, sites.filter { serviceSites.contains($0) })
+    }
+
     /// Les sites ajoutés à la liste par défaut après coup : ils rejoignent une
     /// liste déjà enregistrée (sans rétablir ceux qu'on a retirés).
     static let addedLater: Set<String> = ["geogebra.org", "desmos.com", "wolframalpha.com",

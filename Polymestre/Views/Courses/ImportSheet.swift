@@ -199,7 +199,7 @@ struct ImportSheet: View {
                 runImport()
             } catch {
                 isError = true
-                message = "Lecture impossible : \(error.localizedDescription)"
+                message = String(localized: "Lecture impossible : \(error.localizedDescription)")
             }
         case .failure(let error):
             isError = true

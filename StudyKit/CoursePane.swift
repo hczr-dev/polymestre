@@ -52,10 +52,10 @@ struct CoursePane: View {
         var id: String { rawValue }
         var label: String {
             switch self {
-            case .sheet: return "Fiche"
+            case .sheet: return String(localized: "Fiche")
             case .saved: return String(localized: "Gardés")
             case .polymestre: return String(localized: "Semaine")
-            case .notes: return "Mes notes"
+            case .notes: return String(localized: "Mes notes")
             case .moodle: return "Moodle"
             case .courseware: return "Courseware"
             case .botafogo: return String(localized: "Le cours")
@@ -1209,7 +1209,7 @@ struct CoursePane: View {
                     botafogoRow(icon: "info.circle", title: node.displayName, url: node.url ?? "")
                 }
             } header: {
-                MacMathText(group.name ?? "Infos", size: 14, design: .serif).foregroundStyle(Carnet.ink)
+                MacMathText(group.name ?? String(localized: "Infos"), size: 14, design: .serif).foregroundStyle(Carnet.ink)
             }
         }
     }

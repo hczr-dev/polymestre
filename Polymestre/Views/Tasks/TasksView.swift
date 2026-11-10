@@ -266,7 +266,7 @@ struct AddTaskView: View {
                     }
                 }
                 Section("Cours lié") {
-                    Picker("Cours", selection: $courseID) {
+                    Picker("Cours (au singulier)", selection: $courseID) {
                         Text("Aucun").tag(UUID?.none)
                         ForEach(courses) { course in
                             Text(course.displayCode).tag(UUID?.some(course.id))

@@ -8,6 +8,69 @@ import SwiftUI
 // les sessions prévues, les membres, le code à partager, quitter. Les mêmes services que
 // l'iPhone (`SocialService`, `GroupSync`, `GroupSessionService`, `PresenceService`).
 
+/// Déconnecté : ce que les groupes donnent, et la connexion sur place, comme
+/// sur l'iPhone et sur Windows. Renvoyer aux réglages faisait chercher un
+/// formulaire sous un autre nom, puis revenir ici.
+private struct MacGroupsSignIn: View {
+    let social: SocialService
+    var signedIn: () async -> Void
+
+    @State private var email = ""
+    @State private var password = ""
+    @State private var working = false
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Travailler ensemble").font(Carnet.serif(18)).foregroundStyle(Carnet.ink)
+            Text("Qui travaille en ce moment, qui en est où série par série, l'entraide sur un exercice et les sessions ensemble — avec ton compte Polymestre, le même que sur l'iPhone.")
+                .foregroundStyle(Carnet.inkSecondary)
+                .fixedSize(horizontal: false, vertical: true)
+            HStack(spacing: 8) {
+                TextField("Adresse e-mail", text: $email)
+                    .textContentType(.username)
+                SecureField("Mot de passe", text: $password)
+                    .onSubmit { Task { await authenticate(signUp: false) } }
+            }
+            .textFieldStyle(.roundedBorder)
+            .frame(maxWidth: 520)
+            HStack(spacing: 8) {
+                Button("Se connecter") { Task { await authenticate(signUp: false) } }
+                    .buttonStyle(.ink)
+                    .disabled(working || email.isEmpty || password.count < 6)
+                Button("Créer un compte") { Task { await authenticate(signUp: true) } }
+                    .disabled(working || email.isEmpty || password.count < 6)
+                Button {
+                    Task {
+                        working = true
+                        if await social.signInWithGoogle() { await signedIn() }
+                        working = false
+                    }
+                } label: {
+                    Label("Continuer avec Google", systemImage: "g.circle.fill")
+                }
+                .disabled(working)
+                if working { ProgressView().controlSize(.small) }
+            }
+            .buttonStyle(.paper)
+            if let error = social.lastError, !working {
+                Text(ui: error).font(.caption).foregroundStyle(Carnet.wrong)
+            }
+        }
+        .macCard()
+    }
+
+    private func authenticate(signUp: Bool) async {
+        working = true
+        defer { working = false }
+        let ok = signUp ? await social.signUp(email: email, password: password)
+                        : await social.signIn(email: email, password: password)
+        if ok {
+            password = ""
+            await signedIn()
+        }
+    }
+}
+
 /// Le compte Polymestre, la session de groupe et la présence, pour le Mac.
 @MainActor
 @Observable
@@ -106,13 +169,7 @@ struct MacGroupsView: View {
                 }
                 .buttonStyle(.paper)
                 if !social.isSignedIn {
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("Connecte ton compte Polymestre").font(Carnet.serif(18)).foregroundStyle(Carnet.ink)
-                        Text("Le même compte que sur ton iPhone (Réglages › Comptes).").foregroundStyle(Carnet.inkSecondary)
-                        Button("Ouvrir les réglages") { UserDefaults.standard.set("accounts", forKey: "settings.page"); openSettings() }
-                            .buttonStyle(.ink)
-                    }
-                    .macCard()
+                    MacGroupsSignIn(social: social) { await groupsService.refresh() }
                 } else if groups.isEmpty {
                     VStack(alignment: .leading, spacing: 6) {
                         Text("Pas encore de groupe").font(Carnet.serif(18)).foregroundStyle(Carnet.ink)
@@ -335,7 +392,7 @@ private struct MacGroupHub: View {
         return VStack(alignment: .leading, spacing: 10) {
             HStack(spacing: 8) {
                 Circle().fill(entries.isEmpty ? Carnet.inkTertiary : Carnet.correct).frame(width: 8, height: 8)
-                Kicker(entries.isEmpty ? "En direct" : PresenceBoard.summary(entries), color: entries.isEmpty ? Carnet.inkSecondary : Carnet.correct)
+                Kicker(entries.isEmpty ? String(localized: "En direct") : PresenceBoard.summary(entries), color: entries.isEmpty ? Carnet.inkSecondary : Carnet.correct)
             }
             if entries.isEmpty {
                 Text("Personne ne travaille en ce moment.").foregroundStyle(Carnet.inkSecondary)
@@ -800,7 +857,7 @@ private struct MacPlanSession: View {
     var body: some View {
         Form {
             TextField("Titre", text: $title, prompt: Text("Session d'étude"))
-            Picker("Cours", selection: $courseID) {
+            Picker("Cours (au singulier)", selection: $courseID) {
                 Text("Aucun").tag(UUID?.none)
                 ForEach(courses.filter(\.isTracked)) { Text($0.code).tag(Optional($0.id)) }
             }

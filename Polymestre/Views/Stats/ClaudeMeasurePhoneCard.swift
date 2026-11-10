@@ -34,7 +34,7 @@ struct ClaudeMeasurePhoneCard: View {
         return HStack(alignment: .firstTextBaseline, spacing: 24) {
             figure(ClaudeMeasure.duration(today?.projets ?? 0), String(localized: "projets aujourd'hui"))
             figure(ClaudeMeasure.duration(projets), String(localized: "projets en 7 jours"))
-            figure("\(passes)", passes > 1 ? "passes" : "pass")
+            figure("\(passes)", passes > 1 ? String(localized: "passes") : String(localized: "pass"))
         }
         .accessibilityElement(children: .combine)
     }

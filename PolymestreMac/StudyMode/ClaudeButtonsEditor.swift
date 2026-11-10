@@ -86,8 +86,8 @@ struct ClaudeButtonsEditor: View {
                     }
                     Picker("Modèle", selection: modelBinding(index)) {
                         Text("Celui de la conversation").tag("")
-                        Text("Indices (\(models.tutor ?? "défaut"))").tag("tutor")
-                        Text("Système (\(models.system ?? "défaut"))").tag("system")
+                        Text("Indices (\(models.tutor ?? String(localized: "défaut")))").tag("tutor")
+                        Text("Système (\(models.system ?? String(localized: "défaut")))").tag("system")
                         ForEach(Self.modelNames, id: \.self) { Text($0).tag($0) }
                     }
                 }

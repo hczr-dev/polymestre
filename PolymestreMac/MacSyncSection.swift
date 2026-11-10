@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// Réglages › iCloud › Synchronisation Supabase : le même interrupteur que sur l'iPhone,
+/// Réglages › Comptes › Compte Polymestre (la synchronisation Supabase) : le même interrupteur que sur l'iPhone,
 /// avec la connexion au compte Polymestre (le Mac n'a pas d'autre écran pour ça).
 struct MacSupabaseSyncSection: View {
     @State private var sync: SupabaseSync? = SupabaseSync.shared
@@ -62,7 +62,7 @@ struct MacSupabaseSyncSection: View {
                     Text(error).font(.footnote).foregroundStyle(.red)
                 }
             } header: {
-                Text(ui: "Synchronisation Supabase")
+                Text(ui: "Compte Polymestre")
             } footer: {
                 Text(ui: "Envoie tes cours, séries, exercices et sessions à ton compte Polymestre pour les retrouver sur l'iPhone et sur Windows, en plus d'iCloud. Désactivée par défaut.")
             }

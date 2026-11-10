@@ -17,6 +17,9 @@ private struct TodayState {
     let corrections: (done: Int, total: Int)
     /// Éléments des semaines passées pas faits (corrections comprises).
     let late: Int
+    /// De quoi ce retard est fait — seulement quand la semaine n'a rien de
+    /// prévu : la carte le montre alors à la place de trois tirets.
+    let lateParts: LateParts?
     /// Temps compté (sessions et cours suivis), jour par jour, du lundi au dimanche.
     let days: [Int]
     /// Le planning du jour : séances, sessions planifiées, évaluations.
@@ -89,6 +92,8 @@ struct TodayView: View {
         let weekEvents = events.filter { $0.startsAt >= weekStart && $0.startsAt < weekEnd }
         let days = StudyTime.days(of: StudyTime.blocks(events: weekEvents, sessions: weekSessions), weekStart: weekStart)
         let soon = DateUtils.addDays(7, to: DateUtils.startOfDay(now))
+        let late = summaries.reduce(0) { $0 + $1.late }
+        let nothingPlanned = weeks.allSatisfy { $0.videoCount == 0 && $0.exerciseCount == 0 }
         return TodayState(
             tracked: tracked,
             term: AcademicTerm.resolve(from: tracked.compactMap(\.term)),
@@ -97,7 +102,8 @@ struct TodayView: View {
             theory: (weeks.reduce(0) { $0 + $1.watchedCount }, weeks.reduce(0) { $0 + $1.videoCount }),
             series: (weeks.reduce(0) { $0 + $1.doneCount }, weeks.reduce(0) { $0 + $1.exerciseCount }),
             corrections: (weeks.reduce(0) { $0 + $1.correctedCount }, weeks.reduce(0) { $0 + $1.doneCount }),
-            late: summaries.reduce(0) { $0 + $1.late },
+            late: late,
+            lateParts: nothingPlanned && late > 0 ? LateParts.of(tracked.map { LateWork.of($0, now: now) }) : nil,
             days: days,
             todayItems: todayItems(),
             deadlines: Array(Deadline.upcoming(in: tracked, days: 14).filter { $0.date >= now }.prefix(6)),
@@ -301,7 +307,7 @@ struct TodayView: View {
             CarnetColumns {
                 WeekTimeCard(days: state.days, weekStart: state.weekStart,
                              theory: state.theory, series: state.series,
-                             corrections: state.corrections, late: state.late,
+                             corrections: state.corrections, late: state.late, lateParts: state.lateParts,
                              goal: StudyGoal.weeklySeconds(goalMinutes: app.settings.weeklyGoalMinutes,
                                                            courses: state.tracked, hoursPerCredit: app.settings.hoursPerCredit)) {
                     app.router.showingStats = true

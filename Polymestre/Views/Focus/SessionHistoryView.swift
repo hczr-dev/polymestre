@@ -87,7 +87,7 @@ struct SessionHistoryView: View {
                 }
                 ToolbarItem(placement: .topBarTrailing) {
                     Menu {
-                        Picker("Cours", selection: $courseFilter) {
+                        Picker("Cours (au singulier)", selection: $courseFilter) {
                             Text("Tous les cours").tag(UUID?.none)
                             ForEach(courses) { course in
                                 Text(course.displayCode).tag(UUID?.some(course.id))
@@ -123,7 +123,7 @@ struct SessionHistoryView: View {
                     .frame(width: 24)
                 VStack(alignment: .leading, spacing: Layout.micro) {
                     HStack(spacing: Layout.snug) {
-                        Text(session.course?.displayCode ?? "Sans cours")
+                        Text(session.course?.displayCode ?? String(localized: "Sans cours"))
                             .font(.subheadline.weight(.semibold))
                         Text(session.taskType.label)
                             .font(.subheadline)
@@ -195,7 +195,7 @@ struct SessionEditSheet: View {
         NavigationStack {
             Form {
                 Section("Session") {
-                    Picker("Cours", selection: $courseID) {
+                    Picker("Cours (au singulier)", selection: $courseID) {
                         Text("Aucun cours").tag(UUID?.none)
                         ForEach(courses) { course in
                             Text("\(course.displayCode) — \(course.name)").tag(UUID?.some(course.id))

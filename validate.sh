@@ -23,6 +23,12 @@ fi
 
 ROOT="$(cd "$(dirname "$0")" && pwd)"
 
+# Traductions : un littéral français rendu dans une `String` ne passe jamais par
+# le catalogue et reste en français quand l'app est en anglais (« Démarrer »,
+# « Jour », « au total »…). Le script refuse les trois formes qui y mènent, et
+# tout `String(localized:)` sans anglais au catalogue.
+(cd "$ROOT" && python3 scripts/check-strings.py)
+
 # Scratch dir OUTSIDE the project tree. Never write Swift sources into the repo:
 # Xcode's synchronized folder groups scan the project, and a second file named
 # like a real source file produces "Multiple commands produce <file>.stringsdata".

@@ -326,13 +326,13 @@ private struct RunningNowCard: View {
                 .frame(width: 56, height: 56)
             VStack(alignment: .leading, spacing: 4) {
                 TimerTimeline { date in
-                    Kicker(timer.isStudying ? "Mode étude" : (timer.statusLabel(at: date) ?? "En cours"), color: tint)
+                    Kicker(timer.isStudying ? String(localized: "Mode étude") : (timer.statusLabel(at: date) ?? String(localized: "En cours")), color: tint)
                 }
                 Text(MacTargets.headline(course: course, taskType: timer.taskType, targetID: timer.targetID))
                     .font(Carnet.serif(24))
                     .foregroundStyle(Carnet.ink)
                     .lineLimit(1)
-                Text(course?.name ?? "Session libre").foregroundStyle(Carnet.inkSecondary).lineLimit(1)
+                Text(course?.name ?? String(localized: "Session libre")).foregroundStyle(Carnet.inkSecondary).lineLimit(1)
             }
             Spacer()
             TimerClockText(font: MacStyle.clock(38))
@@ -423,7 +423,7 @@ struct SessionRow: View {
             Image(systemName: session.taskType.icon)
                 .foregroundStyle(Carnet.tint(session.course))
                 .frame(width: 20)
-            Text(session.course?.displayCode ?? "Sans cours").fontWeight(.medium).foregroundStyle(Carnet.ink)
+            Text(session.course?.displayCode ?? String(localized: "Sans cours")).fontWeight(.medium).foregroundStyle(Carnet.ink)
             if !compact { Text(session.taskType.label).foregroundStyle(Carnet.inkSecondary) }
             if let target = session.targetLabel {
                 Text(target).foregroundStyle(Carnet.inkSecondary).lineLimit(1)

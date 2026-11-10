@@ -27,7 +27,7 @@ struct TheoryTabView: View {
             if course.theoryItems.isEmpty {
                 EmptyCard(icon: TaskType.theory.icon,
                           title: String(localized: "Aucune théorie"),
-                          message: "Depuis Moodle, Courseware ou Botafogo.",
+                          message: String(localized: "Depuis Moodle, Courseware ou Botafogo."),
                           actionTitle: String(localized: "Importer la théorie")) {
                     app.router.openContentImport(courseID: course.id)
                 }
@@ -264,7 +264,7 @@ struct VideoDetailSheet: View {
                         DetailRow(icon: "clock", label: String(localized: "Durée"), value: video.durationLabel)
                     }
                     if let course = video.course {
-                        DetailRow(icon: "books.vertical", label: String(localized: "Cours"), value: course.code)
+                        DetailRow(icon: "books.vertical", label: String(localized: "Cours (au singulier)"), value: course.code)
                     }
                 }
 

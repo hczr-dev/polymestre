@@ -70,11 +70,21 @@ struct SubQuestionChecklist: View {
 /// Fait / juste / moyen / faux, en une rangée.
 struct ExerciseQuickMark: View {
     @Bindable var exercise: Exercise
+    /// Faux à côté d'un bouton « J'ai fini » (le bureau du Mac) : la case
+    /// « Fait » faisait une deuxième façon de dire la même chose, sans les
+    /// questions ni la sûreté que le bouton demande. Elle laisse alors la place
+    /// à l'état, en mots.
+    var marksDone = true
 
     var body: some View {
         HStack(spacing: 6) {
-            Toggle("Fait", isOn: Binding(get: { exercise.isDone }, set: { exercise.setDone($0) }))
-                .studyCheckbox()
+            if marksDone {
+                Toggle("Fait", isOn: Binding(get: { exercise.isDone }, set: { exercise.setDone($0) }))
+                    .studyCheckbox()
+            } else {
+                Text(exercise.isDone ? String(localized: "Fait") : String(localized: "À faire"))
+                    .foregroundStyle(Carnet.inkSecondary)
+            }
             Spacer(minLength: 8)
             ForEach(Correctness.allCases) { result in
                 let selected = exercise.correctness == result
@@ -114,6 +124,8 @@ struct ExerciseStudySheet: View {
     var ladder = RedoLadder.Config()
     /// « Relire » dans « À savoir » : la section du polycopié.
     var openPoly: ((String) -> Void)? = nil
+    /// Faux quand « J'ai fini » est déjà à l'écran (voir `ExerciseQuickMark`).
+    var marksDone = true
 
     private var nextExercise: Exercise? { ExerciseFlow.next(after: exercise, in: series.sortedExercises) }
     @State private var showsHint = false
@@ -157,7 +169,7 @@ struct ExerciseStudySheet: View {
             }
             VStack(alignment: .leading, spacing: 10) {
                 Kicker("Où j'en suis")
-                ExerciseQuickMark(exercise: exercise)
+                ExerciseQuickMark(exercise: exercise, marksDone: marksDone)
                 Toggle("À refaire", isOn: $exercise.redoRequired).studyCheckbox()
             }
             if !exercise.mistakes.isEmpty {
@@ -220,7 +232,7 @@ struct ExerciseStudySheet: View {
                         ask(ClaudeTutor.QuickAction.check.prompt, attachment)
                     } label: { Label("Vérifier ma copie", systemImage: "checkmark.circle") }
                         .buttonStyle(.paper)
-                        .help(copy.map { "Envoie « \($0.title) » à Claude" } ?? "Joins ta copie")
+                        .help(copy.map { "Envoie « \($0.title) » à Claude" } ?? String(localized: "Joins ta copie"))
                 }
                 if let nextExercise {
                     Button { next(nextExercise) } label: {

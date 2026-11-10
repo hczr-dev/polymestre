@@ -16,6 +16,16 @@ struct ExerciseStatementView: View {
         case unavailable
     }
 
+    /// Y a-t-il quoi que ce soit à montrer ici pour cet exercice — un texte lu
+    /// à l'import, un PDF d'où tirer la bande, ou au moins un lien vers
+    /// l'énoncé d'origine ? Sinon, proposer « Afficher l'énoncé » ne mène qu'à
+    /// « pas d'énoncé lisible ».
+    static func hasSomething(for exercise: Exercise) -> Bool {
+        if !exercise.statement.isEmpty { return true }
+        if let series = exercise.series, SeriesPDFStore.shared.hasDocument(for: series) { return true }
+        return !ExerciseLinks.links(for: exercise).isEmpty
+    }
+
     @State private var phase: Phase = .loading
     /// L'énoncé ouvert en plein écran, d'un toucher.
     @State private var expanded = false
@@ -149,7 +159,7 @@ struct StatementReader: View {
                         .background(Color.white.ignoresSafeArea())
                 } else if loaded || !exercise.statement.isEmpty {
                     ScrollView {
-                        MathText(exercise.statement.isEmpty ? "Pas d'énoncé lisible ici pour cet exercice." : exercise.statement,
+                        MathText(exercise.statement.isEmpty ? String(localized: "Pas d'énoncé lisible ici pour cet exercice.") : exercise.statement,
                                  font: .system(.title3, design: .serif))
                             .foregroundStyle(Carnet.ink)
                             .lineSpacing(6)

@@ -66,19 +66,8 @@ enum TaskType: String, Codable, CaseIterable, Identifiable {
         }
     }
 
-    /// Une teinte par catégorie, jamais vert / orange / rouge : ces trois-là
-    /// portent un verdict (sureté, correction), pas une catégorie.
-    var tint: Color {
-        switch canonical {
-        // Pas le gris d'« Autre » : les heures d'amphi se distinguent dans le bilan.
-        case .lecture: return .orange
-        case .exercise: return .blue
-        case .theory: return .purple
-        case .flashcards: return .pink
-        case .correction: return .teal
-        default: return .gray
-        }
-    }
+    // La teinte d'une catégorie (`tint`) est dans la palette du papier :
+    // StudyKit/CarnetCore.swift.
 }
 
 // MARK: - Niveau de confiance (code couleur de sureté de la réponse)
@@ -269,10 +258,6 @@ enum TheoryKind: String, Codable, CaseIterable, Identifiable {
         case .slides: return "rectangle.on.rectangle"
         }
     }
-
-    /// Tous les supports sont de la **théorie** : une seule teinte. Le glyphe
-    /// suffit à distinguer une vidéo d'une lecture.
-    var tint: Color { TaskType.theory.tint }
 
     /// Une durée a-t-elle un sens pour ce support ? Un chapitre sans durée ne
     /// doit pas s'afficher « 0 min ».

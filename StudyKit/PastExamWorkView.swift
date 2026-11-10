@@ -113,7 +113,7 @@ struct PastExamWorkView: View {
         } else if !revealed.contains(key) {
             VStack(spacing: 14) {
                 Image(systemName: "eye.slash").font(.largeTitle).foregroundStyle(Carnet.inkTertiary)
-                Text(label.map { "Le corrigé de \($0)" } ?? String(localized: "Le corrigé"))
+                Text(label.map { String(localized: "Le corrigé de \($0)") } ?? String(localized: "Le corrigé"))
                     .font(Carnet.serif(.title2)).foregroundStyle(Carnet.ink)
                 Text("Cherche d'abord, en temps limité comme à l'examen.")
                     .foregroundStyle(Carnet.inkSecondary)

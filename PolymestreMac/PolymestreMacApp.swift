@@ -17,6 +17,8 @@ struct PolymestreMacApp: App {
     @State private var menuClock: MenuBarClock
 
     init() {
+        // Les captures (`-snapshot`) ne lisent ni n'écrivent les vraies préférences.
+        HeadlessCapture.isolatePreferences()
         // Avant tout : ce que StudyTrack (l'ancienne identité) a laissé — réglages,
         // trousseau, fichiers, base — copié une fois, l'ancien n'est pas touché.
         #if DEBUG

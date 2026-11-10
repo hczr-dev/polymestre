@@ -61,7 +61,7 @@ struct FocusShortcutsEditor: View {
                 }
 
                 Section {
-                    Picker("Cours", selection: $newCourseCode) {
+                    Picker("Cours (au singulier)", selection: $newCourseCode) {
                         Text("Choisir…").tag("")
                         ForEach(availableCourses) { course in
                             Text("\(course.displayCode) — \(course.name)").tag(course.displayCode)

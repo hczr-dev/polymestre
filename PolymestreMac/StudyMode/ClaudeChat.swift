@@ -246,9 +246,9 @@ final class ClaudeChat: Identifiable {
         prompt += situation.card
         if prompt.hasPrefix("/") {
             // La compétence d'abord, la question ensuite.
-            prompt += "\n\n" + (trimmed.isEmpty ? "Regarde ce que je t'envoie." : trimmed)
+            prompt += "\n\n" + (trimmed.isEmpty ? "Regarde ce que je t'envoie." : trimmed) // l10n: tel quel (consigne envoyée à Claude)
         } else {
-            prompt += trimmed.isEmpty ? "Regarde ce que je t'envoie." : trimmed
+            prompt += trimmed.isEmpty ? "Regarde ce que je t'envoie." : trimmed // l10n: tel quel (consigne envoyée à Claude)
         }
         messages.append(Message(role: .student, text: trimmed, label: label, attachments: attachments.map(\.chip),
                                 exercise: situation.exerciseLabel, images: images))

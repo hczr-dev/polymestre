@@ -19,9 +19,9 @@ struct MoodleCourseList: View {
             switch self {
             case .all: return String(localized: "Tout")
             case .series: return String(localized: "Séries")
-            case .documents: return "Documents"
+            case .documents: return String(localized: "Documents")
             case .videos: return String(localized: "Vidéos")
-            case .tasks: return "Devoirs"
+            case .tasks: return String(localized: "Devoirs")
             }
         }
 

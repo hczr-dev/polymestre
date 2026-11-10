@@ -158,13 +158,24 @@ final class SettingsStore {
     var contentRefreshNews: String {
         didSet {
             defaults.set(contentRefreshNews, forKey: Key.contentRefreshNews)
-            guard !applyingShared, contentRefreshNews != oldValue else { return }
+            guard !applyingShared, contentRefreshNews != oldValue, Self.sharesOverICloud else { return }
             NSUbiquitousKeyValueStore.default.set(contentRefreshNews, forKey: Self.sharedNewsKey)
             NSUbiquitousKeyValueStore.default.synchronize()
         }
     }
 
     private static let sharedNewsKey = "content.news"
+    /// Les essais et les captures (`-memoryStore`) ne lisent ni n'écrivent les
+    /// réglages partagés par iCloud : une capture sur la base d'essai reprenait
+    /// les nouveautés des vrais cours, et un réglage touché pendant un essai
+    /// serait parti sur l'iPhone.
+    private static let sharesOverICloud: Bool = {
+        #if DEBUG
+        return !CommandLine.arguments.contains("-memoryStore")
+        #else
+        return true
+        #endif
+    }()
     @ObservationIgnored private var applyingShared = false
     @ObservationIgnored private var sharedObserver: NSObjectProtocol?
 
@@ -172,7 +183,7 @@ final class SettingsStore {
     /// section, cycle Pomodoro, objectif de la semaine, charge par crédit.
     /// Réglés sur l'iPhone, ils valent sur le Mac (et inversement).
     private func share(_ key: String, _ value: Any) {
-        guard !applyingShared else { return }
+        guard !applyingShared, Self.sharesOverICloud else { return }
         NSUbiquitousKeyValueStore.default.set(value, forKey: "pref." + key)
         NSUbiquitousKeyValueStore.default.synchronize()
     }
@@ -311,6 +322,7 @@ final class SettingsStore {
         self.assistantFiles = defaults.bool(forKey: Key.assistantFiles)
         self.aiExtractionEnabled = defaults.object(forKey: Key.aiExtractionEnabled) as? Bool ?? true
         for key in Key.legacyAI { defaults.removeObject(forKey: key) }
+        guard Self.sharesOverICloud else { return }
         // Ce qu'iCloud ne connaît pas encore part d'ici ; ce qu'il connaît
         // l'emporte (le réglage fait sur l'autre appareil).
         let store = NSUbiquitousKeyValueStore.default

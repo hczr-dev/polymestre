@@ -74,6 +74,11 @@ struct MacUpdateFeed: Codable, Equatable {
     var url: URL
     var notes: String?
 
+    /// « 2.1 (9) » : la version et sa build, comme la ligne « Version » des
+    /// réglages. La version seule disait « 2.1 est disponible » à qui avait déjà
+    /// la 2.1 : entre deux envois, c'est souvent la build qui change.
+    var label: String { "\(version) (\(build))" }
+
     static func feedURL(siteHost: String) -> URL? { URL(string: "https://\(siteHost)/mac/latest.json") }
 
     static func decode(_ data: Data) -> MacUpdateFeed? { try? JSONDecoder().decode(Self.self, from: data) }

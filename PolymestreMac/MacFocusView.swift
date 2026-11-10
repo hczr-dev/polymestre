@@ -93,7 +93,7 @@ struct MacFocusView: View {
         switch timer.phase {
         case .idle: return timer.pomodoro ? "Pomodoro" : String(localized: "Prêt")
         case .running: return timer.isStudying ? String(localized: "Mode étude") : (timer.statusLabel(at: date) ?? (course?.displayCode ?? String(localized: "En cours")))
-        case .paused, .onBreak: return timer.statusLabel(at: date) ?? "En pause"
+        case .paused, .onBreak: return timer.statusLabel(at: date) ?? String(localized: "En pause")
         }
     }
 

@@ -34,6 +34,8 @@ struct ProfileView: View {
 
     /// Poussé depuis l'onglet Moi (sans pile ni « Fermer »), ou présenté seul.
     var isEmbedded = false
+    /// Dans « Moi » : le bilan en première ligne, sous le prénom.
+    var showsSummaryLink = false
 
     var body: some View {
         if isEmbedded {
@@ -60,6 +62,15 @@ struct ProfileView: View {
                 Group {
                     storeSection
                     identitySection(app.settings)
+                    if showsSummaryLink {
+                        Section {
+                            NavigationLink {
+                                StatsView()
+                            } label: {
+                                settingsRow(String(localized: "Bilan"), icon: "chart.bar.xaxis", value: weekHours)
+                            }
+                        }
+                    }
                     studiesSection(app.settings)
                     studyToolsSection
                     accountsHubSection
@@ -72,7 +83,7 @@ struct ProfileView: View {
                 .listRowBackground(Carnet.sheet)
             }
             .carnetForm()
-            .navigationTitle("Réglages")
+            .navigationTitle(showsSummaryLink ? LocalizedStringKey("Moi") : LocalizedStringKey("Réglages"))
             .navigationBarTitleDisplayMode(.inline)
             .sheet(isPresented: $showingImport) {
                 ImportSheet(defaultSectionCode: app.settings.sectionCode)
@@ -316,6 +327,13 @@ struct ProfileView: View {
     }
 
     /// Une ligne de réglage : icône d'encre, titre, et l'état à droite.
+    /// « 4,9 h cette semaine » : le temps compté depuis lundi, sur la ligne du bilan.
+    private var weekHours: String {
+        let start = DateUtils.startOfWeek(Date())
+        let seconds = StudyTime.seconds(in: context, from: start, to: DateUtils.addDays(7, to: start))
+        return String(localized: "\(DateUtils.hoursLabel(seconds: seconds)) cette semaine")
+    }
+
     private func settingsRow(_ title: String, icon: String, value: String? = nil) -> some View {
         HStack(spacing: 12) {
             Label { Text(ui: title) } icon: { Image(systemName: icon) }
@@ -506,7 +524,7 @@ struct ProfileView: View {
 
             Button {
                 exportURL = DataExporter.writeFile(courses: courses, sessions: sessions)
-                message = exportURL == nil ? "Sauvegarde impossible." : String(localized: "Sauvegarde prête à partager.")
+                message = exportURL == nil ? String(localized: "Sauvegarde impossible.") : String(localized: "Sauvegarde prête à partager.")
             } label: {
                 Label("Créer une sauvegarde (JSON)", systemImage: "square.and.arrow.down")
             }
@@ -768,7 +786,7 @@ private struct ICloudStatusRow: View {
     }
 
     private var value: String {
-        guard isSynced else { return "base locale" }
+        guard isSynced else { return String(localized: "base locale") }
         switch account {
         case .available?: return String(localized: "synchronisé")
         case .noAccount?: return String(localized: "connecte-toi à iCloud dans Réglages")

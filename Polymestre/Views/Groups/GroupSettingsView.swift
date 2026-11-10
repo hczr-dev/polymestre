@@ -248,7 +248,7 @@ struct GroupSettingsView: View {
             try? context.save()
             Haptics.success()
         } catch {
-            message = "Publication impossible — \(GroupSync.explain(error))"
+            message = String(localized: "Publication impossible — \(GroupSync.explain(error))")
         }
     }
 
@@ -261,7 +261,7 @@ struct GroupSettingsView: View {
             do {
                 try await app.social.leaveGroup(groupID: remoteID)
             } catch {
-                message = "Sortie impossible — \(GroupSync.explain(error))"
+                message = String(localized: "Sortie impossible — \(GroupSync.explain(error))")
                 return
             }
         }
@@ -276,7 +276,7 @@ struct GroupSettingsView: View {
             do {
                 try await app.social.deleteGroup(id: remoteID)
             } catch {
-                message = "Suppression impossible — \(GroupSync.explain(error))"
+                message = String(localized: "Suppression impossible — \(GroupSync.explain(error))")
                 return
             }
         }

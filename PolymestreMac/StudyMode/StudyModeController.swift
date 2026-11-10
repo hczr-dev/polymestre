@@ -184,6 +184,10 @@ final class StudyModeController: NSObject, NSWindowDelegate {
     /// toucher à l'écran de personne.
     static let snapshotPath: String? = CommandLine.arguments.firstIndex(of: "-snapshot").flatMap {
         $0 + 1 < CommandLine.arguments.count ? CommandLine.arguments[$0 + 1] : nil
+    }.flatMap {
+        // `-snapshot -advanced -captureView …` : le drapeau suivant n'est pas un
+        // chemin (une image nommée « -advanced » s'écrivait à la racine du dépôt).
+        $0.hasPrefix("-") ? nil : $0
     }
     private static let snapshotDelay = CommandLine.arguments.firstIndex(of: "-snapshotDelay").flatMap {
         $0 + 1 < CommandLine.arguments.count ? Double(CommandLine.arguments[$0 + 1]) : nil
@@ -603,7 +607,7 @@ final class StudyModeController: NSObject, NSWindowDelegate {
         if let asked = quitting[app.processIdentifier], Date().timeIntervalSince(asked) < 20 { return }
         screen.blockedName = app.localizedName
         screen.blockedAt = Date()
-        DeskNotifications.shared.post(.blockedApp, "\(app.localizedName ?? "Une app") reste fermée pendant le mode étude", icon: "hand.raised.fill")
+        DeskNotifications.shared.post(.blockedApp, "\(app.localizedName ?? String(localized: "Une app")) reste fermée pendant le mode étude", icon: "hand.raised.fill")
         log.notice("mode étude : \(app.bundleIdentifier ?? "?", privacy: .public) arrêtée")
         // Le voile d'abord : rien de l'app ne se voit, même une fraction de seconde.
         showShields()
@@ -741,7 +745,7 @@ final class StudyModeController: NSObject, NSWindowDelegate {
         let alert = NSAlert()
         alert.messageText = String(localized: "Quitter le mode étude ?")
         alert.informativeText = String(localized: "Ta session continue.")
-        alert.addButton(withTitle: "Rester")
+        alert.addButton(withTitle: String(localized: "Rester"))
         alert.addButton(withTitle: "Quitter")
         return alert.runModal() == .alertSecondButtonReturn
     }

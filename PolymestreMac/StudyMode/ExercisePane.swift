@@ -96,7 +96,7 @@ struct ExercisePane: View {
                                 ExerciseStudySheet(exercise: exercise, series: series, ask: { desk.ask($0, attachment: $1) }, tint: tint,
                                                    showStatement: false, copy: copy(series), next: { next in select(next, in: course) },
                                                    ladder: ClaudeProjectSetup.file(settings: settings)?.redo ?? RedoLadder.Config(),
-                                                   openPoly: openPoly)
+                                                   openPoly: openPoly, marksDone: false)
                                     .padding(18)
                             }
                             .frame(width: compact ? 290 : 340)

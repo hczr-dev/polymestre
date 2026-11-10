@@ -122,8 +122,9 @@ enum MacDebugLaunch {
                     // Réglages › une page (`settings-general|chrono|study|accounts|claude`), avancé ouvert
                     // avec `-advanced`.
                     let key = String(page.dropFirst("settings-".count))
-                    UserDefaults.standard.set(key, forKey: "settings.page")
-                    UserDefaults.standard.set(CommandLine.arguments.contains("-advanced"), forKey: "settings.advanced.\(key)")
+                    // Pour cette capture seulement : rien n'est écrit dans les vraies préférences.
+                    HeadlessCapture.override(["settings.page": key,
+                                              "settings.advanced.\(key)": CommandLine.arguments.contains("-advanced")])
                     let settings = StudyModeController.shared.settings ?? MacSettings()
                     content = AnyView(MacSettingsView()
                         .environment(settings).environment(timer).environment(settings.shared).environment(store)

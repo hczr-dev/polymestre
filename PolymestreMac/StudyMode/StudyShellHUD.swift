@@ -475,7 +475,7 @@ struct StudySearchView: View {
                 controller.present()
             }
         }
-        list.append(Result(id: "a.claude", title: "Claude", subtitle: "Demander", icon: "sparkle", section: "Actions") {
+        list.append(Result(id: "a.claude", title: "Claude", subtitle: String(localized: "Demander"), icon: "sparkle", section: "Actions") {
             desk.showClaude()
             controller.present()
         })

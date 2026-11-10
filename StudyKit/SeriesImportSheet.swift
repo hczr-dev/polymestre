@@ -133,7 +133,7 @@ struct SeriesImportSheet: View {
     private var title: String {
         switch phase {
         case .review: return String(localized: "Vérifier l'import")
-        case .reading, .analyzing: return "Analyse"
+        case .reading, .analyzing: return String(localized: "Analyse")
         default: return String(localized: "Importer une série")
         }
     }
@@ -159,7 +159,7 @@ struct SeriesImportSheet: View {
             }
             if let course {
                 Section {
-                    LabeledContent("Cours", value: "\(course.displayCode) · \(course.name)")
+                    LabeledContent("Cours (au singulier)", value: "\(course.displayCode) · \(course.name)")
                 }
             }
         }
@@ -251,7 +251,7 @@ struct SeriesImportSheet: View {
     private var reviewStep: some View {
         List {
             Section {
-                Picker("Cours", selection: $selectedCourseID) {
+                Picker("Cours (au singulier)", selection: $selectedCourseID) {
                     if selectedCourseID == nil {
                         Text("Choisir…").tag(UUID?.none)
                     }

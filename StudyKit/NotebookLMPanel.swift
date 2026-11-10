@@ -69,7 +69,7 @@ struct NotebookLMPanel: View {
     private var intro: some View {
         VStack(alignment: .leading, spacing: 6) {
             Kicker("NotebookLM · \(course.displayCode)", color: tint)
-            Text(chapterTitle.map { "Écouter : \($0)" } ?? "Écouter ton cours").font(Carnet.serif(26)).foregroundStyle(Carnet.ink)
+            Text(chapterTitle.map { "Écouter : \($0)" } ?? String(localized: "Écouter ton cours")).font(Carnet.serif(26)).foregroundStyle(Carnet.ink)
             Text("Un podcast de ta fiche, par NotebookLM.")
                 .font(.callout).foregroundStyle(Carnet.inkSecondary).fixedSize(horizontal: false, vertical: true)
         }

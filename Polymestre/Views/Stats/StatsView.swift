@@ -148,7 +148,7 @@ struct StatsView: View {
 
     private var categoryColors: [Color] {
         categoryOrder.map { name in
-            if name == Self.lectureCategory { return Carnet.inkTertiary.opacity(0.45) }
+            if name == Self.lectureCategory { return TaskType.lecture.tint }
             let type = TaskType.reportCategories.first { $0.label == name } ?? .other
             return StatsPalette.color(for: type)
         }
@@ -389,7 +389,7 @@ struct StatsView: View {
                 Rectangle().fill(Carnet.rule).frame(width: 1, height: 48)
                 total(String(localized: "Amphi"), seconds: lectureSeconds, detail: String(localized: "\(lectures.count) cours"))
                 Rectangle().fill(Carnet.rule).frame(width: 1, height: 48)
-                total("Total", seconds: studySeconds + lectureSeconds, detail: activeDaysLabel)
+                total(String(localized: "Total"), seconds: studySeconds + lectureSeconds, detail: activeDaysLabel)
             } else {
                 Rectangle().fill(Carnet.rule).frame(width: 1, height: 48)
                 total(String(localized: "Jours actifs"), value: "\(Set(studySessions.map { DateUtils.startOfDay($0.startedAt) }).count)",
@@ -586,7 +586,7 @@ struct StatsView: View {
         } label: {
             CarnetRow(icon: session.taskType.icon,
                       tint: session.course.map { Carnet.tint($0.colorHex) } ?? Carnet.inkSecondary,
-                      title: "\(session.course?.displayCode ?? "Sans cours") · \(session.taskType.label)",
+                      title: "\(session.course?.displayCode ?? String(localized: "Sans cours")) · \(session.taskType.label)",
                       subtitle: sessionSubtitle(session)) {
                 Text(session.durationLabel)
                     .font(.subheadline.weight(.medium))
@@ -636,10 +636,10 @@ struct StatsView: View {
         let study = bars.filter { $0.category != Self.lectureCategory }.reduce(0) { $0 + $1.seconds }
         let lecture = bars.filter { $0.category == Self.lectureCategory }.reduce(0) { $0 + $1.seconds }
         return VStack(alignment: .leading, spacing: 4) {
-            Text(binsByWeek ? "Semaine du \(DateUtils.shortDay.string(from: bin))" : DateUtils.fullDayLabel(bin))
+            Text(binsByWeek ? String(localized: "Semaine du \(DateUtils.shortDay.string(from: bin))") : DateUtils.fullDayLabel(bin))
                 .font(.subheadline.weight(.semibold))
                 .foregroundStyle(Carnet.ink)
-            Text("\(DateUtils.durationLabel(seconds: study)) d'étude" + (lecture > 0 ? " · \(DateUtils.durationLabel(seconds: lecture)) d'amphi" : ""))
+            Text(String(localized: "\(DateUtils.durationLabel(seconds: study)) d'étude") + (lecture > 0 ? " · " + String(localized: "\(DateUtils.durationLabel(seconds: lecture)) d'amphi") : ""))
                 .font(.footnote)
                 .foregroundStyle(Carnet.inkSecondary)
             Text(bars.filter { $0.category != Self.lectureCategory }
@@ -836,7 +836,7 @@ struct StatsView: View {
                         Text(total == 0 ? "—" : "\(Int((Double(shown?.count ?? 0) / Double(max(total, 1)) * 100).rounded())) %")
                             .font(Carnet.serif(.title2))
                             .foregroundStyle(Carnet.ink)
-                        Text(shown?.result.lineLabel ?? "juste")
+                        Text(shown?.result.lineLabel ?? Correctness.correct.lineLabel)
                             .font(.caption)
                             .foregroundStyle(Carnet.inkSecondary)
                     }
@@ -867,14 +867,5 @@ struct StatsView: View {
 /// Les couleurs des catégories de travail, dans la palette du papier : des
 /// teintes sourdes, qui ne rivalisent pas avec les verdicts de correction.
 enum StatsPalette {
-    static func color(for type: TaskType) -> Color {
-        switch type.canonical {
-        case .theory: return Carnet.tint("#4F6FB8")
-        case .exercise: return Carnet.tint("#C08A2E")
-        case .correction: return Carnet.tint("#5E9A6A")
-        case .flashcards: return Carnet.tint("#A0567E")
-        case .lecture: return Carnet.inkTertiary
-        default: return Carnet.tint("#7A7468")
-        }
-    }
+    static func color(for type: TaskType) -> Color { type.tint }
 }

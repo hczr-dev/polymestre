@@ -27,7 +27,7 @@ struct GroupSubjectProgressView: View {
 
         var label: String {
             switch self {
-            case .overall: return "Global"
+            case .overall: return String(localized: "Global")
             case .series: return String(localized: "Séries")
             case .exercises: return String(localized: "Exercices")
             case .theory: return String(localized: "Théorie")
@@ -88,7 +88,7 @@ struct GroupSubjectProgressView: View {
             HStack(spacing: Layout.block) {
                 StatCard(icon: "person.3.fill",
                          value: "\(comparison.rows.filter(\.isPresent).count)",
-                         title: "membres", onCard: true)
+                         title: String(localized: "membres"), onCard: true)
                 StatCard(icon: "checkmark.circle.fill",
                          value: "\(comparison.rows.filter { $0.isPresent && $0.doneTotal > 0 }.count)",
                          title: String(localized: "ont commencé"), onCard: true)
@@ -152,7 +152,7 @@ struct GroupSubjectProgressView: View {
                     .font(.subheadline.weight(row.isMe ? .bold : .regular))
                     .lineLimit(1)
                 if row.isMe {
-                    Pill(text: "toi", color: Theme.accent)
+                    Pill(text: String(localized: "toi"), color: Theme.accent)
                 } else if !row.isPresent {
                     Pill(text: String(localized: "hors groupe"), color: .secondary)
                 }

@@ -13,7 +13,7 @@ struct LateWorkScreen: View {
         LateWorkView(course: course,
                      openExercise: { openedExercise = $0 },
                      openTheory: { openedVideo = $0 },
-                     openURL: { browsing = BrowsedLink(title: "Corrigé", url: $0, icon: "checkmark.seal") })
+                     openURL: { browsing = BrowsedLink(title: String(localized: "Corrigé"), url: $0, icon: "checkmark.seal") })
             .navigationTitle("À rattraper")
             .navigationBarTitleDisplayMode(.inline)
             .sheet(item: $openedExercise) { ExerciseSheet(exercise: $0) }

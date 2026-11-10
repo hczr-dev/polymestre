@@ -10,11 +10,15 @@ export function percent(part: number, total: number): string {
   return total === 0 ? "—" : `${Math.round((part / total) * 100)} %`;
 }
 
-/** `Correctness.lineLabel` : le mot d'une ligne d'exercice. */
+/**
+ * `Correctness.lineLabel` : le mot d'une ligne d'exercice — les mêmes trois mots
+ * que partout ailleurs (« juste », « moyen », « faux »). « à revoir » se
+ * confondait avec « à refaire », qui est autre chose.
+ */
 export function lineLabel(correctness: Correctness): string {
   switch (correctness) {
     case "correct": return "juste";
-    case "partial": return "à revoir";
+    case "partial": return "moyen";
     case "wrong": return "faux";
   }
 }

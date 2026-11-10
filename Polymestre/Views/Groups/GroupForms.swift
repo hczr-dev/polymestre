@@ -335,7 +335,7 @@ struct PlanSessionView: View {
             Form {
                 Section("Session") {
                     TextField("Titre", text: $title)
-                    Picker("Cours", selection: $selectedCourseID) {
+                    Picker("Cours (au singulier)", selection: $selectedCourseID) {
                         Text("Aucun").tag(UUID?.none)
                         ForEach(selectableCourses) { course in
                             Text("\(course.code) — \(course.name)").tag(UUID?.some(course.id))

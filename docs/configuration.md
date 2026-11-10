@@ -64,6 +64,13 @@ binaire macOS et teste :
 ./validate.sh     # se termine par « ✅ TOUS LES CONTRÔLES SONT PASSÉS »
 ```
 
+`validate.sh` commence par `scripts/check-strings.py`, le garde-fou de traduction :
+un littéral français rendu dans une `String` (`return "Progression"`, `nom ?? "au total"`,
+`cond ? "Jour" : heure`) ne passe jamais par le catalogue et reste en français quand
+l'app est en anglais. Le script refuse ces trois formes dans les dossiers d'interface,
+et tout `String(localized:)` sans anglais au catalogue ; `// l10n: tel quel` sur la
+ligne laisse passer un texte voulu tel quel (consigne envoyée à Claude, nom propre).
+
 `./validate.sh --bench` ajoute des **repères de performance** : il construit un
 semestre simulé (6 cours, 240 vidéos, 576 exercices, 480 sessions) et chronomètre
 les dérivations que les écrans refont à chaque rendu. La mesure porte sur la logique

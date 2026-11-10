@@ -75,7 +75,7 @@ struct GroupHubView: View {
                 Circle()
                     .fill(live.isEmpty ? Carnet.inkTertiary : Carnet.correct)
                     .frame(width: 8, height: 8)
-                CarnetKicker(live.isEmpty ? "En direct" : PresenceBoard.summary(live),
+                CarnetKicker(live.isEmpty ? String(localized: "En direct") : PresenceBoard.summary(live),
                              color: live.isEmpty ? Carnet.inkSecondary : Carnet.correct)
             }
             if !isOnline {
@@ -332,7 +332,7 @@ struct GroupHubView: View {
                 }
                 Text(post.body).font(.body).foregroundStyle(Carnet.ink).lineLimit(3)
                 HStack(spacing: 10) {
-                    Label(replies == 0 ? "Répondre" : Plural.count(replies, "\(replies) réponse", "\(replies) réponses"),
+                    Label(replies == 0 ? String(localized: "Répondre") : Plural.count(replies, "\(replies) réponse", "\(replies) réponses"),
                           systemImage: "arrowshape.turn.up.left")
                     if post.resolved {
                         Label("Résolu", systemImage: "checkmark.circle.fill").foregroundStyle(Carnet.correct)
@@ -507,7 +507,7 @@ struct HelpComposer: View {
         NavigationStack {
             Form {
                 Section("Sur quoi") {
-                    Picker("Cours", selection: $courseCode) {
+                    Picker("Cours (au singulier)", selection: $courseCode) {
                         Text("Général").tag("")
                         ForEach(subjects, id: \.self) { Text($0).tag($0) }
                     }
@@ -629,7 +629,7 @@ struct HelpThread: View {
                 .padding(.bottom, 6)
             }
             .task { await watchReplies() }
-            .navigationTitle(question.target.isEmpty ? "Question" : question.target)
+            .navigationTitle(question.target.isEmpty ? String(localized: "Question") : question.target)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) { Button("OK") { dismiss() } }

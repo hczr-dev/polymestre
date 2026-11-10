@@ -20,6 +20,26 @@ import Foundation
 /// La semaine en cours n'y entre pas : elle n'est pas finie. Une série qui a
 /// une échéance compte à son échéance, pas à sa semaine. Les bonus non plus :
 /// facultatifs, ils ne sont pas dus.
+/// Le retard de plusieurs cours, par nature : de quoi dire **de quoi** sont
+/// faits « 26 en retard » sans ouvrir chaque cours.
+struct LateParts: Equatable {
+    var redo = 0
+    var toCorrect = 0
+    var exercises = 0
+    var theory = 0
+
+    var total: Int { redo + toCorrect + exercises + theory }
+
+    static func of(_ works: [LateWork]) -> LateParts {
+        works.reduce(into: LateParts()) { parts, work in
+            parts.redo += work.redo.count
+            parts.toCorrect += work.toCorrect.count
+            parts.exercises += work.exerciseCount
+            parts.theory += work.theoryCount
+        }
+    }
+}
+
 struct LateWork {
     struct SeriesGroup: Identifiable {
         let series: ExerciseSeries

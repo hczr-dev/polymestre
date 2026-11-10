@@ -23,7 +23,7 @@ struct QuickNoteSheet: View {
         NavigationStack {
             Form {
                 Section {
-                    Picker("Cours", selection: $courseID) {
+                    Picker("Cours (au singulier)", selection: $courseID) {
                         ForEach(tracked) { course in
                             Text("\(course.displayCode) · \(course.name)").tag(Optional(course.id))
                         }

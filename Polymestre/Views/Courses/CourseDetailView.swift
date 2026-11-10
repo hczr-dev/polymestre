@@ -43,8 +43,8 @@ struct CourseDetailView: View {
             switch self {
             case .theory: return String(localized: "Théorie")
             case .exercises: return String(localized: "Séries")
-            case .progress: return "Progression"
-            case .exams: return "Examens"
+            case .progress: return String(localized: "Progression")
+            case .exams: return String(localized: "Examens")
             }
         }
     }
@@ -540,7 +540,7 @@ struct CourseDetailView: View {
                 if series.exercises.isEmpty {
                     CarnetRow(icon: SeriesAutoReader.shared.reading.contains(series.id) ? "hourglass" : "doc.text.magnifyingglass",
                               tint: Carnet.inkSecondary,
-                              title: SeriesAutoReader.shared.reading.contains(series.id) ? "Lecture de l'énoncé…" : "Exercices pas encore lus")
+                              title: SeriesAutoReader.shared.reading.contains(series.id) ? String(localized: "Lecture de l'énoncé…") : String(localized: "Exercices pas encore lus"))
                 }
                 ForEach(Array(series.sortedExercises.enumerated()), id: \.element.id) { index, exercise in
                     Button { openedExercise = exercise } label: {
@@ -747,7 +747,7 @@ struct CourseDetailView: View {
                 }
                 if pastWeeks != nil {
                     Divider()
-                    completionMenu(pastWeeks!, title: "Semaines \(pastWeeks!.lowerBound) à \(pastWeeks!.upperBound)") {
+                    completionMenu(pastWeeks!, title: String(localized: "Semaines \(pastWeeks!.lowerBound) à \(pastWeeks!.upperBound)")) {
                         Label("Marquer les semaines passées faites…", systemImage: "checklist.checked")
                     }
                 }

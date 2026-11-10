@@ -18,6 +18,8 @@ struct WeekTimeCard: View {
     /// Éléments des semaines passées pas faits (corrections comprises), tous
     /// cours confondus.
     let late: Int
+    /// De quoi ce retard est fait, quand la semaine elle-même n'a rien de prévu.
+    var lateParts: LateParts? = nil
     /// L'objectif de la semaine (réglé, sinon la charge EPFL), en secondes.
     var goal: Int = 0
     var onOpen: () -> Void
@@ -59,16 +61,24 @@ struct WeekTimeCard: View {
                     dayStrip
                 }
                 Rectangle().fill(Carnet.rule).frame(height: 1)
-                HStack(spacing: 18) {
-                    axis(String(localized: "Théorie"), theory)
-                    axis(String(localized: "Séries"), series)
-                    axis(String(localized: "Corrigés"), corrections)
-                }
-                if late > 0 {
-                    Label("\(late) à rattraper dans tes cours",
-                          systemImage: "exclamationmark.circle")
-                        .font(.footnote)
-                        .foregroundStyle(Carnet.wrong)
+                if let lateParts, lateParts.total > 0, theory.total == 0, series.total == 0 {
+                    // Rien de prévu cette semaine : trois tirets ne disaient rien,
+                    // juste au-dessus de « 26 en retard ». La place dit plutôt de
+                    // quoi ce retard est fait.
+                    lateLabel
+                    HStack(spacing: 18) {
+                        lateCount(String(localized: "À refaire"), lateParts.redo)
+                        lateCount(String(localized: "À corriger"), lateParts.toCorrect)
+                        lateCount(String(localized: "Exercices"), lateParts.exercises)
+                        lateCount(String(localized: "Théorie"), lateParts.theory)
+                    }
+                } else {
+                    HStack(spacing: 18) {
+                        axis(String(localized: "Théorie"), theory)
+                        axis(String(localized: "Séries"), series)
+                        axis(String(localized: "Corrigés"), corrections)
+                    }
+                    if late > 0 { lateLabel }
                 }
             }
             .padding(16)
@@ -78,6 +88,30 @@ struct WeekTimeCard: View {
         .buttonStyle(PressableStyle(scale: 0.99))
         .accessibilityElement(children: .combine)
         .accessibilityHint("Ouvre le bilan")
+    }
+
+    /// Le même mot que sur chaque cours (« N en retard ») : « à rattraper »
+    /// est le nom de la page qui les liste.
+    private var lateLabel: some View {
+        Label("\(late) en retard dans tes cours", systemImage: "exclamationmark.circle")
+            .font(.footnote)
+            .foregroundStyle(Carnet.wrong)
+    }
+
+    private func lateCount(_ title: String, _ value: Int) -> some View {
+        VStack(alignment: .leading, spacing: 2) {
+            Text(value == 0 ? "—" : "\(value)")
+                .font(Carnet.serif(.title3))
+                .foregroundStyle(value == 0 ? Carnet.inkTertiary : Carnet.ink)
+            Text(title)
+                .font(.caption)
+                .foregroundStyle(Carnet.inkSecondary)
+                .lineLimit(1)
+                .minimumScaleFactor(0.8)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("\(title) : \(value)")
     }
 
     private var todayLine: String {

@@ -62,7 +62,7 @@ struct AnkiCourseRow: View {
             CarnetIconTile(systemName: "rectangle.stack", tint: Carnet.tint(course.colorHex))
             VStack(alignment: .leading, spacing: 2) {
                 Text("Révision Anki").font(.body).foregroundStyle(Carnet.ink)
-                Text(preparing ? "Téléchargement de ta collection…" : (sync.lastError ?? String(localized: "Ta collection n'est pas encore sur l'appareil")))
+                Text(preparing ? String(localized: "Téléchargement de ta collection…") : (sync.lastError ?? String(localized: "Ta collection n'est pas encore sur l'appareil")))
                     .font(.footnote)
                     .foregroundStyle(sync.lastError == nil ? Carnet.inkSecondary : Carnet.wrong)
                     .lineLimit(2)
@@ -104,7 +104,7 @@ struct AnkiCourseRow: View {
             Menu {
                 Button { browsing = true } label: { Label("Parcourir les cartes", systemImage: "list.bullet.rectangle") }
                 Button { composing = true } label: { Label("Nouvelle carte", systemImage: "plus.rectangle.on.rectangle") }
-                deckPicker(collection, title: "Changer de paquet")
+                deckPicker(collection, title: String(localized: "Changer de paquet"))
             } label: {
                 Image(systemName: "ellipsis")
                     .frame(width: 34, height: Layout.minTouch)
@@ -125,7 +125,7 @@ struct AnkiCourseRow: View {
     /// Pas de paquet reconnu : une proposition discrète de le choisir.
     private func unlinkedRow(_ collection: AnkiCollection) -> some View {
         Menu {
-            deckPicker(collection, title: "Paquet de \(course.displayCode)")
+            deckPicker(collection, title: String(localized: "Paquet de \(course.displayCode)"))
         } label: {
             Label("Relier un paquet Anki à ce cours", systemImage: "rectangle.stack.badge.plus")
                 .font(.subheadline)
@@ -237,7 +237,7 @@ struct AnkiReviewView: View {
     private var countsLabel: some View {
         HStack(spacing: 10) {
             count(counts.new, Color.blue, "nouvelles")
-            count(counts.learning, Carnet.wrong, "en apprentissage")
+            count(counts.learning, Carnet.wrong, String(localized: "en apprentissage"))
             count(counts.review, Carnet.correct, "à revoir")
         }
         .font(.subheadline.monospacedDigit().weight(.semibold))

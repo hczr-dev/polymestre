@@ -57,7 +57,7 @@ private struct DeskControlCenter: View {
             recentNotices
             if timer.isLocked {
                 // La seule sortie sous verrou, ici aussi : à tenir, jamais un réflexe.
-                HoldButton(title: "Sortie d'urgence", systemImage: "exclamationmark.triangle", hold: StudyMode.emergencyHold) {
+                HoldButton(title: String(localized: "Sortie d'urgence"), systemImage: "exclamationmark.triangle", hold: StudyMode.emergencyHold) {
                     timer.finish(emergency: true)
                 }
                 .help("Maintiens \(Int(StudyMode.emergencyHold)) secondes : la session s'enregistre, notée « sortie d'urgence ».")

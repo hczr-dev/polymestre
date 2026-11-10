@@ -87,11 +87,10 @@ struct ExercisesTabView: View {
                 // gros boutons pleins, eux, faisaient concurrence au chrono de
                 // la fiche — un menu suffit à un geste hebdomadaire.
                 HStack(alignment: .firstTextBaseline) {
-                    Text("Séries")
+                    // « 4 séries », en un morceau : « Séries 4 » se lisait comme
+                    // le nom d'une série, juste au-dessus de « Série 1 ».
+                    Text(Plural.count(course.series.count, "\(course.series.count) série", "\(course.series.count) séries"))
                         .font(.headline)
-                    Text("\(course.series.count)")
-                        .font(.subheadline.monospacedDigit())
-                        .foregroundStyle(.secondary)
                     Spacer()
                     Menu {
                         Button { showingPDFImport = true } label: {
@@ -196,9 +195,9 @@ struct ExercisesTabView: View {
             }
             HStack(spacing: Layout.block) {
                 Text("Correction").font(.caption.weight(.semibold)).foregroundStyle(.secondary)
-                legendItem(.corrected(.correct), "juste")
-                legendItem(.corrected(.partial), "moyen")
-                legendItem(.corrected(.wrong), "faux")
+                legendItem(.corrected(.correct), Correctness.correct.lineLabel)
+                legendItem(.corrected(.partial), Correctness.partial.lineLabel)
+                legendItem(.corrected(.wrong), Correctness.wrong.lineLabel)
                 Spacer(minLength: 0)
             }
         }

@@ -16,7 +16,7 @@ import {
   AcademicTerm, Correctness, Course, LinkedCalendarEvent, StudySession, TaskType,
 } from "../../../models/index.ts";
 import type { ModelStore } from "../../../models/store.ts";
-import { LECTURE_COLOR, carnetTint, taskColor } from "./palette.ts";
+import { carnetTint, lectureColor, taskColor } from "./palette.ts";
 
 export type Period = "week" | "month" | "semester";
 
@@ -256,7 +256,7 @@ export function buildStats(
     const label = TaskType.label(type);
     categoryStyles[label] = { color: taskColor(type, dark), opacity: 1 };
   }
-  categoryStyles[LECTURE_CATEGORY] = { color: LECTURE_COLOR, opacity: 0.45 };
+  categoryStyles[LECTURE_CATEGORY] = { color: lectureColor(dark), opacity: 1 };
 
   // Les cases du graphique : une par jour, ou une par semaine en semestre.
   const bins: Date[] = [];
@@ -276,8 +276,8 @@ export function buildStats(
       name: LECTURE_CATEGORY,
       detail: "cours magistraux suivis",
       seconds: lectureSeconds,
-      color: LECTURE_COLOR,
-      opacity: 0.55,
+      color: lectureColor(dark),
+      opacity: 1,
     });
   }
   for (const type of TaskType.reportCategories) {

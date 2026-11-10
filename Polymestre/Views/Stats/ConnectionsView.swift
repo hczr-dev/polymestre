@@ -84,7 +84,7 @@ struct ConnectionsList: View {
                 connected: AnkiWebSync.shared.isSignedIn && center.state(of: .ankiweb) != .expired,
                 action: { sheet = .ankiweb })
             CarnetRule()
-            row(icon: "calendar", title: "Calendrier de l'iPhone",
+            row(icon: "calendar", title: String(localized: "Calendrier de l'iPhone"),
                 purpose: String(localized: "Ton horaire et tes sessions dans l'agenda"),
                 status: calendarGranted ? String(localized: "Accès accordé") : String(localized: "Accès à autoriser"),
                 connected: calendarGranted,
@@ -117,7 +117,7 @@ struct ConnectionsList: View {
             status = sites[site] == false ? String(localized: "Pas connecté·e") : "—"
         }
         return row(icon: icon, title: title, purpose: purpose, status: status, connected: connected,
-                   action: checking.contains(site) ? nil : { sheet = site }, actionTitle: connected ? "Reconnecter" : "Connecter")
+                   action: checking.contains(site) ? nil : { sheet = site }, actionTitle: connected ? String(localized: "Reconnecter") : String(localized: "Connecter"))
     }
 
     /// Vérifie un site dans le navigateur invisible (sa vraie session).
@@ -160,12 +160,12 @@ struct ConnectionsList: View {
                     Button("Gérer", action: action).buttonStyle(.carnetSecondary)
                 } else if connected {
                     Menu {
-                        Button(actionTitle ?? "Reconnecter", action: action)
+                        Button(actionTitle ?? String(localized: "Reconnecter"), action: action)
                     } label: {
                         Image(systemName: "ellipsis.circle").font(.title3).foregroundStyle(Carnet.inkSecondary)
                     }
                 } else {
-                    Button(actionTitle ?? "Connecter", action: action).buttonStyle(.carnetSecondary)
+                    Button(actionTitle ?? String(localized: "Connecter"), action: action).buttonStyle(.carnetSecondary)
                 }
             } else if !connected, status == String(localized: "Vérification…") {
                 ProgressView()

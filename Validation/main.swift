@@ -10,13 +10,24 @@ final class SettingsStore {
 
 var failures = 0
 
-/// Efface un domaine de préférences jetable, fichier compris : `removePersistentDomain`
-/// seul laisse le `.plist` dans ~/Library/Preferences.
+/// Le nom d'un domaine de préférences jetable : un **chemin absolu** dans le
+/// dossier temporaire, que `UserDefaults(suiteName:)` prend pour le fichier
+/// lui-même. Un simple nom (`polymestre.validation.<UUID>`) atterrissait dans
+/// ~/Library/Preferences, et rien ne l'en retirait pour de bon : le service
+/// des préférences réécrit un `.plist` vide quelques secondes après qu'on a
+/// vidé le domaine et supprimé le fichier (308 fichiers au 10 novembre, malgré
+/// `dropSuite`). Dans le dossier temporaire, ce qui resterait est à sa place.
+func throwawaySuite(_ label: String = "suite") -> String {
+    let folder = FileManager.default.temporaryDirectory
+        .appendingPathComponent("polymestre-validation/\(UUID().uuidString)")
+    try? FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+    return folder.appendingPathComponent(label).path
+}
+
+/// Efface un domaine jetable, fichier compris.
 func dropSuite(_ name: String) {
     UserDefaults.standard.removePersistentDomain(forName: name)
-    let file = FileManager.default.homeDirectoryForCurrentUser
-        .appendingPathComponent("Library/Preferences/\(name).plist")
-    try? FileManager.default.removeItem(at: file)
+    try? FileManager.default.removeItem(atPath: name + ".plist")
 }
 
 func check(_ condition: Bool, _ label: String) {
@@ -3285,9 +3296,8 @@ do {
           "plus restaurable au-delà de \(Int(FocusTimerState.maxRestorableAge / 3600)) h")
     check(!FocusTimerState(sessionStartedAt: t0).isRestorable(at: t0), "un chrono à zéro n'est pas restauré")
 
-    // Un domaine jetable, effacé après : sans ça, chaque passage laissait un
-    // `polymestre.validation.<UUID>.plist` dans ~/Library/Preferences (539 au 26 octobre).
-    let suite = "polymestre.validation.\(UUID().uuidString)"
+    // Un domaine jetable, hors de ~/Library/Preferences (voir `throwawaySuite`).
+    let suite = throwawaySuite("timer")
     let defaults = UserDefaults(suiteName: suite)!
     defer { dropSuite(suite) }
     FocusTimerStore.save(timer, defaults: defaults)
@@ -5753,7 +5763,7 @@ do {
 do {
     // Bloquer le reste : choisi pour une nouvelle installation, gardé pour qui
     // s'en servait avec l'ancien défaut, jamais réécrit une fois choisi.
-    let suite = "polymestre.validation.blocking.\(UUID().uuidString)"
+    let suite = throwawaySuite("blocking")
     let fresh = UserDefaults(suiteName: suite)!
     StudyMode.settleBlockingDefaults(["studyMode.blocking"], existingUser: false, in: fresh)
     check(fresh.object(forKey: "studyMode.blocking") as? Bool == false, "nouvelle installation : le mode étude ne bloque rien")

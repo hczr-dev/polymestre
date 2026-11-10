@@ -65,7 +65,9 @@ extension ExerciseStage {
         switch self {
         case .toDo: return .secondary
         case .inProgress: return TaskType.exercise.tint
-        case .toCorrect: return TaskType.correction.tint
+        // Pas le vert de la catégorie « correction » : à côté d'un verdict, un
+        // vert se lirait « juste ». L'ambre de ce qui attend, comme dans « À rattraper ».
+        case .toCorrect: return Carnet.review
         case .corrected(let result): return result.color
         case .redo: return .red
         }
@@ -85,7 +87,9 @@ struct CorrectionDots: View {
     @ScaledMetric(relativeTo: .body) private var dot: CGFloat = 22
 
     var body: some View {
-        HStack(spacing: 2) {
+        // Chaque pastille a sa cible de 44 pt de large : à 34 pt et 2 pt d'écart,
+        // « juste » et « faux » se touchaient presque, pour un geste qui note.
+        HStack(spacing: 0) {
             ForEach(Correctness.allCases) { option in
                 let isOn = value == option
                 Button {
@@ -100,7 +104,7 @@ struct CorrectionDots: View {
                     }
                     .frame(width: dot, height: dot)
                     .opacity(value == nil || isOn ? 1 : 0.45)
-                    .frame(width: dot + 12, height: Layout.minTouch)
+                    .frame(width: max(dot + 12, Layout.minTouch), height: Layout.minTouch)
                     .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
@@ -602,7 +606,7 @@ private struct ExerciseDetailContent: View {
             }
             if let documentURL {
                 Button {
-                    onOpenLink(BrowsedLink(title: "Énoncé d'origine", url: documentURL, icon: "doc.richtext"))
+                    onOpenLink(BrowsedLink(title: String(localized: "Énoncé d'origine"), url: documentURL, icon: "doc.richtext"))
                 } label: {
                     Label("Énoncé d'origine", systemImage: "doc.richtext")
                         .font(.subheadline.weight(.medium))
@@ -1043,7 +1047,7 @@ enum ExerciseLinks {
     static func links(for exercise: Exercise) -> [BrowsedLink] {
         var links: [BrowsedLink] = []
         if let url = web(exercise.statementURLString) {
-            links.append(BrowsedLink(title: "Énoncé de l'exercice", url: url, icon: "doc.text"))
+            links.append(BrowsedLink(title: String(localized: "Énoncé de l'exercice"), url: url, icon: "doc.text"))
         }
         if let series = exercise.series {
             links.append(contentsOf: seriesLinks(series).filter { link in !links.contains { $0.url == link.url } })
@@ -1054,13 +1058,13 @@ enum ExerciseLinks {
     static func seriesLinks(_ series: ExerciseSeries) -> [BrowsedLink] {
         var links: [BrowsedLink] = []
         if let url = web(series.urlString) {
-            links.append(BrowsedLink(title: "Énoncé de la série", url: url, icon: "doc.richtext"))
+            links.append(BrowsedLink(title: String(localized: "Énoncé de la série"), url: url, icon: "doc.richtext"))
         }
         if let url = web(series.solutionURLString) {
             if let date = series.solutionsAt, date > Date() {
                 links.append(BrowsedLink(title: "Corrigé (publié le \(DateUtils.shortDay.string(from: date)))", url: url, icon: "lock"))
             } else {
-                links.append(BrowsedLink(title: "Corrigé", url: url, icon: "checkmark.seal"))
+                links.append(BrowsedLink(title: String(localized: "Corrigé"), url: url, icon: "checkmark.seal"))
             }
         }
         return links

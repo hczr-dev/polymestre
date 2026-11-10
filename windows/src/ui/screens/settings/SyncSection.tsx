@@ -129,7 +129,7 @@ export function SyncSection() {
   return (
     <Section title="Synchronisation">
       <Card>
-        <SettingRow label="Compte" hint="Le compte Supabase relié à cet appareil.">
+        <SettingRow label="Compte" hint="Le compte Polymestre relié à cet appareil.">
           <span className="settings-value">{status.email ?? "—"}</span>
         </SettingRow>
 

@@ -55,8 +55,8 @@ struct AssistantSettingsView: View {
             }
 
             Section {
-                capability("Lire", String(localized: "avancement, séries, évaluations, temps — et, si tu l'actives, fichiers et notes"))
-                capability("Noter", String(localized: "exercices faits, corrections, questions"))
+                capability(String(localized: "Lire (assistant)"), String(localized: "avancement, séries, évaluations, temps — et, si tu l'actives, fichiers et notes"))
+                capability(String(localized: "Noter (assistant)"), String(localized: "exercices faits, corrections, questions"))
                 capability(String(localized: "Ajouter"), String(localized: "séries, évaluations, sessions, résumés"))
             } header: {
                 Text("Ce que l'assistant peut faire")

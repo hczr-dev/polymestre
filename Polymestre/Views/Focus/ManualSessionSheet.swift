@@ -24,7 +24,7 @@ struct ManualSessionSheet: View {
         NavigationStack {
             Form {
                 Section {
-                    Picker("Cours", selection: $courseID) {
+                    Picker("Cours (au singulier)", selection: $courseID) {
                         Text("Sans cours").tag(UUID?.none)
                         ForEach(courses.filter(\.isTracked)) { course in
                             Text("\(course.displayCode) — \(course.name)").tag(UUID?.some(course.id))

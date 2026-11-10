@@ -256,7 +256,7 @@ struct MenuBarTimerView: View {
                 LiveTimerRing(tint: tint, lineWidth: 6, graduated: true)
                 VStack(spacing: 3) {
                     TimerTimeline { date in
-                        Text(timer.statusLabel(at: date) ?? course?.displayCode ?? "En cours")
+                        Text(timer.statusLabel(at: date) ?? course?.displayCode ?? String(localized: "En cours"))
                             .font(.caption2.weight(.semibold))
                             .textCase(.uppercase)
                             .tracking(1)
@@ -281,7 +281,7 @@ struct MenuBarTimerView: View {
                     .font(Carnet.serif(.headline))
                     .foregroundStyle(Carnet.ink)
                     .lineLimit(1)
-                Text(course?.name ?? "Sans cours")
+                Text(course?.name ?? String(localized: "Sans cours"))
                     .font(.caption)
                     .foregroundStyle(Carnet.inkSecondary)
                     .lineLimit(1)
@@ -392,14 +392,14 @@ struct MenuBarTimerView: View {
             deadlines
             ClaudeMeasureMenuLine()
             HStack(spacing: 8) {
-                HubAction(title: "Note", icon: "note.text.badge.plus") {
+                HubAction(title: String(localized: "Note"), icon: "note.text.badge.plus") {
                     MacWindows.openMain(openWindow)
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
                         NotificationCenter.default.post(name: .macQuickNote, object: nil)
                     }
                 }
                 .help("Note rapide (⇧⌘N)")
-                HubAction(title: "Agenda", icon: "calendar") { go("agenda") }
+                HubAction(title: String(localized: "Agenda"), icon: "calendar") { go("agenda") }
                 HubAction(title: String(localized: "Bilan"), icon: "chart.bar.xaxis") { go("stats") }
                 if let course {
                     HubAction(title: course.displayCode, icon: "book.closed") { go("code:" + course.displayCode) }

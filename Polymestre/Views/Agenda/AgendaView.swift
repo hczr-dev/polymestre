@@ -43,9 +43,9 @@ struct AgendaFilter: Equatable {
         var label: String {
             switch self {
             case .epfl: return "EPFL"
-            case .lectures: return String(localized: "Cours")
+            case .lectures: return String(localized: "Cours (les séances)")
             case .exams: return String(localized: "Évaluations")
-            case .sessions: return "Sessions"
+            case .sessions: return String(localized: "Sessions")
             case .tasks: return String(localized: "Tâches")
             }
         }
@@ -645,7 +645,7 @@ struct AgendaView: View {
         let isPast = calendar.isDateInToday(selectedDay) && !entry.isAllDay && (entry.endDate ?? entry.date) < Date()
         return HStack(alignment: .top, spacing: Layout.block) {
             VStack(alignment: .trailing, spacing: Layout.micro) {
-                Text(entry.isAllDay ? "Jour" : DateUtils.time.string(from: entry.date))
+                Text(entry.isAllDay ? String(localized: "Jour") : DateUtils.time.string(from: entry.date))
                     .font(.caption.weight(.semibold))
                     .monospacedDigit()
                 if let end = entry.endDate {
@@ -726,7 +726,7 @@ struct AgendaView: View {
                             ForEach(group.entries) { entry in
                                 actions(for: entry) {
                                     HStack(spacing: Layout.block) {
-                                        Text(entry.isAllDay ? "Jour" : DateUtils.time.string(from: entry.date))
+                                        Text(entry.isAllDay ? String(localized: "Jour") : DateUtils.time.string(from: entry.date))
                                             .font(.caption.weight(.medium))
                                             .foregroundStyle(.secondary)
                                             .monospacedDigit()

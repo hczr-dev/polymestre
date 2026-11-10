@@ -46,7 +46,7 @@ enum SpotlightIndexer {
         for course in courses {
             let label = "\(course.displayCode) · \(course.name)"
             items.append(item(id: "course:\(course.id)", title: label,
-                              detail: course.notes.isEmpty ? String(localized: "Cours") : String(course.notes.prefix(300)),
+                              detail: course.notes.isEmpty ? String(localized: "Cours (au singulier)") : String(course.notes.prefix(300)),
                               keywords: [course.code, course.displayCode, course.name, "notes"]))
             for series in course.series {
                 let name = series.title.isEmpty ? series.displayName : series.title

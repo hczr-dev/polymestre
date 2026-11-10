@@ -305,3 +305,32 @@ extension Text {
         self.init(verbatim: Bundle.main.localizedString(forKey: text, value: text, table: nil))
     }
 }
+
+// MARK: - Teintes des natures de travail
+
+extension TaskType {
+    /// Une teinte par nature de travail, **la même partout** : bilan de l'iPhone,
+    /// du Mac et de Windows (`palette.ts`), anneaux et pictogrammes des fiches de
+    /// cours. Des teintes sourdes, dans la palette du papier, qui ne rivalisent
+    /// pas avec les verdicts de correction (vert, ambre, rouge) — les couleurs
+    /// vives du système (`.purple`, `.blue`, `.orange`…) juraient avec le reste
+    /// et ne disaient pas la même chose d'un écran à l'autre.
+    var tint: Color {
+        switch canonical {
+        case .theory: return Carnet.tint("#4F6FB8")
+        case .exercise: return Carnet.tint("#C08A2E")
+        case .correction: return Carnet.tint("#5E9A6A")
+        case .flashcards: return Carnet.tint("#A0567E")
+        // Sa propre teinte, pas le gris d'« Autre » : les heures d'amphi se
+        // distinguent dans le bilan.
+        case .lecture: return Carnet.tint("#3E8E96")
+        default: return Carnet.tint("#7A7468")
+        }
+    }
+}
+
+extension TheoryKind {
+    /// Tous les supports sont de la **théorie** : une seule teinte. Le glyphe
+    /// suffit à distinguer une vidéo d'une lecture.
+    var tint: Color { TaskType.theory.tint }
+}

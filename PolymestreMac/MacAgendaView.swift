@@ -278,7 +278,7 @@ private struct DayColumn: View {
                             }
                         }
                         if height > 34 {
-                            Text([event.kind == .lecture ? "Cours" : event.kind.label, event.location.isEmpty ? nil : event.location]
+                            Text([event.kind == .lecture ? String(localized: "Cours (une séance)") : event.kind.label, event.location.isEmpty ? nil : event.location]
                                 .compactMap { $0 }.joined(separator: " · "))
                                 .font(.caption2)
                                 .foregroundStyle(Carnet.inkSecondary)

@@ -124,7 +124,7 @@ struct ExerciseDraftSummary: View {
                 .frame(minWidth: 40, alignment: .leading)
             VStack(alignment: .leading, spacing: Layout.micro) {
                 HStack(spacing: Layout.snug) {
-                    MathText(exercise.title.isEmpty ? "Sans titre" : exercise.title, font: .subheadline)
+                    MathText(exercise.title.isEmpty ? String(localized: "Sans titre") : exercise.title, font: .subheadline)
                         .foregroundStyle(exercise.title.isEmpty ? .secondary : .primary)
                         .lineLimit(1)
                     if exercise.isBonus {
